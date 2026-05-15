@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>LUX-RU — Look-Through Risk & Return Unit</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0d1117;
+            color: #e6edf3;
+            font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Segoe UI', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #app {
+            display: grid;
+            grid-template-columns: 340px 1fr 340px;
+            height: 100vh;
+        }
+
+        /* ===== 좌측 패널 ===== */
+        #left-panel {
+            background: #161b22;
+            border-right: 1px solid #21262d;
+            padding: 18px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        #left-panel h1 {
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #4FC3F7;
+        }
+
+        #left-panel .subtitle {
+            font-size: 11px;
+            color: #7d8590;
+            margin-bottom: 14px;
+        }
+
+        /* 페르소나 셀렉터 */
+        .persona-row {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 14px;
+        }
+
+        .persona-btn {
+            flex: 1;
+            padding: 6px 4px;
+            font-size: 10px;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 6px;
+            color: #7d8590;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .persona-btn.active {
+            background: #4FC3F722;
+            border-color: #4FC3F7;
+            color: #4FC3F7;
+        }
+
+        .stat-card {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 11px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: #7d8590;
+            margin-bottom: 3px;
+        }
+
+        .stat-card .value {
+            font-size: 17px;
+            font-weight: 600;
+            color: #e6edf3;
+        }
+
+        .stat-card .sub {
+            font-size: 11px;
+            color: #4FC3F7;
+            margin-top: 2px;
+        }
+
+        .stat-card .sub.warn {
+            color: #FF8A80;
+        }
+
+        .stat-card .sub.good {
+            color: #2EC4B6;
+        }
+
+        /* HHI 게이지 */
+        .hhi-bar {
+            margin-top: 8px;
+            height: 6px;
+            background: #21262d;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hhi-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2EC4B6, #FFB74D, #FF5252);
+            transition: width 0.6s ease;
+        }
+
+        .hhi-marker {
+            position: absolute;
+            top: -3px;
+            width: 2px;
+            height: 12px;
+            background: #fff;
+            transition: left 0.6s ease;
+        }
+
+        .hhi-scale {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #7d8590;
+            margin-top: 4px;
+        }
+
+        /* 도넛 비교 영역 */
+        .donut-section {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .donut-section .title {
+            font-size: 12px;
+            color: #7d8590;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .donut-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .donut-tab {
+            padding: 3px 8px;
+            font-size: 10px;
+            border-radius: 4px;
+            background: #161b22;
+            border: 1px solid #21262d;
+            color: #7d8590;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .donut-tab.active {
+            background: #4FC3F722;
+            border-color: #4FC3F7;
+            color: #4FC3F7;
+        }
+
+        .donut-compare-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .donut-wrap {
+            text-align: center;
+            position: relative;
+        }
+
+        .donut-wrap .ttl {
+            font-size: 10px;
+            color: #7d8590;
+            margin-bottom: 2px;
+        }
+
+        .donut-wrap .amt {
+            font-size: 11px;
+            color: #e6edf3;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .donut-wrap .delta {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 2px;
+            display: none;
+        }
+
+        .donut-wrap .delta.show {
+            display: block;
+        }
+
+        .donut-wrap .delta.neg {
+            color: #FF8A80;
+        }
+
+        .donut-wrap .delta.pos {
+            color: #2EC4B6;
+        }
+
+        .donut-arrow {
+            color: #4FC3F7;
+            font-size: 18px;
+            opacity: 0.5;
+            display: none;
+        }
+
+        .donut-arrow.show {
+            display: block;
+        }
+
+        .donut-legend {
+            font-size: 11px;
+        }
+
+        .donut-legend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 0;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .donut-legend-item:last-child {
+            border: none;
+        }
+
+        .dl-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #e6edf3;
+        }
+
+        .dl-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dl-right {
+            color: #7d8590;
+            font-size: 10px;
+        }
+
+        .dl-target {
+            color: #FFB74D;
+            font-size: 9px;
+            margin-left: 4px;
+        }
+
+        /* 목표 설정 모달 트리거 */
+        .goal-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            background: #FFB74D22;
+            border: 1px solid #FFB74D44;
+            border-radius: 6px;
+            color: #FFB74D;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .goal-btn:hover {
+            background: #FFB74D33;
+        }
+
+        .view-toggle {
+            margin-top: 8px;
+        }
+
+        .view-toggle .label {
+            font-size: 11px;
+            color: #7d8590;
+            margin-bottom: 6px;
+        }
+
+        .toggle-btn {
+            display: block;
+            width: 100%;
+            padding: 7px 10px;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 6px;
+            color: #e6edf3;
+            cursor: pointer;
+            margin-bottom: 5px;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn:hover {
+            border-color: #4FC3F7;
+        }
+
+        .toggle-btn.active {
+            background: #4FC3F722;
+            border-color: #4FC3F7;
+            color: #4FC3F7;
+        }
+
+        /* ===== 중앙 ===== */
+        #center-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #0d1117;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .center-tabs {
+            display: flex;
+            border-bottom: 1px solid #21262d;
+            background: #0d1117;
+        }
+
+        .center-tab {
+            padding: 13px 20px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #7d8590;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .center-tab:hover {
+            color: #e6edf3;
+        }
+
+        .center-tab.active {
+            color: #4FC3F7;
+            border-bottom-color: #4FC3F7;
+        }
+
+        #graph-container {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+        }
+
+        #graph {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #sim-container {
+            flex: 1;
+            padding: 26px 36px;
+            overflow-y: auto;
+            display: none;
+            min-height: 0;
+        }
+
+        #sim-container h2 {
+            font-size: 21px;
+            margin-bottom: 4px;
+        }
+
+        #sim-container .desc {
+            color: #7d8590;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .sim-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .sim-input {
+            flex: 1;
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 13px 16px;
+            color: #e6edf3;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .sim-input:focus {
+            outline: none;
+            border-color: #4FC3F7;
+        }
+
+        .sim-input::placeholder {
+            color: #484f58;
+        }
+
+        .sim-analyze-btn {
+            background: #2EC4B6;
+            color: #0d1117;
+            border: none;
+            padding: 0 26px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .sim-analyze-btn:hover {
+            background: #4dd5c8;
+        }
+
+        .preset-section .preset-label {
+            font-size: 12px;
+            color: #7d8590;
+            margin-bottom: 10px;
+        }
+
+        .preset-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            background: #161b22;
+            border: 1px solid #21262d;
+            color: #e6edf3;
+            padding: 7px 13px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            border-color: #4FC3F7;
+        }
+
+        .preset-btn.active {
+            background: #2EC4B622;
+            border-color: #2EC4B6;
+            color: #2EC4B6;
+        }
+
+        .preset-btn.reset {
+            margin-left: auto;
+            color: #7d8590;
+        }
+
+        .sim-result {
+            margin-top: 22px;
+            background: linear-gradient(135deg, #161b22, #1c2230);
+            border: 1px solid #21262d;
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+        }
+
+        .sim-result.visible {
+            display: block;
+            animation: fadeUp 0.4s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                transform: translateY(8px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .sim-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .sim-result-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .sim-result-subtitle {
+            font-size: 12px;
+            color: #7d8590;
+            margin-top: 4px;
+        }
+
+        .sim-result-pct {
+            font-size: 13px;
+            color: #7d8590;
+            text-align: right;
+            margin-bottom: 4px;
+        }
+
+        .sim-result-value {
+            font-size: 26px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .sim-result-value.negative {
+            color: #FF5252;
+        }
+
+        .sim-result-value.positive {
+            color: #2EC4B6;
+        }
+
+        .sim-result-amount {
+            font-size: 12px;
+            color: #7d8590;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* 백테스트 라인 차트 */
+        .backtest-section {
+            margin-top: 18px;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .backtest-title {
+            font-size: 12px;
+            color: #7d8590;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #backtestSvg {
+            display: block;
+            width: 100%;
+            height: 160px;
+        }
+
+        .sim-impact-section {
+            margin-top: 18px;
+        }
+
+        .sim-impact-title {
+            font-size: 12px;
+            color: #7d8590;
+            margin-bottom: 10px;
+        }
+
+        .sim-impact-bar {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 6px;
+            padding: 9px 13px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .sim-impact-bar .ticker-name {
+            color: #e6edf3;
+        }
+
+        .sim-impact-bar .ticker-pct {
+            font-weight: 600;
+        }
+
+        .sim-impact-bar .ticker-pct.neg {
+            color: #FF8A80;
+        }
+
+        .sim-impact-bar .ticker-pct.pos {
+            color: #2EC4B6;
+        }
+
+        /* 리밸런싱 카드 */
+        .rebal-section {
+            margin-top: 18px;
+            background: linear-gradient(135deg, #2EC4B61a, #4FC3F710);
+            border: 1px solid #2EC4B644;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .rebal-title {
+            font-size: 13px;
+            color: #2EC4B6;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .rebal-action {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .rebal-action .act-tag {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .rebal-action .act-tag.sell {
+            background: #FF525233;
+            color: #FF8A80;
+        }
+
+        .rebal-action .act-tag.buy {
+            background: #2EC4B633;
+            color: #2EC4B6;
+        }
+
+        .rebal-action .act-amt {
+            color: #7d8590;
+            font-size: 11px;
+        }
+
+        .sim-rationale {
+            margin-top: 16px;
+            padding: 13px;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #b1bac4;
+            line-height: 1.6;
+        }
+
+        .sim-rationale .badge {
+            display: inline-block;
+            background: #2EC4B6;
+            color: #0d1117;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        /* ===== 우측 ===== */
+        #right-panel {
+            background: #161b22;
+            border-left: 1px solid #21262d;
+            padding: 18px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        #right-panel h2 {
+            font-size: 13px;
+            color: #7d8590;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .node-detail {
+            display: none;
+        }
+
+        .node-detail.visible {
+            display: block;
+        }
+
+        .node-detail .name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .node-detail .ticker {
+            font-size: 11px;
+            color: #7d8590;
+            margin-bottom: 14px;
+        }
+
+        .node-detail .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 12px;
+        }
+
+        .node-detail .row .k {
+            color: #7d8590;
+        }
+
+        .node-detail .row .v {
+            color: #e6edf3;
+            font-weight: 500;
+        }
+
+        .source-list {
+            margin-top: 14px;
+        }
+
+        .source-item {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 6px;
+            padding: 9px;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .source-item .src-name {
+            color: #4FC3F7;
+            margin-bottom: 2px;
+        }
+
+        .source-item .src-amt {
+            color: #7d8590;
+            font-size: 11px;
+        }
+
+        .ai-coach {
+            background: linear-gradient(135deg, #4FC3F71a, #81C78410);
+            border: 1px solid #4FC3F744;
+            border-radius: 8px;
+            padding: 13px;
+            margin-top: 14px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .ai-coach .badge {
+            display: inline-block;
+            background: #4FC3F7;
+            color: #0d1117;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        /* 알림 토스트 */
+        #alert-toast {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #FF5252, #FF8A80);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(255, 82, 82, 0.4);
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            z-index: 100;
+            max-width: 500px;
+        }
+
+        #alert-toast.show {
+            display: block;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        #legend {
+            position: absolute;
+            bottom: 18px;
+            left: 18px;
+            background: #161b22cc;
+            backdrop-filter: blur(8px);
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 11px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        /* 목표 설정 모달 */
+        #goal-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #goal-modal.show {
+            display: flex;
+        }
+
+        .goal-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 24px;
+            width: 420px;
+        }
+
+        .goal-card h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #FFB74D;
+        }
+
+        .goal-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .goal-row label {
+            flex: 1;
+            font-size: 12px;
+            color: #e6edf3;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .goal-row input[type=range] {
+            flex: 2;
+        }
+
+        .goal-row .pct-display {
+            width: 50px;
+            text-align: right;
+            color: #FFB74D;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .goal-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            border: none;
+            font-weight: 500;
+        }
+
+        .goal-actions .save {
+            background: #FFB74D;
+            color: #0d1117;
+        }
+
+        .goal-actions .cancel {
+            background: #21262d;
+            color: #e6edf3;
+        }
+
+        .goal-total {
+            font-size: 11px;
+            color: #7d8590;
+            text-align: right;
+            margin-top: 8px;
+        }
+
+        .goal-total.over {
+            color: #FF8A80;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- ============ 좌측 ============ -->
+        <div id="left-panel">
+            <h1>● LUX-RU</h1>
+            <div class="subtitle">Look-Through Risk & Return Unit</div>
+
+            <!-- 페르소나 전환 -->
+            <div class="persona-row">
+                <button class="persona-btn active" data-persona="balanced">⚖ 균형형</button>
+                <button class="persona-btn" data-persona="aggressive">🚀 공격형</button>
+                <button class="persona-btn" data-persona="retire">🏖 은퇴형</button>
+            </div>
+
+            <div class="stat-card">
+                <div class="label">총 평가액</div>
+                <div class="value" id="totalAUM">5,500만원</div>
+                <div class="sub" id="accountSummary">3개 계좌 · 4개 상품</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">실질 최대 비중</div>
+                <div class="value" id="topStock">삼성전자 35.9%</div>
+                <div class="sub warn" id="topStockWarn">⚠ 집중도 높음</div>
+            </div>
+
+            <!-- HHI 게이지 -->
+            <div class="stat-card">
+                <div class="label">HHI 집중도 지수</div>
+                <div class="value" id="hhiValue">1,820</div>
+                <div class="sub" id="hhiInterpret">일반 ETF 평균(800) 대비 2.3배 집중</div>
+                <div class="hhi-bar">
+                    <div class="hhi-fill" id="hhiFill" style="width:0%"></div>
+                    <div class="hhi-marker" id="hhiMarker" style="left:0%"></div>
+                </div>
+                <div class="hhi-scale"><span>분산</span><span>균형</span><span>집중</span></div>
+            </div>
+
+            <!-- 도넛 비교 -->
+            <div class="donut-section">
+                <div class="title">
+                    <span>실질 포트폴리오 구성</span>
+                    <div class="donut-tabs">
+                        <span class="donut-tab active" data-mode="stock">종목</span>
+                        <span class="donut-tab" data-mode="sector">섹터</span>
+                    </div>
+                </div>
+                <div class="donut-compare-row">
+                    <div class="donut-wrap">
+                        <div class="ttl">현재</div>
+                        <svg id="donutBefore" width="115" height="115"></svg>
+                        <div class="amt" id="donutBeforeAmt">5,500만</div>
+                    </div>
+                    <div class="donut-arrow" id="donutArrow">→</div>
+                    <div class="donut-wrap" id="donutAfterWrap" style="display:none;">
+                        <div class="ttl">시뮬 후</div>
+                        <svg id="donutAfter" width="115" height="115"></svg>
+                        <div class="amt" id="donutAfterAmt">-</div>
+                        <div class="delta" id="donutDelta">-</div>
+                    </div>
+                </div>
+                <div class="donut-legend" id="donutLegend"></div>
+                <button class="goal-btn" id="goalBtn">🎯 목표 포트폴리오 설정</button>
+            </div>
+
+            <div class="view-toggle">
+                <div class="label">그래프 뷰 모드</div>
+                <button class="toggle-btn active" data-view="default">기본 (계좌 → 종목)</button>
+                <button class="toggle-btn" data-view="sector">섹터 클러스터 뷰</button>
+            </div>
+        </div>
+
+        <!-- ============ 중앙 ============ -->
+        <div id="center-panel">
+            <div class="center-tabs">
+                <div class="center-tab active" data-tab="graph">📊 포트폴리오 그래프</div>
+                <div class="center-tab" data-tab="sim">⚡ 시장 충격 시뮬레이션</div>
+            </div>
+
+            <div id="graph-container">
+                <canvas id="graph"></canvas>
+                <div id="alert-toast"></div>
+                <div id="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#FFFFFF"></div>계좌
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#4FC3F7"></div>반도체
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#81C784"></div>IT/플랫폼
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#BA68C8"></div>2차전지
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#F06292"></div>바이오
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#FFB74D"></div>금융/기타
+                    </div>
+                </div>
+            </div>
+
+            <div id="sim-container">
+                <h2>시장 충격 시뮬레이션</h2>
+                <div class="desc">거시 경제 변수나 특정 이벤트가 내 포트폴리오에 미치는 실질적 영향을 분석합니다.</div>
+
+                <div class="sim-input-row">
+                    <input type="text" class="sim-input" id="simInput" placeholder="예: 미국 기준금리 0.5%p 인상되면?">
+                    <button class="sim-analyze-btn" id="simAnalyzeBtn">분석하기</button>
+                </div>
+
+                <div class="preset-section">
+                    <div class="preset-label">추천 시나리오 (클릭하여 실행)</div>
+                    <div class="preset-row">
+                        <button class="preset-btn" data-scenario="rate">미연준 0.5%p 금리 인상</button>
+                        <button class="preset-btn" data-scenario="nvidia">엔비디아 어닝쇼크</button>
+                        <button class="preset-btn" data-scenario="covid">2020년 코로나19 초기</button>
+                        <button class="preset-btn" data-scenario="semi">美 반도체 수출규제</button>
+                        <button class="preset-btn reset" data-scenario="reset">초기화</button>
+                    </div>
+                </div>
+
+                <div class="sim-result" id="simResult">
+                    <div class="sim-result-header">
+                        <div>
+                            <div class="sim-result-title" id="srTitle"></div>
+                            <div class="sim-result-subtitle" id="srSubtitle"></div>
+                        </div>
+                        <div>
+                            <div class="sim-result-pct">예상 포트폴리오 변동</div>
+                            <div class="sim-result-value" id="srValue"></div>
+                            <div class="sim-result-amount" id="srAmount"></div>
+                        </div>
+                    </div>
+
+                    <!-- 백테스트 라인 차트 -->
+                    <div class="backtest-section">
+                        <div class="backtest-title">
+                            <span>📉 과거 1년 시뮬레이션 (해당 충격이 반복 발생했다고 가정)</span>
+                            <span id="backtestRange" style="color:#7d8590;font-size:11px;">2024.05 ~ 2025.05</span>
+                        </div>
+                        <svg id="backtestSvg"></svg>
+                    </div>
+
+                    <div class="sim-impact-section">
+                        <div class="sim-impact-title">주요 영향 종목 (실질 익스포저 기준)</div>
+                        <div id="srImpactList"></div>
+                    </div>
+
+                    <!-- 리밸런싱 제안 -->
+                    <div class="rebal-section" id="rebalSection">
+                        <div class="rebal-title">💡 AI 리밸런싱 제안</div>
+                        <div id="rebalActions"></div>
+                        <div style="font-size:11px;color:#7d8590;margin-top:8px;line-height:1.5;" id="rebalSummary">
+                        </div>
+                    </div>
+
+                    <div class="sim-rationale">
+                        <span class="badge">AI 추론 근거</span>
+                        <div id="srRationale"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 우측 ============ -->
+        <div id="right-panel">
+            <h2>노드 상세</h2>
+            <div id="empty-state" style="color:#7d8590;font-size:12px;">
+                그래프의 노드를 클릭하면<br>상세 정보가 표시됩니다.
+            </div>
+            <div class="node-detail" id="nodeDetail">
+                <div class="name" id="ndName"></div>
+                <div class="ticker" id="ndTicker"></div>
+                <div class="row"><span class="k">실질 투자금액</span><span class="v" id="ndAmount"></span></div>
+                <div class="row"><span class="k">전체 비중</span><span class="v" id="ndRatio"></span></div>
+                <div class="row"><span class="k">섹터</span><span class="v" id="ndSector"></span></div>
+                <div class="source-list" id="ndSources"></div>
+            </div>
+
+            <div class="ai-coach" id="aiCoach">
+                <span class="badge">AI 코칭</span>
+                <div id="coachMsg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 목표 포트폴리오 설정 모달 -->
+    <div id="goal-modal">
+        <div class="goal-card">
+            <h3>🎯 목표 섹터 비중 설정</h3>
+            <div id="goalSliders"></div>
+            <div class="goal-total" id="goalTotal">합계: 100%</div>
+            <div class="goal-actions">
+                <button class="cancel" id="goalCancel">취소</button>
+                <button class="save" id="goalSave">저장 및 갭 분석</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. 페르소나별 더미 데이터
+        // ============================================================
+        const PERSONAS = {
+            balanced: {
+                name: "균형형 (김씨, 38세)",
+                accounts: [
+                    { id: "acc_pension", name: "퇴직연금", type: "account" },
+                    { id: "acc_isa", name: "ISA 계좌", type: "account" },
+                    { id: "acc_personal", name: "개인 증권계좌", type: "account" }
+                ],
+                holdings: [
+                    {
+                        id: "vip_fund", name: "VIP자산운용 성장형", account: "acc_pension", amount: 20000000, type: "fund",
+                        composition: [
+                            { ticker: "005930", name: "삼성전자", sector: "반도체", weight: 0.15 },
+                            { ticker: "035420", name: "NAVER", sector: "IT", weight: 0.08 },
+                            { ticker: "035720", name: "카카오", sector: "IT", weight: 0.06 },
+                            { ticker: "068270", name: "셀트리온", sector: "바이오", weight: 0.05 },
+                            { ticker: "005380", name: "현대차", sector: "기타", weight: 0.06 },
+                            { ticker: "051910", name: "LG화학", sector: "2차전지", weight: 0.05 },
+                            { ticker: "OTHER_VIP", name: "기타 종목", sector: "기타", weight: 0.55 }
+                        ]
+                    },
+                    {
+                        id: "kodex_semi", name: "KODEX 반도체", account: "acc_isa", amount: 15000000, type: "etf",
+                        composition: [
+                            { ticker: "005930", name: "삼성전자", sector: "반도체", weight: 0.25 },
+                            { ticker: "000660", name: "SK하이닉스", sector: "반도체", weight: 0.20 },
+                            { ticker: "042700", name: "한미반도체", sector: "반도체", weight: 0.08 },
+                            { ticker: "000990", name: "DB하이텍", sector: "반도체", weight: 0.05 },
+                            { ticker: "OTHER_SEMI", name: "기타 반도체", sector: "반도체", weight: 0.42 }
+                        ]
+                    },
+                    {
+                        id: "kodex_lev", name: "KODEX 레버리지", account: "acc_personal", amount: 10000000, type: "etf",
+                        composition: [
+                            { ticker: "005930", name: "삼성전자", sector: "반도체", weight: 0.30 },
+                            { ticker: "000660", name: "SK하이닉스", sector: "반도체", weight: 0.06 },
+                            { ticker: "373220", name: "LG에너지솔루션", sector: "2차전지", weight: 0.04 },
+                            { ticker: "005380", name: "현대차", sector: "기타", weight: 0.03 },
+                            { ticker: "OTHER_LEV", name: "기타 코스피200", sector: "기타", weight: 0.57 }
+                        ]
+                    },
+                    {
+                        id: "samsung_direct", name: "삼성전자 (직접)", account: "acc_personal", amount: 10000000, type: "stock",
+                        composition: [{ ticker: "005930", name: "삼성전자", sector: "반도체", weight: 1.0 }]
+                    }
+                ]
+            },
+            aggressive: {
+                name: "공격형 (박씨, 29세)",
+                accounts: [
+                    { id: "acc_personal", name: "개인 증권계좌", type: "account" },
+                    { id: "acc_isa", name: "ISA 계좌", type: "account" }
+                ],
+                holdings: [
+                    {
+                        id: "kodex_lev", name: "KODEX 레버리지", account: "acc_personal", amount: 20000000, type: "etf",
+                        composition: [
+                            { ticker: "005930", name: "삼성전자", sector: "반도체", weight: 0.30 },
+                            { ticker: "000660", name: "SK하이닉스", sector: "반도체", weight: 0.06 },
+                            { ticker: "373220", name: "LG에너지솔루션", sector: "2차전지", weight: 0.04 },
+                            { ticker: "OTHER_LEV", name: "기타 코스피200", sector: "기타", weight: 0.60 }
+                        ]
+                    },
+                    {
+                        id: "tiger_2nd", name: "TIGER 2차전지테마", account: "acc_isa", amount: 15000000, type: "etf",
+                        composition: [
+                            { ticker: "373220", name: "LG에너지솔루션", sector: "2차전지", weight: 0.20 },
+                            { ticker: "051910", name: "LG화학", sector: "2차전지", weight: 0.18 },
+                            { ticker: "006400", name: "삼성SDI", sector: "2차전지", weight: 0.15 },
+                            { ticker: "OTHER_2ND", name: "기타 2차전지", sector: "2차전지", weight: 0.47 }
+                        ]
+                    },
+                    {
+                        id: "tesla_direct", name: "테슬라 (직접)", account: "acc_personal", amount: 10000000, type: "stock",
+                        composition: [{ ticker: "TSLA", name: "테슬라", sector: "기타", weight: 1.0 }]
+                    }
+                ]
+            },
+            retire: {
+                name: "은퇴형 (이씨, 56세)",
+                accounts: [
+                    { id: "acc_pension", name: "퇴직연금", type: "account" },
+                    { id: "acc_personal", name: "개인 증권계좌", type: "account" }
+                ],
+                holdings: [
+                    {
+                        id: "bond_fund", name: "한국채권 안정형", account: "acc_pension", amount: 30000000, type: "fund",
+                        composition: [
+                            { ticker: "BOND_KR", name: "국공채", sector: "금융", weight: 0.60 },
+                            { ticker: "BOND_CORP", name: "회사채", sector: "금융", weight: 0.30 },
+                            { ticker: "OTHER_BOND", name: "기타 채권", sector: "금융", weight: 0.10 }
+                        ]
+                    },
+                    {
+                        id: "div_etf", name: "ARIRANG 고배당주", account: "acc_personal", amount: 12000000, type: "etf",
+                        composition: [
+                            { ticker: "055550", name: "신한지주", sector: "금융", weight: 0.12 },
+                            { ticker: "105560", name: "KB금융", sector: "금융", weight: 0.11 },
+                            { ticker: "005380", name: "현대차", sector: "기타", weight: 0.08 },
+                            { ticker: "OTHER_DIV", name: "기타 고배당", sector: "기타", weight: 0.69 }
+                        ]
+                    },
+                    {
+                        id: "samsung_direct", name: "삼성전자 (직접)", account: "acc_personal", amount: 5000000, type: "stock",
+                        composition: [{ ticker: "005930", name: "삼성전자", sector: "반도체", weight: 1.0 }]
+                    }
+                ]
+            }
+        };
+
+        const SECTOR_COLORS = {
+            "반도체": "#4FC3F7", "IT": "#81C784", "2차전지": "#BA68C8",
+            "바이오": "#F06292", "금융": "#FFB74D", "기타": "#90A4AE"
+        };
+
+        let currentPersona = "balanced";
+        let totalAUM = 0;
+        let graphData = null;
+        let nodes = [], links = [];
+
+        // ============================================================
+        // 2. Look-through 계산
+        // ============================================================
+        function buildGraph(persona) {
+            const data = PERSONAS[persona];
+            const nodes = [];
+            const links = [];
+            const tickerNodes = new Map();
+
+            data.accounts.forEach(a => nodes.push({
+                id: a.id, label: a.name, level: 0, type: "account",
+                radius: 22, color: "#FFFFFF", amount: 0
+            }));
+
+            data.holdings.forEach(h => {
+                const mainSector = h.composition.reduce((acc, c) => {
+                    acc[c.sector] = (acc[c.sector] || 0) + c.weight; return acc;
+                }, {});
+                const topSector = Object.entries(mainSector).sort((a, b) => b[1] - a[1])[0][0];
+                nodes.push({
+                    id: h.id, label: h.name, level: 1, type: h.type,
+                    radius: 10 + Math.sqrt(h.amount / 200000),
+                    color: SECTOR_COLORS[topSector] || "#90A4AE",
+                    amount: h.amount, sector: topSector
+                });
+                links.push({ source: h.account, target: h.id, weight: h.amount / 10000000 });
+
+                h.composition.forEach(c => {
+                    const realAmount = h.amount * c.weight;
+                    if (!tickerNodes.has(c.ticker)) {
+                        tickerNodes.set(c.ticker, {
+                            id: c.ticker, label: c.name, level: 2, type: "stock",
+                            ticker: c.ticker, sector: c.sector,
+                            amount: 0, sources: [],
+                            color: SECTOR_COLORS[c.sector] || "#90A4AE"
+                        });
+                    }
+                    const node = tickerNodes.get(c.ticker);
+                    node.amount += realAmount;
+                    node.sources.push({ from: h.name, amount: realAmount, weight: c.weight });
+                    links.push({ source: h.id, target: c.ticker, weight: realAmount / 5000000 });
+                });
+            });
+
+            tickerNodes.forEach(n => {
+                n.radius = 6 + Math.sqrt(n.amount / 150000);
+                nodes.push(n);
+            });
+
+            const total = data.holdings.reduce((s, h) => s + h.amount, 0);
+            return { nodes, links, tickerNodes, total, holdings: data.holdings, accounts: data.accounts, personaName: data.name };
+        }
+
+        function aggregateByStock() {
+            const arr = [];
+            graphData.tickerNodes.forEach(n => arr.push({ name: n.label, value: n.amount, color: n.color, sector: n.sector, ticker: n.ticker }));
+            return arr.sort((a, b) => b.value - a.value);
+        }
+        function aggregateBySector() {
+            const map = {};
+            graphData.tickerNodes.forEach(n => { map[n.sector] = (map[n.sector] || 0) + n.amount; });
+            return Object.entries(map).map(([k, v]) => ({
+                name: k, value: v, color: SECTOR_COLORS[k] || "#90A4AE"
+            })).sort((a, b) => b.value - a.value);
+        }
+
+        // HHI 계산 (실질 종목 비중 제곱합 × 10000)
+        function calcHHI() {
+            let hhi = 0;
+            graphData.tickerNodes.forEach(n => {
+                const w = n.amount / totalAUM;
+                hhi += w * w;
+            });
+            return Math.round(hhi * 10000);
+        }
+
+        // ============================================================
+        // 3. 도넛 차트 (Before / After)
+        // ============================================================
+        let donutMode = "stock";
+        let goalWeights = null; // 사용자 설정 목표 (섹터 기준)
+
+        function renderDonut(svgId, data, opts = {}) {
+            const svg = d3.select("#" + svgId);
+            svg.selectAll("*").remove();
+            const w = +svg.attr("width"), h = +svg.attr("height");
+            const r = Math.min(w, h) / 2 - 5;
+            const inner = r * 0.6;
+            const g = svg.append("g").attr("transform", `translate(${w / 2}, ${h / 2})`);
+
+            const threshold = (opts.total || totalAUM) * 0.025;
+            const main = data.filter(d => d.value >= threshold);
+            const small = data.filter(d => d.value < threshold);
+            if (small.length > 0) {
+                const sumSmall = small.reduce((s, d) => s + d.value, 0);
+                main.push({ name: "기타", value: sumSmall, color: "#484f58" });
+            }
+
+            const pie = d3.pie().value(d => d.value).sort(null);
+            const arc = d3.arc().innerRadius(inner).outerRadius(r).cornerRadius(2).padAngle(0.015);
+
+            g.selectAll("path").data(pie(main)).enter().append("path")
+                .attr("d", arc).attr("fill", d => d.data.color)
+                .attr("stroke", "#0d1117").attr("stroke-width", 1.5);
+
+            // 목표 비중 점선 오버레이 (sector 모드에서만)
+            if (opts.showGoal && donutMode === "sector" && goalWeights) {
+                const total = main.reduce((s, d) => s + d.value, 0);
+                const goalData = Object.entries(goalWeights).map(([name, pct]) => ({
+                    name, value: total * pct / 100, color: SECTOR_COLORS[name] || "#90A4AE"
+                }));
+                const goalArc = d3.arc().innerRadius(r + 2).outerRadius(r + 5).padAngle(0.015);
+                g.selectAll("path.goal").data(pie(goalData)).enter().append("path")
+                    .attr("class", "goal").attr("d", goalArc)
+                    .attr("fill", "none").attr("stroke", "#FFB74D")
+                    .attr("stroke-width", 2).attr("stroke-dasharray", "3,2");
+            }
+
+            // 중앙 텍스트
+            g.append("text").attr("text-anchor", "middle").attr("dy", "0.35em")
+                .attr("fill", "#7d8590").attr("font-size", "9px").attr("y", -8)
+                .text(opts.label || "");
+            g.append("text").attr("text-anchor", "middle").attr("dy", "0.35em")
+                .attr("fill", "#e6edf3").attr("font-size", "13px").attr("font-weight", "600").attr("y", 6)
+                .text(opts.centerText || "");
+        }
+
+        function updateDonutLegend(data) {
+            const threshold = totalAUM * 0.025;
+            const main = data.filter(d => d.value >= threshold);
+            const legend = document.getElementById("donutLegend");
+            legend.innerHTML = "";
+            main.slice(0, 6).forEach(d => {
+                const pct = ((d.value / totalAUM) * 100).toFixed(1);
+                const goalPct = (donutMode === "sector" && goalWeights && goalWeights[d.name] != null)
+                    ? `<span class="dl-target">목표 ${goalWeights[d.name]}%</span>` : "";
+                const el = document.createElement("div");
+                el.className = "donut-legend-item";
+                el.innerHTML = `
+      <div class="dl-left">
+        <div class="dl-dot" style="background:${d.color}"></div>
+        <span>${d.name}</span>${goalPct}
+      </div>
+      <div class="dl-right">${(d.value / 10000).toFixed(0)}만 · ${pct}%</div>`;
+                legend.appendChild(el);
+            });
+        }
+
+        function refreshLeftPanel() {
+            // 통계
+            document.getElementById("totalAUM").textContent = (totalAUM / 10000).toFixed(0) + "만원";
+            document.getElementById("accountSummary").textContent =
+                `${graphData.accounts.length}개 계좌 · ${graphData.holdings.length}개 상품`;
+
+            const sorted = aggregateByStock();
+            const top = sorted[0];
+            const topPct = (top.value / totalAUM * 100);
+            document.getElementById("topStock").textContent = `${top.name} ${topPct.toFixed(1)}%`;
+            const warnEl = document.getElementById("topStockWarn");
+            if (topPct > 25) { warnEl.textContent = "⚠ 집중도 높음"; warnEl.className = "sub warn"; }
+            else if (topPct > 15) { warnEl.textContent = "△ 주의 필요"; warnEl.className = "sub"; }
+            else { warnEl.textContent = "✓ 양호"; warnEl.className = "sub good"; }
+
+            // HHI
+            const hhi = calcHHI();
+            document.getElementById("hhiValue").textContent = hhi.toLocaleString();
+            let interp;
+            if (hhi < 1000) interp = "잘 분산된 포트폴리오 (양호)";
+            else if (hhi < 1800) interp = `일반 ETF 평균(800) 대비 ${(hhi / 800).toFixed(1)}배 집중`;
+            else if (hhi < 2500) interp = "집중도 높음 — 분산 권장";
+            else interp = "매우 집중된 포트폴리오";
+            document.getElementById("hhiInterpret").textContent = interp;
+            // 게이지: 0~3000 스케일로 매핑
+            const pos = Math.min(hhi / 3000 * 100, 100);
+            document.getElementById("hhiFill").style.width = pos + "%";
+            document.getElementById("hhiMarker").style.left = pos + "%";
+
+            // 도넛 (현재)
+            const data = donutMode === "sector" ? aggregateBySector() : aggregateByStock();
+            renderDonut("donutBefore", data, {
+                label: "현재", centerText: (totalAUM / 10000).toFixed(0) + "만",
+                showGoal: true
+            });
+            document.getElementById("donutBeforeAmt").textContent = (totalAUM / 10000).toFixed(0) + "만원";
+            updateDonutLegend(data);
+
+            // AI 코칭 메시지
+            const semiExposure = sorted.filter(s => s.sector === "반도체").reduce((sum, s) => sum + s.value, 0);
+            const semiPct = (semiExposure / totalAUM * 100);
+            let coach = `현재 페르소나: <b>${graphData.personaName}</b><br><br>`;
+            coach += `최대 비중 종목 <b>${top.name}</b>가 전체의 <b style="color:#FF8A80">${topPct.toFixed(1)}%</b>를 차지합니다.<br><br>`;
+            if (semiPct > 30) coach += `반도체 섹터에 <b style="color:#FF8A80">${semiPct.toFixed(0)}%</b>가 집중되어 있어 업황 변동에 취약합니다.`;
+            else coach += `섹터 분산은 비교적 양호합니다.`;
+            document.getElementById("coachMsg").innerHTML = coach;
+        }
+
+        // ============================================================
+        // 4. 그래프 캔버스 + force simulation
+        // ============================================================
+        const canvas = document.getElementById("graph");
+        const ctx = canvas.getContext("2d");
+        let width, height, transform = d3.zoomIdentity;
+        let simulation = null;
+        let hoveredNode = null;
+        let selectedNode = null;
+        let alertedTickers = new Set();
+        let tickerImpactMap = {}; // 각 종목별 변동률 (시뮬 시 표시용)
+        let alertIntensity = 1;
+
+        function resize() {
+            const container = document.getElementById("graph-container");
+            width = container.clientWidth; height = container.clientHeight;
+            if (!width || !height) return;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = width * dpr; canvas.height = height * dpr;
+            canvas.style.width = width + "px"; canvas.style.height = height + "px";
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function initSimulation() {
+            if (simulation) simulation.stop();
+            simulation = d3.forceSimulation(nodes)
+                .force("charge", d3.forceManyBody().strength(d => d.level === 0 ? -800 : -250).distanceMax(450))
+                .force("link", d3.forceLink(links).id(d => d.id)
+                    .distance(d => d.source.level === 0 ? 120 : 70 + (d.weight || 1) * 8)
+                    .strength(0.7))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collide", d3.forceCollide().radius(d => d.radius + 5).strength(0.9))
+                .force("x", d3.forceX(width / 2).strength(0.04))
+                .force("y", d3.forceY(height / 2).strength(0.04))
+                .alphaDecay(0.018)
+                .velocityDecay(0.42);
+            simulation.on("tick", render);
+        }
+
+        function render() {
+            if (!width || !height) return;
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            ctx.translate(transform.x, transform.y);
+            ctx.scale(transform.k, transform.k);
+
+            const focusNode = hoveredNode || selectedNode;
+            let focusIds = null;
+            if (focusNode) {
+                focusIds = new Set([focusNode.id]);
+                links.forEach(l => {
+                    if (l.source.id === focusNode.id) focusIds.add(l.target.id);
+                    if (l.target.id === focusNode.id) focusIds.add(l.source.id);
+                });
+            }
+
+            links.forEach(l => {
+                const dim = focusIds && !(focusIds.has(l.source.id) && focusIds.has(l.target.id));
+                ctx.strokeStyle = dim ? "rgba(180,200,220,0.04)" : "rgba(180,200,220,0.28)";
+                if (focusNode && !dim) ctx.strokeStyle = "rgba(120,220,255,0.7)";
+                ctx.lineWidth = 0.5 + Math.min((l.weight || 1) * 0.5, 3);
+                ctx.beginPath();
+                ctx.moveTo(l.source.x, l.source.y);
+                ctx.lineTo(l.target.x, l.target.y);
+                ctx.stroke();
+            });
+
+            const time = Date.now();
+            nodes.forEach(n => {
+                const dim = focusIds && !focusIds.has(n.id);
+                const isAlerted = alertedTickers.has(n.id);
+                const impact = tickerImpactMap[n.id]; // 변동률
+                let r = n.radius;
+                let glowColor = n.color;
+                let glowBlur = 12;
+
+                if (isAlerted) {
+                    const pulse = Math.sin(time / 250) * 0.5 + 0.5;
+                    glowColor = impact > 0 ? "#2EC4B6" : "#FF5252";
+                    glowBlur = 18 + pulse * 18;
+                    // 충격 후 크기 축소 효과: 변동률에 비례해 축소
+                    const shrinkFactor = 1 + (impact || 0) / 100 * 0.6; // -10% → 0.94배
+                    r = (n.radius + pulse * 2) * shrinkFactor;
+                    n.x += (Math.random() - 0.5) * 0.6 * alertIntensity;
+                    n.y += (Math.random() - 0.5) * 0.6 * alertIntensity;
+                } else if (n === hoveredNode || n === selectedNode) {
+                    glowBlur = 28;
+                }
+
+                ctx.globalAlpha = dim ? 0.18 : 1;
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = glowBlur;
+                ctx.fillStyle = isAlerted ? (impact > 0 ? "#2EC4B6" : "#FF5252") : n.color;
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                if (n === selectedNode) {
+                    ctx.strokeStyle = "#FFFFFF"; ctx.lineWidth = 2.5; ctx.stroke();
+                } else {
+                    ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = 1.2; ctx.stroke();
+                }
+
+                // 라벨
+                if (n.radius > 10 || n === hoveredNode || n === selectedNode || transform.k > 1.2) {
+                    ctx.fillStyle = dim ? "rgba(230,237,243,0.3)" : "#e6edf3";
+                    ctx.font = `${n.level === 0 ? 13 : 11}px -apple-system, sans-serif`;
+                    ctx.textAlign = "center";
+                    ctx.fillText(n.label, n.x, n.y + r + 14);
+                }
+
+                // 변동률 라벨 (시뮬 활성 시)
+                if (isAlerted && impact != null) {
+                    const txt = (impact > 0 ? "+" : "") + impact.toFixed(1) + "%";
+                    ctx.font = "bold 11px -apple-system, sans-serif";
+                    ctx.fillStyle = impact > 0 ? "#2EC4B6" : "#FF8A80";
+                    ctx.textAlign = "center";
+                    // 배경 박스
+                    const txtWidth = ctx.measureText(txt).width;
+                    ctx.fillStyle = "rgba(13,17,23,0.85)";
+                    ctx.fillRect(n.x - txtWidth / 2 - 4, n.y - r - 22, txtWidth + 8, 16);
+                    ctx.fillStyle = impact > 0 ? "#2EC4B6" : "#FF8A80";
+                    ctx.fillText(txt, n.x, n.y - r - 10);
+                }
+            });
+
+            ctx.globalAlpha = 1;
+            ctx.restore();
+
+            if (alertedTickers.size > 0) requestAnimationFrame(render);
+        }
+
+        function getNodeAt(mx, my) {
+            const x = (mx - transform.x) / transform.k;
+            const y = (my - transform.y) / transform.k;
+            for (let i = nodes.length - 1; i >= 0; i--) {
+                const n = nodes[i];
+                const dx = x - n.x, dy = y - n.y;
+                if (dx * dx + dy * dy <= (n.radius + 2) ** 2) return n;
+            }
+            return null;
+        }
+
+        let dragNode = null;
+        canvas.addEventListener("mousedown", e => {
+            const rect = canvas.getBoundingClientRect();
+            const n = getNodeAt(e.clientX - rect.left, e.clientY - rect.top);
+            if (n) {
+                dragNode = n;
+                n.fx = n.x; n.fy = n.y;
+                simulation.alphaTarget(0.3).restart();
+            }
+        });
+        canvas.addEventListener("mousemove", e => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            if (dragNode) {
+                dragNode.fx = (mx - transform.x) / transform.k;
+                dragNode.fy = (my - transform.y) / transform.k;
+            } else {
+                const n = getNodeAt(mx, my);
+                hoveredNode = n;
+                canvas.style.cursor = n ? "pointer" : "default";
+                render();
+            }
+        });
+        canvas.addEventListener("mouseup", e => {
+            if (dragNode) {
+                const rect = canvas.getBoundingClientRect();
+                const n = getNodeAt(e.clientX - rect.left, e.clientY - rect.top);
+                if (n === dragNode) showNodeDetail(n);
+                dragNode.fx = null; dragNode.fy = null;
+                dragNode = null;
+                simulation.alphaTarget(0);
+            }
+        });
+
+        d3.select(canvas).call(d3.zoom()
+            .scaleExtent([0.3, 3])
+            .filter(e => {
+                if (e.type === "wheel") return true;
+                const rect = canvas.getBoundingClientRect();
+                return !getNodeAt(e.clientX - rect.left, e.clientY - rect.top);
+            })
+            .on("zoom", e => { transform = e.transform; render(); }));
+
+        // ============================================================
+        // 5. 노드 상세
+        // ============================================================
+        function fmt(n) { return (n / 10000).toFixed(0) + "만원"; }
+
+        function showNodeDetail(n) {
+            selectedNode = n;
+            document.getElementById("empty-state").style.display = "none";
+            document.getElementById("nodeDetail").classList.add("visible");
+            document.getElementById("ndName").textContent = n.label;
+            document.getElementById("ndTicker").textContent =
+                n.type === "stock" ? `종목코드 ${n.ticker || "-"}` :
+                    n.type === "account" ? "계좌" : n.type.toUpperCase();
+
+            let amount = n.amount;
+            if (n.type === "account") {
+                amount = graphData.holdings.filter(h => h.account === n.id).reduce((s, h) => s + h.amount, 0);
+            }
+            document.getElementById("ndAmount").textContent = fmt(amount);
+            document.getElementById("ndRatio").textContent = ((amount / totalAUM) * 100).toFixed(1) + "%";
+            document.getElementById("ndSector").textContent = n.sector || "-";
+
+            const srcDiv = document.getElementById("ndSources");
+            srcDiv.innerHTML = "";
+            if (n.type === "stock" && n.sources) {
+                srcDiv.innerHTML = '<div style="font-size:11px;color:#7d8590;margin:12px 0 6px;">유입 경로 (look-through)</div>';
+                n.sources.forEach(s => {
+                    const item = document.createElement("div");
+                    item.className = "source-item";
+                    item.innerHTML = `<div class="src-name">${s.from}</div>
+        <div class="src-amt">${fmt(s.amount)} (비중 ${(s.weight * 100).toFixed(1)}%)</div>`;
+                    srcDiv.appendChild(item);
+                });
+            }
+            render();
+        }
+
+        // ============================================================
+        // 6. 시나리오
+        // ============================================================
+        const scenarios = {
+            rate: {
+                title: "미연준 0.5%p 금리 인상 시뮬레이션 결과",
+                subtitle: "성장주·고PER 종목 압박, 채권 수익률 상승",
+                keywords: ["금리", "인상", "기준금리", "연준", "fed", "rate"],
+                sectorImpact: { "반도체": -6, "IT": -9, "2차전지": -6, "바이오": -7, "금융": +2, "기타": -3 },
+                rationale: "2022년 미 연준의 0.75%p 인상 시점 KOSPI 성장주 평균 -6.5%, 반도체 -8.2%, 인터넷 -11.5% 변동. 금융주는 NIM 개선으로 +2% 내외 상승."
+            },
+            nvidia: {
+                title: "엔비디아 어닝쇼크 시뮬레이션 결과",
+                subtitle: "글로벌 AI 반도체 수요 우려",
+                keywords: ["엔비디아", "nvidia", "어닝쇼크", "ai 반도체"],
+                sectorImpact: { "반도체": -10, "IT": -3, "2차전지": -1, "바이오": 0, "금융": -1, "기타": -2 },
+                rationale: "엔비디아 분기 실적 하회는 HBM·메모리 수요 둔화 우려로 직결되어 국내 반도체 종목에 평균 -10% 내외 충격을 줬습니다 (2024년 8월 사례)."
+            },
+            covid: {
+                title: "2020년 코로나19 초기 충격 재현 시뮬레이션",
+                subtitle: "글로벌 위험회피 + KOSPI -30%",
+                keywords: ["코로나", "covid", "팬데믹", "2020"],
+                sectorImpact: { "반도체": -25, "IT": -27, "2차전지": -22, "바이오": -8, "금융": -28, "기타": -30 },
+                rationale: "2020년 2~3월 KOSPI는 약 한 달간 -30% 급락. KODEX 레버리지(2배 추종)는 약 -55% 충격을 받았던 점을 반영."
+            },
+            semi: {
+                title: "美 반도체 수출규제 강화 시뮬레이션",
+                subtitle: "對中 첨단 반도체 수출 추가 제재",
+                keywords: ["반도체", "수출규제", "제재", "수출"],
+                sectorImpact: { "반도체": -8, "IT": -2, "2차전지": -1, "바이오": 0, "금융": 0, "기타": -1 },
+                rationale: "2022년 10월 美 반도체 수출통제 발표 시 KOSPI 반도체 섹터는 평균 -7.4% 변동."
+            }
+        };
+
+        function runScenario(sc) {
+            // 종목별 변동률 계산 (섹터 기반)
+            alertedTickers = new Set();
+            tickerImpactMap = {};
+            let portfolioImpact = 0;
+            graphData.tickerNodes.forEach(n => {
+                const impact = sc.sectorImpact[n.sector] || 0;
+                if (impact !== 0) {
+                    alertedTickers.add(n.id);
+                    tickerImpactMap[n.id] = impact;
+                    // 레버리지 ETF는 2배 가중
+                    let weight = n.amount / totalAUM;
+                    portfolioImpact += impact * weight;
+                }
+            });
+            // 레버리지 보정 (KODEX 레버리지가 있다면 추가 -)
+            const lev = graphData.holdings.find(h => h.id === "kodex_lev");
+            if (lev) {
+                const levAmt = lev.amount / totalAUM;
+                portfolioImpact -= Math.abs(portfolioImpact) * levAmt * 0.5;
+            }
+
+            alertIntensity = Math.min(Math.abs(portfolioImpact) / 5, 2);
+            requestAnimationFrame(render);
+
+            // 결과 카드
+            document.getElementById("simResult").classList.add("visible");
+            document.getElementById("srTitle").textContent = sc.title;
+            document.getElementById("srSubtitle").textContent = sc.subtitle;
+
+            const valueEl = document.getElementById("srValue");
+            valueEl.textContent = (portfolioImpact > 0 ? "+" : "") + portfolioImpact.toFixed(2) + "%";
+            valueEl.className = "sim-result-value " + (portfolioImpact < 0 ? "negative" : "positive");
+
+            const newAUM = totalAUM * (1 + portfolioImpact / 100);
+            document.getElementById("srAmount").innerHTML =
+                `${(totalAUM / 10000).toFixed(0)}만원 → <span style="color:${portfolioImpact < 0 ? '#FF8A80' : '#2EC4B6'};font-weight:600">${(newAUM / 10000).toFixed(1)}만원</span>`;
+
+            // 영향 종목 리스트
+            const list = document.getElementById("srImpactList");
+            list.innerHTML = "";
+            const impactSorted = Array.from(graphData.tickerNodes.values())
+                .filter(n => tickerImpactMap[n.id] != null)
+                .map(n => ({ name: n.label, amount: n.amount, pct: tickerImpactMap[n.id] }))
+                .sort((a, b) => Math.abs(b.amount * b.pct) - Math.abs(a.amount * a.pct))
+                .slice(0, 6);
+            impactSorted.forEach(it => {
+                const lossAmt = it.amount * it.pct / 100;
+                const bar = document.createElement("div");
+                bar.className = "sim-impact-bar";
+                bar.innerHTML = `
+      <div class="ticker-name">${it.name} <span style="color:#7d8590;font-size:11px;">(실질 ${(it.amount / 10000).toFixed(0)}만원)</span></div>
+      <div class="ticker-pct ${it.pct < 0 ? 'neg' : 'pos'}">${it.pct > 0 ? '+' : ''}${it.pct.toFixed(1)}% (${lossAmt > 0 ? '+' : ''}${(lossAmt / 10000).toFixed(0)}만원)</div>`;
+                list.appendChild(bar);
+            });
+
+            document.getElementById("srRationale").innerHTML = sc.rationale;
+
+            // Before/After 도넛
+            showAfterDonut(portfolioImpact);
+            // 백테스트 라인
+            renderBacktest(portfolioImpact, sc.title);
+            // 리밸런싱 제안
+            generateRebalancing(sc, portfolioImpact);
+        }
+
+        function showAfterDonut(portfolioImpact) {
+            const newAUM = totalAUM * (1 + portfolioImpact / 100);
+            // 시뮬 후 데이터 (각 종목에 변동률 적용)
+            const afterData = Array.from(graphData.tickerNodes.values()).map(n => ({
+                name: n.label, color: n.color, sector: n.sector,
+                value: n.amount * (1 + (tickerImpactMap[n.id] || 0) / 100)
+            })).sort((a, b) => b.value - a.value);
+            const afterDataAgg = donutMode === "sector"
+                ? Object.entries(afterData.reduce((acc, d) => { acc[d.sector] = (acc[d.sector] || 0) + d.value; return acc; }, {}))
+                    .map(([k, v]) => ({ name: k, value: v, color: SECTOR_COLORS[k] || "#90A4AE" }))
+                : afterData;
+
+            document.getElementById("donutAfterWrap").style.display = "block";
+            document.getElementById("donutArrow").classList.add("show");
+            renderDonut("donutAfter", afterDataAgg, {
+                label: "시뮬 후", centerText: (newAUM / 10000).toFixed(0) + "만",
+                total: totalAUM
+            });
+            document.getElementById("donutAfterAmt").textContent = (newAUM / 10000).toFixed(1) + "만원";
+            const deltaEl = document.getElementById("donutDelta");
+            deltaEl.textContent = (portfolioImpact > 0 ? "+" : "") + portfolioImpact.toFixed(2) + "%";
+            deltaEl.className = "delta show " + (portfolioImpact < 0 ? "neg" : "pos");
+        }
+
+        function renderBacktest(impact, title) {
+            const svg = d3.select("#backtestSvg");
+            svg.selectAll("*").remove();
+            const w = svg.node().clientWidth || 600;
+            const h = 160;
+            svg.attr("viewBox", `0 0 ${w} ${h}`);
+
+            // 12개월 시계열 더미 (정상 진행 + 충격 시점)
+            const months = 12;
+            const baseLine = []; // 충격 없을 때
+            const stressLine = []; // 충격 적용
+            let v1 = totalAUM, v2 = totalAUM;
+            for (let i = 0; i <= months; i++) {
+                // 베이스: 월 +0.6% ± 1.5% 노이즈
+                const drift = 1.006 + (Math.sin(i * 1.3) * 0.012);
+                if (i > 0) v1 *= drift;
+                baseLine.push({ m: i, v: v1 });
+
+                // 스트레스: 6개월차에 충격 발생, 이후 50% 회복
+                if (i > 0) v2 *= drift;
+                if (i === 6) v2 *= (1 + impact / 100);
+                if (i > 6 && i < 10) v2 *= 1.012; // 회복 구간
+                stressLine.push({ m: i, v: v2 });
+            }
+
+            const margin = { top: 12, right: 50, bottom: 24, left: 50 };
+            const innerW = w - margin.left - margin.right;
+            const innerH = h - margin.top - margin.bottom;
+
+            const x = d3.scaleLinear().domain([0, months]).range([0, innerW]);
+            const allVals = [...baseLine, ...stressLine].map(d => d.v);
+            const y = d3.scaleLinear()
+                .domain([d3.min(allVals) * 0.95, d3.max(allVals) * 1.02])
+                .range([innerH, 0]);
+
+            const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // 축
+            g.append("g").attr("transform", `translate(0,${innerH})`)
+                .call(d3.axisBottom(x).ticks(6).tickFormat(d => `${d}M`))
+                .selectAll("text").attr("fill", "#7d8590").attr("font-size", "10px");
+            g.append("g").call(d3.axisLeft(y).ticks(4).tickFormat(d => (d / 10000).toFixed(0) + "만"))
+                .selectAll("text").attr("fill", "#7d8590").attr("font-size", "10px");
+            g.selectAll(".domain, .tick line").attr("stroke", "#21262d");
+
+            const line = d3.line().x(d => x(d.m)).y(d => y(d.v)).curve(d3.curveMonotoneX);
+
+            // 베이스라인 (점선)
+            g.append("path").datum(baseLine)
+                .attr("fill", "none").attr("stroke", "#7d8590")
+                .attr("stroke-width", 1.5).attr("stroke-dasharray", "4,3")
+                .attr("d", line);
+
+            // 스트레스 라인
+            g.append("path").datum(stressLine)
+                .attr("fill", "none").attr("stroke", impact < 0 ? "#FF5252" : "#2EC4B6")
+                .attr("stroke-width", 2.5).attr("d", line);
+
+            // 충격 시점 마커
+            g.append("line")
+                .attr("x1", x(6)).attr("x2", x(6)).attr("y1", 0).attr("y2", innerH)
+                .attr("stroke", "#FFB74D").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
+            g.append("text").attr("x", x(6) + 4).attr("y", 12)
+                .attr("fill", "#FFB74D").attr("font-size", "10px").text("⚡ 충격 발생");
+
+            // 범례
+            g.append("circle").attr("cx", innerW - 100).attr("cy", -4).attr("r", 3).attr("fill", "#7d8590");
+            g.append("text").attr("x", innerW - 92).attr("y", 0).attr("fill", "#7d8590").attr("font-size", "10px").text("정상 시나리오");
+            g.append("circle").attr("cx", innerW - 100).attr("cy", 10).attr("r", 3).attr("fill", impact < 0 ? "#FF5252" : "#2EC4B6");
+            g.append("text").attr("x", innerW - 92).attr("y", 14).attr("fill", impact < 0 ? "#FF5252" : "#2EC4B6").attr("font-size", "10px").text("충격 시나리오");
+        }
+
+        function generateRebalancing(sc, portfolioImpact) {
+            const section = document.getElementById("rebalSection");
+            const list = document.getElementById("rebalActions");
+            list.innerHTML = "";
+
+            // 가장 타격 큰 섹터 1~2개 식별 → 매도 제안
+            // 가장 타격 적은 섹터 → 매수 제안
+            const sectorImpacts = Object.entries(sc.sectorImpact).sort((a, b) => a[1] - b[1]);
+            const worstSectors = sectorImpacts.slice(0, 2).filter(([s, i]) => i < -3);
+            const safeSectors = sectorImpacts.filter(([s, i]) => i >= -2).slice(-2);
+
+            // 현 포트폴리오에서 worstSector에 가장 많이 노출된 상품 찾기
+            const sellActions = [];
+            worstSectors.forEach(([sector, impact]) => {
+                let bestProduct = null;
+                let maxExposure = 0;
+                graphData.holdings.forEach(h => {
+                    const exp = h.composition.filter(c => c.sector === sector).reduce((s, c) => s + c.weight, 0);
+                    if (exp * h.amount > maxExposure) {
+                        maxExposure = exp * h.amount;
+                        bestProduct = h;
+                    }
+                });
+                if (bestProduct) {
+                    // 비중 25% 줄이는 매도 금액
+                    const sellAmt = bestProduct.amount * 0.25;
+                    sellActions.push({
+                        action: "sell", product: bestProduct.name, amount: sellAmt,
+                        reason: `${sector} 섹터 노출 축소 (예상 충격 ${impact}%)`
+                    });
+                }
+            });
+
+            const buyActions = [];
+            safeSectors.forEach(([sector, impact]) => {
+                const totalSell = sellActions.reduce((s, a) => s + a.amount, 0);
+                if (totalSell > 0) {
+                    const buyAmt = totalSell / safeSectors.length;
+                    const productName = sector === "금융" ? "ARIRANG 고배당주 (금융 비중 큼)"
+                        : sector === "바이오" ? "TIGER 바이오TOP10"
+                            : sector === "기타" ? "ARIRANG 미국S&P500"
+                                : `${sector} 관련 ETF`;
+                    buyActions.push({
+                        action: "buy", product: productName, amount: buyAmt,
+                        reason: `${sector} 섹터 매수 (예상 충격 ${impact >= 0 ? "+" : ""}${impact}%로 방어적)`
+                    });
+                }
+            });
+
+            if (sellActions.length === 0 && buyActions.length === 0) {
+                section.style.display = "none";
+                return;
+            }
+            section.style.display = "block";
+
+            [...sellActions, ...buyActions].forEach(a => {
+                const el = document.createElement("div");
+                el.className = "rebal-action";
+                el.innerHTML = `
+      <div>
+        <span class="act-tag ${a.action}">${a.action === "sell" ? "매도" : "매수"}</span>
+        <b>${a.product}</b>
+        <div class="act-amt">${a.reason}</div>
+      </div>
+      <div style="font-weight:600;color:${a.action === "sell" ? "#FF8A80" : "#2EC4B6"}">${(a.amount / 10000).toFixed(0)}만원</div>
+    `;
+                list.appendChild(el);
+            });
+
+            // 요약
+            const expectedReducedImpact = Math.abs(portfolioImpact) * 0.4;
+            document.getElementById("rebalSummary").innerHTML =
+                `이 리밸런싱을 적용하면 동일 시나리오 재발생 시 예상 충격을 <b style="color:#2EC4B6">약 ${(Math.abs(portfolioImpact) - expectedReducedImpact).toFixed(1)}%p 완화</b>(${portfolioImpact.toFixed(1)}% → ${(portfolioImpact + expectedReducedImpact).toFixed(1)}% 수준)할 수 있습니다.`;
+        }
+
+        function resetScenario() {
+            alertedTickers.clear();
+            tickerImpactMap = {};
+            document.getElementById("simResult").classList.remove("visible");
+            document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+            document.getElementById("simInput").value = "";
+            document.getElementById("donutAfterWrap").style.display = "none";
+            document.getElementById("donutArrow").classList.remove("show");
+            render();
+        }
+
+        document.querySelectorAll(".preset-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const s = btn.dataset.scenario;
+                if (s === "reset") { resetScenario(); return; }
+                document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                runScenario(scenarios[s]);
+            });
+        });
+
+        function analyzeNaturalLanguage(query) {
+            const q = query.toLowerCase();
+            let bestMatch = null;
+            let bestScore = 0;
+            Object.entries(scenarios).forEach(([key, sc]) => {
+                const score = sc.keywords.reduce((s, kw) => s + (q.includes(kw.toLowerCase()) ? 1 : 0), 0);
+                if (score > bestScore) { bestScore = score; bestMatch = sc; }
+            });
+            if (bestMatch) runScenario(bestMatch);
+            else {
+                runScenario({
+                    title: `"${query}" 시나리오 분석 결과`,
+                    subtitle: "유사 과거 이벤트 기반 일반 추정",
+                    sectorImpact: { "반도체": -3, "IT": -3, "2차전지": -2, "바이오": -1, "금융": -1, "기타": -2 },
+                    rationale: `입력하신 "${query}" 시나리오에 정확히 매칭되는 과거 이벤트 데이터가 부족합니다. 일반적 시장 변동성을 가정한 추정 결과입니다.`
+                });
+            }
+        }
+
+        document.getElementById("simAnalyzeBtn").addEventListener("click", () => {
+            const q = document.getElementById("simInput").value.trim();
+            if (q) analyzeNaturalLanguage(q);
+        });
+        document.getElementById("simInput").addEventListener("keydown", e => {
+            if (e.key === "Enter") { const q = e.target.value.trim(); if (q) analyzeNaturalLanguage(q); }
+        });
+
+        // ============================================================
+        // 7. 도넛 모드 토글, 뷰 토글, 페르소나, 탭
+        // ============================================================
+        document.querySelectorAll(".donut-tab").forEach(t => {
+            t.addEventListener("click", () => {
+                document.querySelectorAll(".donut-tab").forEach(x => x.classList.remove("active"));
+                t.classList.add("active");
+                donutMode = t.dataset.mode;
+                refreshLeftPanel();
+            });
+        });
+
+        document.querySelectorAll(".toggle-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".toggle-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                const view = btn.dataset.view;
+                if (view === "sector") {
+                    const sectors = [...new Set(nodes.filter(n => n.sector).map(n => n.sector))];
+                    const centers = {};
+                    sectors.forEach((s, i) => {
+                        const angle = (i / sectors.length) * Math.PI * 2;
+                        centers[s] = { x: width / 2 + Math.cos(angle) * 220, y: height / 2 + Math.sin(angle) * 180 };
+                    });
+                    simulation
+                        .force("x", d3.forceX(d => d.sector ? centers[d.sector].x : width / 2).strength(0.25))
+                        .force("y", d3.forceY(d => d.sector ? centers[d.sector].y : height / 2).strength(0.25));
+                } else {
+                    simulation
+                        .force("x", d3.forceX(width / 2).strength(0.04))
+                        .force("y", d3.forceY(height / 2).strength(0.04));
+                }
+                simulation.alpha(0.8).restart();
+            });
+        });
+
+        document.querySelectorAll(".center-tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".center-tab").forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+                const target = tab.dataset.tab;
+                document.getElementById("graph-container").style.display = target === "graph" ? "block" : "none";
+                document.getElementById("sim-container").style.display = target === "sim" ? "block" : "none";
+                if (target === "graph") setTimeout(() => { resize(); simulation.alpha(0.3).restart(); }, 50);
+            });
+        });
+
+        document.querySelectorAll(".persona-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".persona-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                currentPersona = btn.dataset.persona;
+                loadPersona();
+            });
+        });
+
+        // ============================================================
+        // 8. 목표 포트폴리오 모달
+        // ============================================================
+        const DEFAULT_GOAL = { "반도체": 25, "IT": 15, "2차전지": 15, "바이오": 10, "금융": 20, "기타": 15 };
+
+        function openGoalModal() {
+            const modal = document.getElementById("goal-modal");
+            const cont = document.getElementById("goalSliders");
+            cont.innerHTML = "";
+            const init = goalWeights || DEFAULT_GOAL;
+            Object.entries(init).forEach(([sector, pct]) => {
+                const row = document.createElement("div");
+                row.className = "goal-row";
+                row.innerHTML = `
+      <label><div style="width:10px;height:10px;border-radius:50%;background:${SECTOR_COLORS[sector]}"></div>${sector}</label>
+      <input type="range" min="0" max="60" value="${pct}" data-sector="${sector}">
+      <div class="pct-display">${pct}%</div>
+    `;
+                cont.appendChild(row);
+            });
+            cont.querySelectorAll("input[type=range]").forEach(inp => {
+                inp.addEventListener("input", e => {
+                    e.target.parentElement.querySelector(".pct-display").textContent = e.target.value + "%";
+                    updateGoalTotal();
+                });
+            });
+            updateGoalTotal();
+            modal.classList.add("show");
+        }
+        function updateGoalTotal() {
+            const total = Array.from(document.querySelectorAll("#goalSliders input[type=range]"))
+                .reduce((s, inp) => s + (+inp.value), 0);
+            const el = document.getElementById("goalTotal");
+            el.textContent = `합계: ${total}%`;
+            el.className = "goal-total " + (total !== 100 ? "over" : "");
+        }
+        document.getElementById("goalBtn").addEventListener("click", openGoalModal);
+        document.getElementById("goalCancel").addEventListener("click", () => {
+            document.getElementById("goal-modal").classList.remove("show");
+        });
+        document.getElementById("goalSave").addEventListener("click", () => {
+            const result = {};
+            document.querySelectorAll("#goalSliders input[type=range]").forEach(inp => {
+                result[inp.dataset.sector] = +inp.value;
+            });
+            goalWeights = result;
+            document.getElementById("goal-modal").classList.remove("show");
+            // 섹터 모드로 자동 전환
+            donutMode = "sector";
+            document.querySelectorAll(".donut-tab").forEach(t => t.classList.toggle("active", t.dataset.mode === "sector"));
+            refreshLeftPanel();
+            // 우측 코칭에 갭 분석 추가
+            showGapAnalysis();
+        });
+
+        function showGapAnalysis() {
+            const current = aggregateBySector();
+            const currentMap = {};
+            current.forEach(c => { currentMap[c.name] = (c.value / totalAUM * 100); });
+            let gapHtml = `<b style="color:#FFB74D">🎯 목표 대비 갭 분석</b><br><br>`;
+            Object.entries(goalWeights).forEach(([sector, target]) => {
+                const cur = currentMap[sector] || 0;
+                const gap = cur - target;
+                const sign = gap > 0 ? "+" : "";
+                const color = Math.abs(gap) < 3 ? "#2EC4B6" : Math.abs(gap) < 10 ? "#FFB74D" : "#FF8A80";
+                gapHtml += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span>${sector}</span>
+      <span>현재 ${cur.toFixed(0)}% / 목표 ${target}% <b style="color:${color}">(${sign}${gap.toFixed(0)}%p)</b></span>
+    </div>`;
+            });
+            document.getElementById("coachMsg").innerHTML = gapHtml;
+        }
+
+        // ============================================================
+        // 9. 페르소나 로드 및 초기화
+        // ============================================================
+        function loadPersona() {
+            graphData = buildGraph(currentPersona);
+            totalAUM = graphData.total;
+            nodes = graphData.nodes;
+            links = graphData.links;
+            selectedNode = null;
+            hoveredNode = null;
+            alertedTickers.clear();
+            tickerImpactMap = {};
+            goalWeights = null; // 페르소나 변경 시 목표 초기화
+
+            document.getElementById("nodeDetail").classList.remove("visible");
+            document.getElementById("empty-state").style.display = "block";
+            document.getElementById("simResult").classList.remove("visible");
+            document.getElementById("donutAfterWrap").style.display = "none";
+            document.getElementById("donutArrow").classList.remove("show");
+
+            resize();
+            initSimulation();
+            refreshLeftPanel();
+            setTimeout(() => simulation.alpha(1).restart(), 100);
+        }
+
+        window.addEventListener("resize", () => { resize(); if (simulation) simulation.alpha(0.3).restart(); });
+
+        // 시작
+        loadPersona();
+    </script>
+</body>
+
+</html>

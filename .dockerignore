@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+.env
+PRD.md
+*.md
+tests/
+.venv
+venv
+node_modules
+.dockerignore

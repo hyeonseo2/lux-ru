@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.env
+.venv/
+venv/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# ── 에이전트 / AI 도구 산출물 ──────────────────────────────
+# 코드와 무관한 에이전트 작업 메모·기획서·메모리는 공개 저장소에 노출하지 않음
+AGENT.md
+AGENTS.md
+CLAUDE.md
+PRD.md
+ONBOARDING.md
+ROADMAP.md
+
+# 에이전트 도구 설정/캐시 디렉터리
+.agents/
+.codex/
+.claude/
+.anthropic/
+.aider*
+.cursor/
+.windsurf/
+.continue/
+
+# 에이전트가 남긴 일일 작업 메모/메모리
+memory/
+notes/
