@@ -959,6 +959,107 @@
             padding: 10px;
             font-size: 11px;
             z-index: 20;
+            max-height: min(62vh, 420px);
+            overflow-y: auto;
+        }
+
+        #graph-hover-tooltip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            min-width: 220px;
+            max-width: min(360px, calc(100% - 24px));
+            background: rgba(248, 250, 252, 0.86);
+            backdrop-filter: blur(9px);
+            border: 1px solid rgba(148, 163, 184, 0.56);
+            border-radius: 10px;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.2);
+            padding: 11px 12px;
+            font-size: 11px;
+            color: #0f172a;
+            line-height: 1.45;
+            z-index: 32;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate3d(0, 0, 0) scale(0.98);
+            transition: opacity 0.12s ease, transform 0.12s ease;
+        }
+
+        #graph-hover-tooltip.show {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        .graph-hover-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+            word-break: keep-all;
+        }
+
+        .graph-hover-meta {
+            color: #475569;
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+
+        .graph-hover-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 3px;
+        }
+
+        .graph-hover-key {
+            color: #64748b;
+        }
+
+        .graph-hover-value {
+            color: #0f172a;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .graph-hover-sources {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(148, 163, 184, 0.28);
+        }
+
+        .graph-hover-sources-title {
+            color: #334155;
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .graph-hover-source {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .graph-hover-source-name {
+            color: #1e3a8a;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 180px;
+        }
+
+        .graph-hover-source-val {
+            color: #0f172a;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .graph-hover-more {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 10px;
         }
 
         .legend-item {
@@ -2017,26 +2118,8 @@
                 </div>
                 <canvas id="graph"></canvas>
                 <div id="alert-toast"></div>
-                <div id="legend">
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#FFFFFF"></div>계좌
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#3182f6"></div>반도체
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#81C784"></div>IT/플랫폼
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#BA68C8"></div>2차전지
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#F06292"></div>바이오
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#FFB74D"></div>금융/기타
-                    </div>
-                </div>
+                <div id="legend"></div>
+                <div id="graph-hover-tooltip" aria-hidden="true"></div>
             </div>
 
             <div id="sim-container">
@@ -2155,7 +2238,7 @@
             <div class="mobile-side-close mobile-side-close-right">
                 <button id="mobile-right-close" class="mobile-panel-btn panel-toggle-btn" type="button">열기 ▶</button>
             </div>
-            <h2>노드 상세</h2>
+            <h2>워크플로우 상세</h2>
             <div id="empty-state" style="color:#64748b;font-size:12px;">
                 그래프의 노드를 클릭하면<br>상세 정보가 표시됩니다.
             </div>
@@ -2418,8 +2501,21 @@
         };
 
         const SECTOR_COLORS = {
-            "반도체": "#3182f6", "IT": "#81C784", "2차전지": "#BA68C8",
-            "바이오": "#F06292", "금융": "#FFB74D", "기타": "#90A4AE"
+            "반도체": "#3182f6",
+            "IT": "#7dd3fc",
+            "커뮤니케이션": "#22d3ee",
+            "2차전지": "#a78bfa",
+            "바이오": "#f472b6",
+            "금융": "#f59e0b",
+            "소비재": "#fb7185",
+            "소재": "#f97316",
+            "산업재": "#10b981",
+            "에너지": "#ef4444",
+            "유틸리티": "#84cc16",
+            "부동산": "#14b8a6",
+            "채권": "#64748b",
+            "현금": "#94a3b8",
+            "기타": "#90A4AE",
         };
         const SECTOR_COLOR_BY_SEED = ["#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#8B5CF6", "#06B6D4", "#F97316", "#FB7185", "#14B8A6"];
 
@@ -2429,18 +2525,29 @@
         // 영문이 흘러 들어왔을 때만 동작하는 방어용입니다. 신규 매핑이 필요하면
         // 반드시 backend/sector_labels.py를 먼저 갱신하세요.
         const SECTOR_FALLBACK_ALIAS = [
-            ["information technology", "반도체"],
-            ["technology", "반도체"],
-            ["industrials", "반도체"],
-            ["industrial", "반도체"],
-            ["communication services", "IT"],
-            ["communication", "IT"],
+            ["information technology", "IT"],
+            ["technology", "IT"],
+            ["communication services", "커뮤니케이션"],
+            ["communication", "커뮤니케이션"],
             ["health care", "바이오"],
             ["healthcare", "바이오"],
             ["financials", "금융"],
             ["financial services", "금융"],
-            ["materials", "2차전지"],
-            ["basic materials", "2차전지"],
+            ["materials", "소재"],
+            ["basic materials", "소재"],
+            ["consumer cyclical", "소비재"],
+            ["consumer defensive", "소비재"],
+            ["consumer discretionary", "소비재"],
+            ["consumer staples", "소비재"],
+            ["industrials", "산업재"],
+            ["industrial", "산업재"],
+            ["energy", "에너지"],
+            ["utilities", "유틸리티"],
+            ["real estate", "부동산"],
+            ["fixed income", "채권"],
+            ["bonds", "채권"],
+            ["cash", "현금"],
+            ["other", "기타"],
         ];
         const _sectorColorCache = new Map();
 
@@ -2452,7 +2559,7 @@
             if (SECTOR_COLORS[trimmed]) return trimmed;
             const lower = trimmed.toLowerCase();
             const hit = SECTOR_FALLBACK_ALIAS.find(([key]) => key === lower);
-            return hit ? hit[1] : "기타";
+            return hit ? hit[1] : trimmed;
         }
 
         function getSectorColor(rawSector, seed = "") {
@@ -2723,6 +2830,49 @@
             });
         }
 
+        function formatGraphLegendSectorLabel(sector) {
+            const s = normalizeSectorName(sector);
+            if (s === "IT") return "IT/플랫폼";
+            return s;
+        }
+
+        function renderGraphLegend() {
+            const legend = document.getElementById("legend");
+            if (!legend) return;
+
+            const rows = [];
+            rows.push(`
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#FFFFFF"></div>계좌
+                </div>
+            `);
+
+            const sectorMap = new Map();
+            if (graphData && graphData.tickerNodes) {
+                graphData.tickerNodes.forEach((n) => {
+                    const sector = normalizeSectorName(n?.sector || "기타");
+                    const amount = Number(n?.amount || 0);
+                    sectorMap.set(sector, (sectorMap.get(sector) || 0) + amount);
+                });
+            }
+
+            const totalSectorAmount = Array.from(sectorMap.values()).reduce((s, v) => s + v, 0);
+            const sectorEntries = Array.from(sectorMap.entries()).sort((a, b) => b[1] - a[1]);
+
+            sectorEntries.forEach(([sector, amount]) => {
+                const pct = totalSectorAmount > 0 ? ` · ${(amount / totalSectorAmount * 100).toFixed(1)}%` : "";
+                const label = formatGraphLegendSectorLabel(sector);
+                const color = getSectorColor(sector, sector);
+                rows.push(`
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:${color}"></div>${label}${pct}
+                    </div>
+                `);
+            });
+
+            legend.innerHTML = rows.join("");
+        }
+
         function refreshLeftPanel() {
             // 통계
             document.getElementById("totalAUM").textContent = (totalAUM / 10000).toFixed(0) + "만원";
@@ -2778,6 +2928,7 @@
             if (semiPct > 30) coach += `반도체 섹터에 <b style="color:#FF8A80">${semiPct.toFixed(0)}%</b>가 집중되어 있어 업황 변동에 취약합니다.`;
             else coach += `섹터 분산은 비교적 양호합니다.`;
             document.getElementById("coachMsg").innerHTML = coach;
+            renderGraphLegend();
         }
 
         // ============================================================
@@ -2785,6 +2936,8 @@
         // ============================================================
         const canvas = document.getElementById("graph");
         const ctx = canvas.getContext("2d");
+        const graphContainerEl = document.getElementById("graph-container");
+        const graphHoverTooltipEl = document.getElementById("graph-hover-tooltip");
         let width, height, transform = d3.zoomIdentity;
         let cachedGraphWidth = 0;
         let cachedGraphHeight = 0;
@@ -2795,6 +2948,113 @@
         let alertedTickers = new Set();
         let tickerImpactMap = {}; // 각 종목별 변동률 (시뮬 시 표시용)
         let alertIntensity = 1;
+
+        function getDisplayAmountForNode(n) {
+            if (!n) return 0;
+            if (n.type !== "account") return Number(n.amount || 0);
+            if (!graphData || !Array.isArray(graphData.holdings)) return Number(n.amount || 0);
+            return graphData.holdings
+                .filter(h => h.account === n.id)
+                .reduce((sum, h) => sum + Number(h.amount || 0), 0);
+        }
+
+        function getNodeTypeLabel(n) {
+            if (!n) return "-";
+            if (n.type === "account") return "계좌";
+            if (n.type === "stock") return "종목";
+            if (n.type === "etf") return "ETF";
+            if (n.type === "fund") return "펀드";
+            return String(n.type || "-").toUpperCase();
+        }
+
+        function hideGraphHoverTooltip() {
+            if (!graphHoverTooltipEl) return;
+            graphHoverTooltipEl.classList.remove("show");
+            graphHoverTooltipEl.setAttribute("aria-hidden", "true");
+        }
+
+        function positionGraphHoverTooltip(clientX, clientY) {
+            if (!graphHoverTooltipEl || !graphContainerEl) return;
+            const containerRect = graphContainerEl.getBoundingClientRect();
+            const tooltipRect = graphHoverTooltipEl.getBoundingClientRect();
+            const margin = 10;
+            const offset = 14;
+            const mouseX = clientX - containerRect.left;
+            const mouseY = clientY - containerRect.top;
+
+            let left = mouseX + offset;
+            let top = mouseY + offset;
+
+            const maxLeft = Math.max(margin, containerRect.width - tooltipRect.width - margin);
+            const maxTop = Math.max(margin, containerRect.height - tooltipRect.height - margin);
+            if (left > maxLeft) {
+                left = Math.max(margin, mouseX - tooltipRect.width - offset);
+            }
+            if (top > maxTop) {
+                top = Math.max(margin, mouseY - tooltipRect.height - offset);
+            }
+            left = Math.max(margin, Math.min(left, maxLeft));
+            top = Math.max(margin, Math.min(top, maxTop));
+
+            graphHoverTooltipEl.style.left = `${left}px`;
+            graphHoverTooltipEl.style.top = `${top}px`;
+        }
+
+        function renderGraphHoverTooltip(node, clientX, clientY) {
+            if (!graphHoverTooltipEl || !node) {
+                hideGraphHoverTooltip();
+                return;
+            }
+
+            const amount = getDisplayAmountForNode(node);
+            const ratio = totalAUM > 0 ? (amount / totalAUM) * 100 : 0;
+            const typeLabel = getNodeTypeLabel(node);
+            const tickerText = node.type === "stock" && node.ticker
+                ? `종목코드 ${escapeHtml(node.ticker)}`
+                : typeLabel;
+            const sectorText = escapeHtml(normalizeSectorName(node.sector || "기타"));
+
+            let sourcesHtml = "";
+            if (node.type === "stock" && Array.isArray(node.sources) && node.sources.length > 0) {
+                const sortedSources = node.sources
+                    .slice()
+                    .sort((a, b) => Number(b?.amount || 0) - Number(a?.amount || 0));
+                const sourceTotal = sortedSources.reduce((sum, src) => sum + Number(src?.amount || 0), 0);
+                const maxItems = 5;
+                const sourceRows = sortedSources.slice(0, maxItems).map(src => {
+                    const srcAmount = Number(src?.amount || 0);
+                    const srcPct = sourceTotal > 0 ? (srcAmount / sourceTotal) * 100 : 0;
+                    const srcName = escapeHtml(src?.from || "-");
+                    return `
+                        <div class="graph-hover-source">
+                            <span class="graph-hover-source-name">${srcName}</span>
+                            <span class="graph-hover-source-val">${fmt(srcAmount)} · ${srcPct.toFixed(1)}%</span>
+                        </div>
+                    `;
+                }).join("");
+                const remain = sortedSources.length - maxItems;
+                const remainLine = remain > 0 ? `<div class="graph-hover-more">+ ${remain}개 경로 더 있음</div>` : "";
+                sourcesHtml = `
+                    <div class="graph-hover-sources">
+                        <div class="graph-hover-sources-title">연관 ETF/상품 유입 경로</div>
+                        ${sourceRows}
+                        ${remainLine}
+                    </div>
+                `;
+            }
+
+            graphHoverTooltipEl.innerHTML = `
+                <div class="graph-hover-title">${escapeHtml(node.label || node.name || "-")}</div>
+                <div class="graph-hover-meta">${tickerText}</div>
+                <div class="graph-hover-row"><span class="graph-hover-key">실질 투자금액</span><span class="graph-hover-value">${fmt(amount)}</span></div>
+                <div class="graph-hover-row"><span class="graph-hover-key">전체 비중</span><span class="graph-hover-value">${ratio.toFixed(1)}%</span></div>
+                <div class="graph-hover-row"><span class="graph-hover-key">섹터</span><span class="graph-hover-value">${sectorText}</span></div>
+                ${sourcesHtml}
+            `;
+            graphHoverTooltipEl.classList.add("show");
+            graphHoverTooltipEl.setAttribute("aria-hidden", "false");
+            positionGraphHoverTooltip(clientX, clientY);
+        }
 
         function resize() {
             const container = document.getElementById("graph-container");
@@ -3068,6 +3328,7 @@
                 hoveredNode = null;
                 render();
             }
+            hideGraphHoverTooltip();
             canvas.style.cursor = "default";
         }
 
@@ -3086,6 +3347,7 @@
             const rect = canvas.getBoundingClientRect();
             const n = getNodeAt(e.clientX - rect.left, e.clientY - rect.top);
             if (n) {
+                hideGraphHoverTooltip();
                 dragNode = n;
                 n.fx = n.x; n.fy = n.y;
                 if (!shockPinned) {
@@ -3107,6 +3369,7 @@
                 const ny = (my - transform.y) / transform.k;
                 dragNode.fx = nx;
                 dragNode.fy = ny;
+                hideGraphHoverTooltip();
                 if (shockPinned) {
                     // force engine이 정지 상태이므로 위치/뷰를 직접 갱신해야 함
                     dragNode.x = nx;
@@ -3119,6 +3382,8 @@
                     hoveredNode = n;
                 }
                 canvas.style.cursor = n ? "pointer" : "default";
+                if (n) renderGraphHoverTooltip(n, e.clientX, e.clientY);
+                else hideGraphHoverTooltip();
                 render();
             }
         });
@@ -3143,7 +3408,11 @@
                 const rect = canvas.getBoundingClientRect();
                 return !getNodeAt(e.clientX - rect.left, e.clientY - rect.top);
             })
-            .on("zoom", e => { transform = e.transform; render(); });
+            .on("zoom", e => {
+                transform = e.transform;
+                hideGraphHoverTooltip();
+                render();
+            });
         graphZoom = graphZoomBehavior;
         d3.select(canvas).call(graphZoomBehavior);
 
@@ -3335,12 +3604,18 @@
             );
         }
 
+        function getTickerNodeByTicker(ticker) {
+            const tk = String(ticker || "").toUpperCase().trim();
+            if (!tk || !graphData || !graphData.tickerNodes) return null;
+            return graphData.tickerNodes.get(tk) || graphData.tickerNodes.get(`Stock_${tk}`) || null;
+        }
+
         // ticker_impacts → {sector: weighted_avg_return%} 집계.
         // generateRebalancing이 sectorImpact 형식을 기대하므로 그 모양을 맞춰서 반환.
         function aggregateSectorImpactFromTickers(tickerImpacts) {
             const sum = {}, wsum = {};
             tickerImpacts.forEach(t => {
-                const node = graphData.tickerNodes.get(t.ticker);
+                const node = getTickerNodeByTicker(t.ticker);
                 if (!node) return;
                 const s = node.sector || "기타";
                 sum[s]  = (sum[s]  || 0) + t.return_pct * t.weight;
@@ -3470,8 +3745,16 @@
             alertedTickers = new Set();
             tickerImpactMap = {};
             result.ticker_impacts.forEach(t => {
-                tickerImpactMap[t.ticker] = t.return_pct;
-                if (Math.abs(t.return_pct) > 0.01) alertedTickers.add(t.ticker);
+                const tickerKey = String(t.ticker || "").toUpperCase();
+                const node = getTickerNodeByTicker(tickerKey);
+                tickerImpactMap[tickerKey] = t.return_pct;
+                if (node && node.id) {
+                    tickerImpactMap[node.id] = t.return_pct;
+                }
+                if (Math.abs(t.return_pct) > 0.01) {
+                    alertedTickers.add(tickerKey);
+                    if (node && node.id) alertedTickers.add(node.id);
+                }
             });
 
             const portfolioImpact = result.total_impact_pct;
@@ -3516,7 +3799,7 @@
             const impactSorted = result.ticker_impacts
                 .filter(t => t.data_source === "yfinance")
                 .map(t => {
-                    const node = graphData.tickerNodes.get(t.ticker);
+                    const node = getTickerNodeByTicker(t.ticker);
                     return { name: node ? node.label : t.ticker, amount: t.amount, pct: t.return_pct };
                 })
                 .sort((a, b) => Math.abs(b.amount * b.pct) - Math.abs(a.amount * a.pct))
@@ -3883,6 +4166,7 @@
                 document.getElementById("graph-container").style.display = target === "graph" ? "block" : "none";
                 document.getElementById("sim-container").style.display = target === "sim" ? "block" : "none";
                 document.getElementById("dashboard-container").style.display = target === "dashboard" ? "block" : "none";
+                if (target !== "graph") hideGraphHoverTooltip();
                 if (target === "graph") setTimeout(() => activateGraphView(), 20);
                 if (target === "dashboard") renderDashboard();
                 if (target === "holdings" && graphData) renderMyHoldings();
@@ -3905,7 +4189,7 @@
                 const row = document.createElement("div");
                 row.className = "goal-row";
                 row.innerHTML = `
-      <label><div style="width:10px;height:10px;border-radius:50%;background:${SECTOR_COLORS[sector]}"></div>${sector}</label>
+      <label><div style="width:10px;height:10px;border-radius:50%;background:${getSectorColor(sector, sector)}"></div>${sector}</label>
       <input type="range" min="0" max="60" value="${pct}" data-sector="${sector}">
       <div class="pct-display">${pct}%</div>
     `;
@@ -4002,7 +4286,7 @@
             },
             {
                 title: "시뮬레이션 반영",
-                detail: "좌측 패널·중앙 탭·우측 노드 상세를 동기화하고 force simulation을 재실행합니다."
+                detail: "좌측 패널·중앙 탭·우측 워크플로우 상세를 동기화하고 force simulation을 재실행합니다."
             },
             {
                 title: "완료",
@@ -4282,65 +4566,75 @@
                 nodes.push(accounts[0]);
                 byId.set(accountId, accounts[0]);
             }
-            const acct = accounts[0];
-            if (!byId.has(acct.id)) {
-                byId.set(acct.id, acct);
-                nodes.push(acct);
-            }
-
             const holdings = [];
-            const holdingsById = new Map();
-            const accountOutgoing = links
-                .filter(l => l.source === acct.id)
-                .reduce((m, l) => {
-                    const target = l.target;
-                    if (!target || target === acct.id) return m;
-                    m.set(target, (m.get(target) || 0) + toNum(l.value));
-                    return m;
-                }, new Map());
+            const accountIds = new Set(accounts.map(a => a.id));
+            const outgoingByAccount = new Map();
+            links.forEach((l) => {
+                const src = l?.source;
+                const tgt = l?.target;
+                if (!src || !tgt || !accountIds.has(src) || accountIds.has(tgt)) return;
+                const amount = toNum(l.value);
+                const byHolding = outgoingByAccount.get(src) || new Map();
+                byHolding.set(tgt, (byHolding.get(tgt) || 0) + amount);
+                outgoingByAccount.set(src, byHolding);
+            });
 
-            accountOutgoing.forEach((totalAmount, hid) => {
-                const h = byId.get(hid);
-                if (!h) return;
-                const children = [];
-
-                if (h.type === "stock") {
-                    children.push({
-                        ticker: h.ticker || String(hid).replace(/^Stock_/, ""),
-                        name: h.label || h.name || hid,
-                        sector: h.sector || "기타",
-                        weight: 1,
-                        value: totalAmount
-                    });
-                } else {
-                    const childLinks = links.filter(l => l.source === hid);
-                    childLinks.forEach(cl => {
-                        const sn = byId.get(cl.target);
-                        if (!sn) return;
-                        const childAmount = toNum(cl.value);
-                        children.push({
-                            ticker: sn.ticker || String(cl.target).replace(/^Stock_/, ""),
-                            name: sn.label || sn.name || cl.target,
-                            sector: sn.sector || "기타",
-                            weight: totalAmount > 0 ? childAmount / totalAmount : 0,
-                            value: childAmount
-                        });
-                    });
+            const productCompositionCache = new Map();
+            const getProductComposition = (hid) => {
+                if (productCompositionCache.has(hid)) {
+                    return productCompositionCache.get(hid);
                 }
+                const childLinks = links.filter(l => l.source === hid);
+                const childTotal = childLinks.reduce((s, cl) => s + toNum(cl.value), 0);
+                const children = childLinks.map((cl) => {
+                    const sn = byId.get(cl.target);
+                    if (!sn) return null;
+                    const childAmount = toNum(cl.value);
+                    return {
+                        ticker: sn.ticker || String(cl.target).replace(/^Stock_/, ""),
+                        name: sn.label || sn.name || cl.target,
+                        sector: sn.sector || "기타",
+                        weight: childTotal > 0 ? childAmount / childTotal : 0,
+                    };
+                }).filter(Boolean);
+                productCompositionCache.set(hid, children);
+                return children;
+            };
 
-                const holding = {
-                    id: h.id,
-                    account: acct.id,
-                    type: h.type || "fund",
-                    name: h.label || h.name || hid,
-                    amount: totalAmount,
-                    composition: children
-                };
-                holdings.push(holding);
-                holdingsById.set(hid, holding);
+            outgoingByAccount.forEach((byHolding, accountId) => {
+                byHolding.forEach((totalAmount, hid) => {
+                    const h = byId.get(hid);
+                    if (!h) return;
+                    let children = [];
+                    if (h.type === "stock") {
+                        children = [{
+                            ticker: h.ticker || String(hid).replace(/^Stock_/, ""),
+                            name: h.label || h.name || hid,
+                            sector: h.sector || "기타",
+                            weight: 1,
+                            value: totalAmount,
+                        }];
+                    } else {
+                        const template = getProductComposition(hid);
+                        children = template.map((c) => ({
+                            ...c,
+                            value: totalAmount * c.weight,
+                        }));
+                    }
+
+                    holdings.push({
+                        id: `${accountId}::${h.id}`,
+                        source_id: h.id,
+                        account: accountId,
+                        type: h.type || "fund",
+                        name: h.label || h.name || hid,
+                        amount: totalAmount,
+                        composition: children,
+                    });
+                });
             });
             rawNodes.forEach(n => {
-                if ((n.type === "stock" || String(n?.id || "").startsWith("Stock_")) && !holdingsById.has(n.id) && n.type !== "account") {
+                if ((n.type === "stock" || String(n?.id || "").startsWith("Stock_")) && n.type !== "account") {
                     const node = byId.get(n.id);
                     if (!node) return;
                     const stockLink = links.filter(l => l.target === n.id);
@@ -4363,10 +4657,11 @@
             const tickerNodes = new Map();
             nodes.filter(n => n.type === "stock").forEach(n => {
                 const color = getSectorColor(n.sector, n.id);
-                tickerNodes.set(n.id, {
+                const tickerKey = String(n.ticker || String(n.id).replace(/^Stock_/, "")).toUpperCase();
+                tickerNodes.set(tickerKey, {
                     id: n.id,
                     label: n.label || n.name || n.id,
-                    ticker: n.ticker || String(n.id).replace(/^Stock_/, ""),
+                    ticker: tickerKey,
                     sector: n.sector || "기타",
                     amount: n.amount,
                     color,
@@ -4432,6 +4727,28 @@
         let activeSuggestionIndex = -1;
         let tickerSuggestionTimer = null;
         let tickerSuggestionSeq = 0;
+        const instrumentNameCache = new Map();
+
+        function cacheInstrumentName(ticker, name) {
+            const key = String(ticker || "").toUpperCase().trim();
+            const label = String(name || "").trim();
+            if (!key || !label) return;
+            instrumentNameCache.set(key, label);
+        }
+
+        function resolveInstrumentName(ticker, fallback = "") {
+            const key = String(ticker || "").toUpperCase().trim();
+            if (!key) return String(fallback || "").trim();
+            const cached = instrumentNameCache.get(key);
+            if (cached) return cached;
+            const node = getTickerNodeByTicker(key);
+            const fromGraph = String(node?.label || "").trim();
+            if (fromGraph) {
+                cacheInstrumentName(key, fromGraph);
+                return fromGraph;
+            }
+            return String(fallback || key).trim();
+        }
 
         function renderLivePositions() {
             if (!posListEl) return;
@@ -4446,7 +4763,8 @@
                 li.style.marginBottom = "4px";
 
                 const left = document.createElement("span");
-                left.textContent = `${p.ticker} (${p.accountLabel})`;
+                const instrumentName = resolveInstrumentName(p.ticker, p.name || p.ticker);
+                left.textContent = `${instrumentName} (${p.accountLabel})`;
 
                 const rightWrap = document.createElement("span");
                 rightWrap.style.display = "inline-flex";
@@ -4561,14 +4879,21 @@
                 const payload = await res.json();
                 if (seq !== tickerSuggestionSeq) return [];
                 const rawItems = Array.isArray(payload?.results) ? payload.results : [];
-                const mapped = rawItems.map((item) => ({
-                    symbol: String(item.symbol || "").trim(),
-                    name: String(item.name || item.symbol || "").trim(),
-                    name_ko: String(item.name_ko || ""),
-                    name_en: String(item.name_en || ""),
-                    symbol_type: String(item.symbol_type || item.type || "instrument").trim(),
-                    market: String(item.market || "").trim(),
-                })).filter((item) => item.symbol);
+                const mapped = rawItems.map((item) => {
+                    const symbol = String(item.symbol || "").trim();
+                    const nameKo = String(item.name_ko || "").trim();
+                    const nameEn = String(item.name_en || "").trim();
+                    const fallbackName = String(item.name || symbol || "").trim();
+                    return {
+                        symbol,
+                        name: nameKo || nameEn || fallbackName,
+                        name_ko: nameKo,
+                        name_en: nameEn,
+                        symbol_type: String(item.symbol_type || item.type || "instrument").trim(),
+                        market: String(item.market || "").trim(),
+                    };
+                }).filter((item) => item.symbol);
+                mapped.forEach((item) => cacheInstrumentName(item.symbol, item.name));
 
                 renderTickerSuggestions(mapped);
                 return mapped;
@@ -4582,7 +4907,12 @@
 
         function applyTickerSuggestion(item) {
             if (!item || !tickerInput) return;
-            tickerInput.value = String(item.symbol || "").toUpperCase();
+            const symbol = String(item.symbol || "").toUpperCase();
+            const name = String(item.name || symbol).trim();
+            tickerInput.value = symbol;
+            tickerInput.dataset.selectedSymbol = symbol;
+            tickerInput.dataset.selectedName = name;
+            cacheInstrumentName(symbol, name);
             hideTickerSuggestions();
             tickerInput.focus();
         }
@@ -4590,6 +4920,8 @@
         if (tickerInput && tickerSuggestionBox) {
             tickerInput.addEventListener("input", () => {
                 const query = tickerInput.value;
+                tickerInput.dataset.selectedSymbol = "";
+                tickerInput.dataset.selectedName = "";
                 clearTimeout(tickerSuggestionTimer);
                 if (!query || query.trim().length < 1) {
                     hideTickerSuggestions();
@@ -4772,6 +5104,8 @@
                     let skipped = 0;
                     positions.forEach((p) => {
                         const ticker = String(p.ticker || "").toUpperCase().trim();
+                        const inferredName = String(p.name || "").trim();
+                        if (ticker && inferredName) cacheInstrumentName(ticker, inferredName);
                         const amount = parseInt(p.amount, 10);
                         if (!ticker || !Number.isFinite(amount) || amount <= 0) {
                             skipped++;
@@ -4779,7 +5113,13 @@
                         }
                         const accountType = accountLabelMap[p.account_type] ? p.account_type : "taxable";
                         const accountLabel = p.account_label || accountLabelMap[accountType] || "주식계좌";
-                        const candidate = { ticker, amount, accountType, accountLabel };
+                        const candidate = {
+                            ticker,
+                            name: resolveInstrumentName(ticker, inferredName || ticker),
+                            amount,
+                            accountType,
+                            accountLabel,
+                        };
                         if (existing.has(dedupeKey(candidate))) {
                             skipped++;
                             return;
@@ -4895,8 +5235,10 @@
                             return;
                         }
                         existing.add(dedupeKey(p));
+                        cacheInstrumentName(p.ticker, p.name);
                         livePositions.push({
                             ticker: p.ticker,
+                            name: p.name,
                             amount: p.amount,
                             accountType: p.accountType,
                             accountLabel: p.accountLabel,
@@ -4927,10 +5269,11 @@
 
             if (!rawTicker || isNaN(amount) || amount <= 0) return;
 
+            let exactMatch = null;
             let ticker = resolveTickerFromText(rawTicker);
             if (!/^[A-Z0-9.\-]{1,20}$/.test(ticker)) {
                 const fetched = await fetchTickerSuggestions(rawTicker);
-                const exactMatch = (fetched || []).find((item) => {
+                exactMatch = (fetched || []).find((item) => {
                     const lowered = rawTicker.toLowerCase();
                     return (
                         (item.symbol || "").toLowerCase() === lowered ||
@@ -4947,13 +5290,54 @@
                 return;
             }
 
+            const selectedSymbol = String(tickerInput?.dataset?.selectedSymbol || "").toUpperCase();
+            const selectedName = String(tickerInput?.dataset?.selectedName || "").trim();
+            if (!exactMatch) {
+                const tickerLower = ticker.toLowerCase();
+                exactMatch = (tickerSuggestionItems || []).find((item) => {
+                    return String(item.symbol || "").toLowerCase() === tickerLower;
+                }) || null;
+            }
+
+            let instrumentName = "";
+            if (selectedSymbol && selectedSymbol === ticker && selectedName) {
+                instrumentName = selectedName;
+            }
+            if (!instrumentName && exactMatch && exactMatch.name) {
+                instrumentName = String(exactMatch.name).trim();
+            }
+            if (!instrumentName) {
+                instrumentName = resolveInstrumentName(ticker, "");
+            }
+            if (!instrumentName || instrumentName === ticker) {
+                const fetchedByTicker = await fetchTickerSuggestions(ticker);
+                const bySymbol = (fetchedByTicker || []).find((item) => {
+                    return String(item.symbol || "").toUpperCase() === ticker;
+                });
+                if (bySymbol && bySymbol.name) {
+                    instrumentName = String(bySymbol.name).trim();
+                }
+            }
+            if (!instrumentName || instrumentName === ticker) {
+                const isRawTickerLikeSymbol = /^[A-Z0-9.\-]{1,20}$/.test(rawTicker.toUpperCase());
+                if (!isRawTickerLikeSymbol) {
+                    instrumentName = rawTicker;
+                }
+            }
+            instrumentName = resolveInstrumentName(ticker, instrumentName || ticker);
+            cacheInstrumentName(ticker, instrumentName);
+
             if (tickerInput) tickerInput.value = ticker;
 
             const accountLabel = accountLabelMap[accountType] || "기타";
-            livePositions.push({ ticker, amount, accountType, accountLabel });
+            livePositions.push({ ticker, name: instrumentName, amount, accountType, accountLabel });
             renderLivePositions();
 
-            if (tickerInput) tickerInput.value = "";
+            if (tickerInput) {
+                tickerInput.value = "";
+                tickerInput.dataset.selectedSymbol = "";
+                tickerInput.dataset.selectedName = "";
+            }
             document.getElementById("amountInput").value = "";
             hideTickerSuggestions();
         });
@@ -5091,7 +5475,7 @@
                         링크_샘플: graphData?.links?.slice?.(0, 8)?.map(l => ({ source: l.source, target: l.target, value: l.value }))
                     }
                 );
-                PERSONAS[currentPersona] = {
+                PERSONAS["custom_live"] = {
                     name: graphData.personaName || "내 포트폴리오 (라이브 연동)",
                     accounts: graphData.accounts,
                     holdings: graphData.holdings.map(h => ({
@@ -5118,6 +5502,7 @@
                 updateLiveAnalysisProgress(6, 66, LIVE_ANALYSIS_STEPS[6].detail);
                 selectedNode = null;
                 hoveredNode = null;
+                hideGraphHoverTooltip();
                 alertedTickers.clear();
                 tickerImpactMap = {};
                 goalWeights = null;
@@ -5148,6 +5533,9 @@
                         activateGraphView();
                     }
                 }, 120);
+                if (document.getElementById("holdings-container").style.display !== "none") {
+                    renderMyHoldings();
+                }
 
                 finishLiveAnalysisProgress(true);
             })
@@ -5189,6 +5577,7 @@
             links = graphData.links;
             selectedNode = null;
             hoveredNode = null;
+            hideGraphHoverTooltip();
             alertedTickers.clear();
             tickerImpactMap = {};
             shockPinned = false;
@@ -5211,8 +5600,17 @@
         // 내 종목 현황 렌더링 (중앙 탭)
         // ============================================================
         function renderMyHoldings() {
-                const p = PERSONAS[currentPersona];
+            const p = PERSONAS[currentPersona];
             const container = document.getElementById("holdingsFullView");
+            if (!container) return;
+            if (!p || !Array.isArray(p.accounts) || !Array.isArray(p.holdings)) {
+                container.innerHTML = `<div class="dash-card">표시할 보유 데이터가 없습니다. 좌측에서 종목을 추가한 뒤 실시간 분석을 실행해 주세요.</div>`;
+                return;
+            }
+            if (p.holdings.length === 0) {
+                container.innerHTML = `<div class="dash-card">표시할 보유 상품이 없습니다. 좌측에서 종목을 추가해 주세요.</div>`;
+                return;
+            }
             const acctMap = {};
             const visibleComposition = 3;
             p.accounts.forEach(a => { acctMap[a.id] = a.name; });

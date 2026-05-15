@@ -5,6 +5,7 @@ import re
 import time
 
 from .sector_labels import normalize_sector, normalize_sector_for_symbol
+from .seed_data import resolve_instrument, ALL_INSTRUMENTS
 
 
 LOG = logging.getLogger(__name__)
@@ -252,7 +253,18 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
                 h_amt = amount * h_weight
                 h_name = _escape_html(str(h.get("holding_name", h_sym)))
                 # 보유 종목의 raw sector + symbol을 모두 활용해 반도체/2차전지 본업을 격상.
-                h_sector = normalize_sector_for_symbol(h_sym, h.get("sector"))
+                raw_sector = h.get("sector")
+                # yfinance top-holdings 경로는 sector를 "Other"로 반환하는 경우가 많다.
+                # 시드 메타에 있는 종목이면 해당 섹터로 보정해 과도한 "기타" 쏠림을 줄인다.
+                if str(raw_sector or "").strip().lower() in {"", "other", "unknown", "none", "n/a"}:
+                    try:
+                        uid = resolve_instrument(h_sym)
+                        inst = ALL_INSTRUMENTS.get(uid) if uid else None
+                        if inst and inst.sector:
+                            raw_sector = inst.sector
+                    except Exception:
+                        pass
+                h_sector = normalize_sector_for_symbol(h_sym, raw_sector)
 
                 if h_sym not in stock_exposures:
                     stock_exposures[h_sym] = {"name": h_name, "val": 0, "sector": h_sector}
