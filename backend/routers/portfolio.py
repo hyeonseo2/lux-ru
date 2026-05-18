@@ -1,9 +1,12 @@
 """Portfolio API router."""
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
+from ..historical import compute_backtest, compute_benchmark_comparison, list_scenarios
+from ..instrument_insights import get_instrument_insights
+from ..live_data import analyze_live_portfolio
 from ..lookthrough import compute_exposure
 from ..overlap import find_overlaps
 from ..models import Position, PortfolioAnalysis
@@ -207,10 +210,6 @@ async def search_instruments_api(q: str = "", limit: int = 12) -> dict:
 
 
 # ---- Live (사용자 직접 입력) 분석 ----
-from ..live_data import analyze_live_portfolio
-from ..historical import compute_backtest, list_scenarios
-
-
 class LiveRequest(BaseModel):
     positions: list[dict]  # [{"ticker": "SPY", "amount": 10000000, "account_type": "taxable"}]
 
@@ -224,6 +223,11 @@ async def analyze_real_portfolio(req: LiveRequest) -> dict:
 class BacktestRequest(BaseModel):
     positions: list[dict]
     scenario_id: str
+
+
+class BenchmarkCompareRequest(BaseModel):
+    positions: list[dict]
+    period_days: int = 365
 
 
 @router.get("/backtest/scenarios")
@@ -240,3 +244,19 @@ async def run_backtest(req: BacktestRequest) -> dict:
     falling back to KOSPI bond proxy for fixed-income placeholders.
     """
     return compute_backtest(req.positions, req.scenario_id)
+
+
+@router.post("/benchmark-compare")
+async def compare_benchmarks(req: BenchmarkCompareRequest) -> dict:
+    """Compare portfolio cumulative return with benchmark indices."""
+    return compute_benchmark_comparison(req.positions, req.period_days)
+
+
+@router.get("/instrument-insights")
+async def instrument_insights_api(
+    ticker: str = Query(default="", description="Stock ticker/symbol"),
+    days: int = Query(default=30, ge=7, le=90),
+    news_limit: int = Query(default=30, ge=10, le=80),
+) -> dict:
+    """Return recent event/news insights for a selected stock node."""
+    return get_instrument_insights(ticker=ticker, days=days, news_limit=news_limit)

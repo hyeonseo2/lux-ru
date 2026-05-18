@@ -274,30 +274,6 @@
             font-size: 10px;
         }
 
-        .dl-target {
-            color: #FFB74D;
-            font-size: 9px;
-            margin-left: 4px;
-        }
-
-        /* 목표 설정 모달 트리거 */
-        .goal-btn {
-            width: 100%;
-            padding: 8px;
-            margin-top: 6px;
-            background: #FFB74D22;
-            border: 1px solid #FFB74D44;
-            border-radius: 6px;
-            color: #FFB74D;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s;
-        }
-
-        .goal-btn:hover {
-            background: #FFB74D33;
-        }
-
         .view-toggle {
             margin-top: 8px;
         }
@@ -892,6 +868,232 @@
             font-size: 11px;
         }
 
+        .node-insights {
+            display: none;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .node-insights.visible {
+            display: block;
+        }
+
+        .nd-insights-title {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .nd-insights-state {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.5;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 9px;
+        }
+
+        .nd-insights-state.error {
+            color: #b91c1c;
+            border-color: #fecaca;
+            background: #fff1f2;
+        }
+
+        .nd-event-section {
+            margin-top: 10px;
+        }
+
+        .nd-event-heading {
+            font-size: 11px;
+            color: #334155;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .nd-event-subheading {
+            font-size: 10px;
+            color: #64748b;
+            margin: 6px 0 4px;
+            font-weight: 600;
+        }
+
+        .nd-event-empty {
+            font-size: 10px;
+            color: #94a3b8;
+            padding: 2px 0 4px;
+        }
+
+        .nd-event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nd-event-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        .nd-event-item-title {
+            font-size: 11px;
+            color: #1e293b;
+            line-height: 1.45;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .nd-event-item-meta {
+            font-size: 10px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .nd-event-meta-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .nd-event-item-link {
+            font-size: 10px;
+            color: #3182f6;
+            text-decoration: none;
+        }
+
+        .nd-event-item-link:hover {
+            text-decoration: underline;
+        }
+
+        .nd-sentiment-badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 1px 6px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .nd-sentiment-badge.positive {
+            color: #047857;
+            background: #d1fae5;
+            border: 1px solid #6ee7b7;
+        }
+
+        .nd-sentiment-badge.negative {
+            color: #b91c1c;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+        }
+
+        .nd-sentiment-badge.neutral {
+            color: #475569;
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+        }
+
+        .nd-news-more {
+            margin-top: 6px;
+        }
+
+        .nd-news-more-btn {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background-color .15s ease, border-color .15s ease;
+        }
+
+        .nd-news-more-btn:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .nd-sentiment-summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .nd-sentiment-summary-title {
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .nd-sentiment-row {
+            display: grid;
+            grid-template-columns: 36px 1fr auto;
+            align-items: center;
+            gap: 7px;
+            margin-top: 5px;
+        }
+
+        .nd-sentiment-name {
+            font-size: 10px;
+            color: #475569;
+        }
+
+        .nd-sentiment-track {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .nd-sentiment-fill {
+            height: 100%;
+            border-radius: 999px;
+            min-width: 0;
+        }
+
+        .nd-sentiment-fill.positive {
+            background: #10b981;
+        }
+
+        .nd-sentiment-fill.neutral {
+            background: #94a3b8;
+        }
+
+        .nd-sentiment-fill.negative {
+            background: #ef4444;
+        }
+
+        .nd-sentiment-pct {
+            font-size: 10px;
+            color: #334155;
+            font-weight: 600;
+            min-width: 56px;
+            text-align: right;
+        }
+
+        .nd-insights-notes {
+            margin-top: 8px;
+            font-size: 10px;
+            color: #64748b;
+            line-height: 1.45;
+        }
+
+        .nd-insights-note-row {
+            margin-top: 3px;
+        }
+
         .ai-coach {
             background: linear-gradient(135deg, #3182f61a, #81C78410);
             border: 1px solid #3182f644;
@@ -1073,100 +1275,6 @@
             height: 10px;
             border-radius: 50%;
             margin-right: 8px;
-        }
-
-        /* 목표 설정 모달 */
-        #goal-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #goal-modal.show {
-            display: flex;
-        }
-
-        .goal-card {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 24px;
-            width: 420px;
-        }
-
-        .goal-card h3 {
-            font-size: 16px;
-            margin-bottom: 16px;
-            color: #FFB74D;
-        }
-
-        .goal-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            gap: 10px;
-        }
-
-        .goal-row label {
-            flex: 1;
-            font-size: 12px;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .goal-row input[type=range] {
-            flex: 2;
-        }
-
-        .goal-row .pct-display {
-            width: 50px;
-            text-align: right;
-            color: #FFB74D;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .goal-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 18px;
-        }
-
-        .goal-actions button {
-            flex: 1;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            border: none;
-            font-weight: 500;
-        }
-
-        .goal-actions .save {
-            background: #FFB74D;
-            color: #f8fafc;
-        }
-
-        .goal-actions .cancel {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-
-        .goal-total {
-            font-size: 11px;
-            color: #64748b;
-            text-align: right;
-            margin-top: 8px;
-        }
-
-        .goal-total.over {
-            color: #FF8A80;
         }
 
         #mobile-panel-bar {
@@ -1713,6 +1821,49 @@
         .dash-table td.t-right { text-align: right;  padding: 8px 4px; color: #1e293b; font-weight: 600; }
         .dash-table td.t-center{ text-align: center; padding: 8px 4px; color: #64748b; }
 
+        /* --- Dashboard benchmark chart --- */
+        .dash-bench-meta {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        #dashBenchmarkSvg {
+            display: block;
+            width: 100%;
+            height: 230px;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            background: #fcfdff;
+        }
+        .dash-bench-legend {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .dash-bench-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 11px;
+            color: #475569;
+            background: #ffffff;
+        }
+        .dash-bench-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dash-bench-note {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
         /* --- Sector list (좌측/대시보드 공통) --- */
         .sector-row {
             display: grid;
@@ -2083,7 +2234,6 @@
                     </div>
                 </div>
                 <div class="donut-legend" id="donutLegend"></div>
-                <button class="goal-btn" id="goalBtn">🎯 목표 포트폴리오 설정</button>
             </div>
 
             <div class="view-toggle">
@@ -2203,6 +2353,16 @@
                     </div>
                 </div>
 
+                <div class="dash-card-row">
+                    <div class="dash-card">
+                        <h3 class="dash-card-heading">내 포트폴리오 수익률 vs 벤치마크 (KOSPI/S&P/나스닥)</h3>
+                        <div class="dash-bench-meta" id="dashBenchmarkRange">최근 1년 데이터를 불러오는 중입니다.</div>
+                        <svg id="dashBenchmarkSvg"></svg>
+                        <div class="dash-bench-legend" id="dashBenchmarkLegend"></div>
+                        <div class="dash-bench-note" id="dashBenchmarkNote"></div>
+                    </div>
+                </div>
+
                 <!-- 섹터별 실질 비중 (전체 폭) -->
                 <div class="dash-card-row">
                     <div class="dash-card">
@@ -2249,6 +2409,7 @@
                 <div class="row"><span class="k">전체 비중</span><span class="v" id="ndRatio"></span></div>
                 <div class="row"><span class="k">섹터</span><span class="v" id="ndSector"></span></div>
                 <div class="source-list" id="ndSources"></div>
+                <div class="node-insights" id="ndInsights"></div>
             </div>
 
             <div class="ai-coach" id="aiCoach">
@@ -2257,19 +2418,6 @@
                 <div style="margin-top:10px; padding-top:8px; border-top:1px solid #3182f622; font-size:10px; color:#94a3b8; line-height:1.5;">
                     본 정보는 정보제공 및 시뮬레이션이며 투자자문이 아닙니다.
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 목표 포트폴리오 설정 모달 -->
-    <div id="goal-modal">
-        <div class="goal-card">
-            <h3>🎯 목표 섹터 비중 설정</h3>
-            <div id="goalSliders"></div>
-            <div class="goal-total" id="goalTotal">합계: 100%</div>
-            <div class="goal-actions">
-                <button class="cancel" id="goalCancel">취소</button>
-                <button class="save" id="goalSave">저장 및 갭 분석</button>
             </div>
         </div>
     </div>
@@ -2641,6 +2789,7 @@
         let totalAUM = 0;
         let graphData = null;
         let nodes = [], links = [];
+        let nodeInsightsRequestSeq = 0;
 
         function escapeHtml(text) {
             return String(text)
@@ -2747,7 +2896,6 @@
         // 3. 도넛 차트 (Before / After)
         // ============================================================
         let donutMode = "stock";
-        let goalWeights = null; // 사용자 설정 목표 (섹터 기준)
         // 가장 최근 Before 도넛이 선택한 main 슬라이스 키셋(ticker 또는 sector명).
         // After 도넛은 동일한 키셋으로 그려서 Before/After 간 슬라이스 구조가 보존되도록 함.
         let lastDonutMainKeys = null;
@@ -2787,19 +2935,6 @@
                 .attr("d", arc).attr("fill", d => d.data.color)
                 .attr("stroke", "#ffffff").attr("stroke-width", 2);
 
-            // 목표 비중 점선 오버레이 (sector 모드에서만)
-            if (opts.showGoal && donutMode === "sector" && goalWeights) {
-                const total = main.reduce((s, d) => s + d.value, 0);
-                const goalData = Object.entries(goalWeights).map(([name, pct]) => ({
-                    name, value: total * pct / 100, color: getSectorColor(name, `goal-${name}`)
-                }));
-                const goalArc = d3.arc().innerRadius(r + 2).outerRadius(r + 5).padAngle(0.015);
-                g.selectAll("path.goal").data(pie(goalData)).enter().append("path")
-                    .attr("class", "goal").attr("d", goalArc)
-                    .attr("fill", "none").attr("stroke", "#FFB74D")
-                    .attr("stroke-width", 2).attr("stroke-dasharray", "3,2");
-            }
-
             // 중앙 텍스트
             g.append("text").attr("text-anchor", "middle").attr("dy", "0.35em")
                 .attr("fill", "#64748b").attr("font-size", "9px").attr("y", -8)
@@ -2816,14 +2951,12 @@
             legend.innerHTML = "";
             main.slice(0, 6).forEach(d => {
                 const pct = ((d.value / totalAUM) * 100).toFixed(1);
-                const goalPct = (donutMode === "sector" && goalWeights && goalWeights[d.name] != null)
-                    ? `<span class="dl-target">목표 ${goalWeights[d.name]}%</span>` : "";
                 const el = document.createElement("div");
                 el.className = "donut-legend-item";
                 el.innerHTML = `
       <div class="dl-left">
         <div class="dl-dot" style="background:${d.color}"></div>
-        <span>${d.name}</span>${goalPct}
+        <span>${d.name}</span>
       </div>
       <div class="dl-right">${(d.value / 10000).toFixed(0)}만 · ${pct}%</div>`;
                 legend.appendChild(el);
@@ -2912,7 +3045,6 @@
             );
             renderDonut("donutBefore", data, {
                 label: "현재", centerText: (totalAUM / 10000).toFixed(0) + "만",
-                showGoal: true,
                 mainKeys: lastDonutMainKeys
             });
             document.getElementById("donutBeforeAmt").textContent = (totalAUM / 10000).toFixed(0) + "만원";
@@ -3421,9 +3553,291 @@
         // ============================================================
         function fmt(n) { return (n / 10000).toFixed(0) + "만원"; }
 
+        function formatNodeInsightTime(isoText) {
+            if (!isoText) return "-";
+            const dt = new Date(isoText);
+            if (Number.isNaN(dt.getTime())) return "-";
+            return new Intl.DateTimeFormat("ko-KR", {
+                timeZone: "Asia/Seoul",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }).format(dt);
+        }
+
+        function getNewsSentiment(item) {
+            const text = `${item?.title || ""} ${item?.summary || ""}`.toLowerCase();
+            const positiveTerms = [
+                "surge", "beat", "upgrade", "strong", "growth", "record", "profit", "rebound",
+                "상승", "호조", "성장", "최고", "증가", "흑자", "강세", "개선",
+            ];
+            const negativeTerms = [
+                "drop", "fall", "miss", "downgrade", "weak", "decline", "loss", "lawsuit", "risk",
+                "하락", "부진", "감소", "적자", "약세", "우려", "리스크", "소송", "충격",
+            ];
+
+            let pos = 0;
+            let neg = 0;
+            positiveTerms.forEach((w) => { if (text.includes(w)) pos += 1; });
+            negativeTerms.forEach((w) => { if (text.includes(w)) neg += 1; });
+
+            if (pos > neg) return { key: "positive", label: "긍정" };
+            if (neg > pos) return { key: "negative", label: "부정" };
+            return { key: "neutral", label: "중립" };
+        }
+
+        function buildNewsSentimentSummary(newsItems) {
+            if (!Array.isArray(newsItems) || newsItems.length === 0) return "";
+            const counters = { positive: 0, neutral: 0, negative: 0 };
+            newsItems.forEach((item) => {
+                const key = getNewsSentiment(item)?.key || "neutral";
+                if (Object.prototype.hasOwnProperty.call(counters, key)) {
+                    counters[key] += 1;
+                }
+            });
+            const total = counters.positive + counters.neutral + counters.negative;
+            if (total <= 0) return "";
+
+            const rows = [
+                { key: "positive", label: "긍정", count: counters.positive },
+                { key: "neutral", label: "중립", count: counters.neutral },
+                { key: "negative", label: "부정", count: counters.negative },
+            ];
+
+            return `
+                <div class="nd-sentiment-summary">
+                    <div class="nd-sentiment-summary-title">감성 분포 (${total}건)</div>
+                    ${rows.map((row) => {
+                        const pct = Math.round((row.count / total) * 100);
+                        return `
+                            <div class="nd-sentiment-row">
+                                <span class="nd-sentiment-name">${row.label}</span>
+                                <div class="nd-sentiment-track">
+                                    <div class="nd-sentiment-fill ${row.key}" style="width:${pct}%;"></div>
+                                </div>
+                                <span class="nd-sentiment-pct">${pct}% (${row.count})</span>
+                            </div>
+                        `;
+                    }).join("")}
+                </div>
+            `;
+        }
+
+        function toNodeInsightList(items, emptyText = "최근 1개월 데이터가 없습니다.", options = {}) {
+            if (!Array.isArray(items) || items.length === 0) {
+                return `<div class="nd-event-empty">${escapeHtml(emptyText)}</div>`;
+            }
+            const maxItems = Number.isFinite(options?.maxItems) ? Math.max(1, Number(options.maxItems)) : 12;
+            const initialLimit = Number.isFinite(options?.initialLimit) ? Math.max(1, Number(options.initialLimit)) : 0;
+            const withSentiment = !!options?.sentiment;
+            const listKeyRaw = String(options?.listKey || "list");
+            const listKey = listKeyRaw.replace(/[^a-zA-Z0-9_-]/g, "") || "list";
+            const safeItems = items.slice(0, maxItems);
+            const hasMore = initialLimit > 0 && safeItems.length > initialLimit;
+
+            return `<div class="nd-event-list">${
+                safeItems.map((item, idx) => {
+                    const title = escapeHtml(item?.title || item?.kind || "이벤트");
+                    const source = escapeHtml(item?.source || "source");
+                    const timeText = escapeHtml(formatNodeInsightTime(item?.occurred_at_kst));
+                    const rawUrl = String(item?.url || "").trim();
+                    const safeUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : "";
+                    const sentiment = withSentiment ? getNewsSentiment(item) : null;
+                    const sentimentHtml = sentiment
+                        ? `<span class="nd-sentiment-badge ${sentiment.key}">${sentiment.label}</span>`
+                        : "";
+                    const extraClass = hasMore && idx >= initialLimit ? ` nd-extra-${listKey}` : "";
+                    const extraStyle = hasMore && idx >= initialLimit ? " style=\"display:none;\"" : "";
+                    const linkHtml = safeUrl
+                        ? `<a class="nd-event-item-link" href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">원문</a>`
+                        : "";
+                    return `
+                        <div class="nd-event-item${extraClass}"${extraStyle}>
+                            <div class="nd-event-item-title">${title}</div>
+                            <div class="nd-event-item-meta">
+                                <span class="nd-event-meta-left">${timeText} · ${source} ${sentimentHtml}</span>
+                                ${linkHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join("")
+            }</div>${
+                hasMore
+                    ? `<div class="nd-news-more"><button type="button" class="nd-news-more-btn" data-news-toggle="${listKey}" data-expanded="false">더보기 (${safeItems.length - initialLimit}개)</button></div>`
+                    : ""
+            }`;
+        }
+
+        function bindNodeInsightsInteractions() {
+            const root = document.getElementById("ndInsights");
+            if (!root) return;
+            root.querySelectorAll("button[data-news-toggle]").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const key = String(btn.dataset.newsToggle || "list");
+                    const expanded = btn.dataset.expanded === "true";
+                    const extraRows = root.querySelectorAll(`.nd-extra-${key}`);
+                    extraRows.forEach((row) => {
+                        row.style.display = expanded ? "none" : "block";
+                    });
+                    btn.dataset.expanded = expanded ? "false" : "true";
+                    const hiddenCount = extraRows.length;
+                    btn.textContent = expanded ? `더보기 (${hiddenCount}개)` : "접기";
+                });
+            });
+        }
+
+        function renderNodeInsightsState(message, isError = false) {
+            const el = document.getElementById("ndInsights");
+            if (!el) return;
+            el.classList.add("visible");
+            el.innerHTML = `<div class="nd-insights-title">종목 이벤트/뉴스 (최근 1개월, KST)</div>
+                <div class="nd-insights-state ${isError ? "error" : ""}">${escapeHtml(message)}</div>`;
+        }
+
+        function ensureNodeDetailLayout() {
+            const panel = document.getElementById("nodeDetail");
+            if (!panel) return;
+            if (
+                document.getElementById("ndName")
+                && document.getElementById("ndTicker")
+                && document.getElementById("ndAmount")
+                && document.getElementById("ndRatio")
+                && document.getElementById("ndSector")
+                && document.getElementById("ndSources")
+                && document.getElementById("ndInsights")
+            ) {
+                return;
+            }
+            panel.innerHTML = `
+                <div class="name" id="ndName"></div>
+                <div class="ticker" id="ndTicker"></div>
+                <div class="row"><span class="k">실질 투자금액</span><span class="v" id="ndAmount"></span></div>
+                <div class="row"><span class="k">전체 비중</span><span class="v" id="ndRatio"></span></div>
+                <div class="row"><span class="k">섹터</span><span class="v" id="ndSector"></span></div>
+                <div class="source-list" id="ndSources"></div>
+                <div class="node-insights" id="ndInsights"></div>
+            `;
+        }
+
+        function renderNodeInsightsPayload(payload) {
+            const el = document.getElementById("ndInsights");
+            if (!el) return;
+            el.classList.add("visible");
+
+            const isUs = !!payload?.is_us;
+            const filingsUs = Array.isArray(payload?.filings?.us) ? payload.filings.us : [];
+            const filingsKr = Array.isArray(payload?.filings?.kr) ? payload.filings.kr : [];
+            const earningsUs = Array.isArray(payload?.earnings?.us) ? payload.earnings.us : [];
+            const earningsKr = Array.isArray(payload?.earnings?.kr) ? payload.earnings.kr : [];
+            const transcriptEarnings = Array.isArray(payload?.transcripts?.us_earnings) ? payload.transcripts.us_earnings : [];
+            const transcriptCorporate = Array.isArray(payload?.transcripts?.us_corporate) ? payload.transcripts.us_corporate : [];
+            const news = Array.isArray(payload?.news) ? payload.news : [];
+            const newsSentimentSummary = buildNewsSentimentSummary(news);
+            const notes = Array.isArray(payload?.notes) ? payload.notes : [];
+            const errors = Array.isArray(payload?.errors) ? payload.errors : [];
+
+            const filingsSection = isUs ? `
+                <div class="nd-event-section">
+                    <div class="nd-event-heading">공시자료</div>
+                    <div class="nd-event-subheading">미국 (20-F, 10-K, 10-Q, 8-K, 6-K)</div>
+                    ${toNodeInsightList(filingsUs)}
+                </div>
+            ` : `
+                <div class="nd-event-section">
+                    <div class="nd-event-heading">공시자료</div>
+                    <div class="nd-event-subheading">한국 (분기/반기/사업보고서)</div>
+                    ${toNodeInsightList(filingsKr, "현재 자동 수집 데이터가 없습니다.")}
+                </div>
+            `;
+
+            const earningsSection = isUs ? `
+                <div class="nd-event-section">
+                    <div class="nd-event-heading">실적발표</div>
+                    <div class="nd-event-subheading">미국</div>
+                    ${toNodeInsightList(earningsUs)}
+                </div>
+            ` : `
+                <div class="nd-event-section">
+                    <div class="nd-event-heading">실적발표</div>
+                    <div class="nd-event-subheading">한국</div>
+                    ${toNodeInsightList(earningsKr, "현재 자동 수집 데이터가 없습니다.")}
+                </div>
+            `;
+
+            const transcriptsSection = isUs ? `
+                <div class="nd-event-section">
+                    <div class="nd-event-heading">어닝콜 스크립트 (미국)</div>
+                    ${toNodeInsightList(transcriptEarnings, "최근 1개월 내 식별된 스크립트가 없습니다.")}
+                </div>
+
+                <div class="nd-event-section">
+                    <div class="nd-event-heading">기업이벤트 스크립트 (미국)</div>
+                    ${toNodeInsightList(transcriptCorporate, "최근 1개월 내 식별된 스크립트가 없습니다.")}
+                </div>
+            ` : "";
+
+            el.innerHTML = `
+                <div class="nd-insights-title">종목 이벤트/뉴스 (최근 1개월, KST)</div>
+
+                ${filingsSection}
+                ${earningsSection}
+                ${transcriptsSection}
+
+                <div class="nd-event-section">
+                    <div class="nd-event-heading">뉴스</div>
+                    ${newsSentimentSummary}
+                    ${toNodeInsightList(news, "최근 1개월 내 뉴스가 없습니다.", {
+                        sentiment: true,
+                        initialLimit: 3,
+                        maxItems: 30,
+                        listKey: "news"
+                    })}
+                </div>
+
+                <div class="nd-insights-notes">
+                    ${notes.map((note) => `<div class="nd-insights-note-row">• ${escapeHtml(note)}</div>`).join("")}
+                    ${errors.map((msg) => `<div class="nd-insights-note-row">• ${escapeHtml(msg)}</div>`).join("")}
+                </div>
+            `;
+            bindNodeInsightsInteractions();
+        }
+
+        async function loadNodeInsights(n) {
+            const insightsEl = document.getElementById("ndInsights");
+            if (!insightsEl) return;
+            const reqSeq = ++nodeInsightsRequestSeq;
+            if (!n || n.type !== "stock" || !n.ticker) {
+                insightsEl.classList.remove("visible");
+                insightsEl.innerHTML = "";
+                return;
+            }
+
+            renderNodeInsightsState("최근 1개월 이벤트/뉴스 데이터를 불러오는 중입니다.");
+
+            try {
+                const endpoint = `/api/portfolio/instrument-insights?ticker=${encodeURIComponent(n.ticker)}&days=30&news_limit=30`;
+                const res = await fetch(endpoint);
+                const data = await res.json().catch(() => ({}));
+                if (reqSeq !== nodeInsightsRequestSeq) return;
+                if (!res.ok || !data || data.status !== "ok") {
+                    const msg = data?.message || "종목 이벤트/뉴스 조회에 실패했습니다.";
+                    renderNodeInsightsState(msg, true);
+                    return;
+                }
+                renderNodeInsightsPayload(data);
+            } catch (err) {
+                if (reqSeq !== nodeInsightsRequestSeq) return;
+                const message = (err && err.message) ? err.message : "네트워크 오류";
+                renderNodeInsightsState(`종목 이벤트/뉴스 조회 실패: ${message}`, true);
+            }
+        }
+
         function showNodeDetail(n) {
             selectedNode = n;
             document.getElementById("empty-state").style.display = "none";
+            ensureNodeDetailLayout();
             document.getElementById("nodeDetail").classList.add("visible");
             if (isMobileLayout()) {
                 openRightPanel();
@@ -3456,6 +3870,8 @@
                     srcDiv.appendChild(item);
                 });
             }
+
+            loadNodeInsights(n);
             render();
         }
 
@@ -4172,84 +4588,8 @@
                 if (target === "holdings" && graphData) renderMyHoldings();
             });
         });
-
-
-
         // ============================================================
-        // 8. 목표 포트폴리오 모달
-        // ============================================================
-        const DEFAULT_GOAL = { "반도체": 25, "IT": 15, "2차전지": 15, "바이오": 10, "금융": 20, "기타": 15 };
-
-        function openGoalModal() {
-            const modal = document.getElementById("goal-modal");
-            const cont = document.getElementById("goalSliders");
-            cont.innerHTML = "";
-            const init = goalWeights || DEFAULT_GOAL;
-            Object.entries(init).forEach(([sector, pct]) => {
-                const row = document.createElement("div");
-                row.className = "goal-row";
-                row.innerHTML = `
-      <label><div style="width:10px;height:10px;border-radius:50%;background:${getSectorColor(sector, sector)}"></div>${sector}</label>
-      <input type="range" min="0" max="60" value="${pct}" data-sector="${sector}">
-      <div class="pct-display">${pct}%</div>
-    `;
-                cont.appendChild(row);
-            });
-            cont.querySelectorAll("input[type=range]").forEach(inp => {
-                inp.addEventListener("input", e => {
-                    e.target.parentElement.querySelector(".pct-display").textContent = e.target.value + "%";
-                    updateGoalTotal();
-                });
-            });
-            updateGoalTotal();
-            modal.classList.add("show");
-        }
-        function updateGoalTotal() {
-            const total = Array.from(document.querySelectorAll("#goalSliders input[type=range]"))
-                .reduce((s, inp) => s + (+inp.value), 0);
-            const el = document.getElementById("goalTotal");
-            el.textContent = `합계: ${total}%`;
-            el.className = "goal-total " + (total !== 100 ? "over" : "");
-        }
-        document.getElementById("goalBtn").addEventListener("click", openGoalModal);
-        document.getElementById("goalCancel").addEventListener("click", () => {
-            document.getElementById("goal-modal").classList.remove("show");
-        });
-        document.getElementById("goalSave").addEventListener("click", () => {
-            const result = {};
-            document.querySelectorAll("#goalSliders input[type=range]").forEach(inp => {
-                result[inp.dataset.sector] = +inp.value;
-            });
-            goalWeights = result;
-            document.getElementById("goal-modal").classList.remove("show");
-            // 섹터 모드로 자동 전환
-            donutMode = "sector";
-            document.querySelectorAll(".donut-tab").forEach(t => t.classList.toggle("active", t.dataset.mode === "sector"));
-            refreshLeftPanel();
-            // 우측 코칭에 갭 분석 추가
-            showGapAnalysis();
-        });
-
-        function showGapAnalysis() {
-            const current = aggregateBySector();
-            const currentMap = {};
-            current.forEach(c => { currentMap[c.name] = (c.value / totalAUM * 100); });
-            let gapHtml = `<b style="color:#FFB74D">🎯 목표 대비 갭 분석</b><br><br>`;
-            Object.entries(goalWeights).forEach(([sector, target]) => {
-                const cur = currentMap[sector] || 0;
-                const gap = cur - target;
-                const sign = gap > 0 ? "+" : "";
-                const color = Math.abs(gap) < 3 ? "#60a5fa" : Math.abs(gap) < 10 ? "#FFB74D" : "#FF8A80";
-                gapHtml += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-      <span>${sector}</span>
-      <span>현재 ${cur.toFixed(0)}% / 목표 ${target}% <b style="color:${color}">(${sign}${gap.toFixed(0)}%p)</b></span>
-    </div>`;
-            });
-            document.getElementById("coachMsg").innerHTML = gapHtml;
-        }
-
-        // ============================================================
-        // 9. 포트폴리오 라이브 로드 로직
+        // 8. 포트폴리오 라이브 로드 로직
         // ============================================================
         const LIVE_ANALYSIS_STEPS = [
             {
@@ -5505,7 +5845,6 @@
                 hideGraphHoverTooltip();
                 alertedTickers.clear();
                 tickerImpactMap = {};
-                goalWeights = null;
                 
                 appendLiveAnalysisLog("TRACE", "그래프 반영", "화면 리렌더/시뮬레이션 재시작");
                 document.getElementById("simResult").classList.remove("visible");
@@ -5581,7 +5920,6 @@
             alertedTickers.clear();
             tickerImpactMap = {};
             shockPinned = false;
-            goalWeights = null;
 
             document.getElementById("nodeDetail").classList.remove("visible");
             document.getElementById("empty-state").style.display = "block";
@@ -5702,6 +6040,246 @@
             }
         });
 
+        let dashboardBenchmarkReqSeq = 0;
+        const DASH_BENCHMARK_LINES = [
+            { key: "portfolio_return_pct", label: "내 포트폴리오", color: "#1d4ed8", width: 2.8 },
+            { key: "kospi_return_pct",     label: "KOSPI",        color: "#ef4444", width: 1.9 },
+            { key: "sp500_return_pct",     label: "S&P 500",      color: "#16a34a", width: 1.9 },
+            { key: "nasdaq_return_pct",    label: "NASDAQ",       color: "#f59e0b", width: 1.9 },
+        ];
+
+        function formatSignedPct(value, digits = 1) {
+            const v = Number(value);
+            if (!Number.isFinite(v)) return "-";
+            return `${v > 0 ? "+" : ""}${v.toFixed(digits)}%`;
+        }
+
+        function renderDashboardBenchmarkPlaceholder(message) {
+            const svg = d3.select("#dashBenchmarkSvg");
+            svg.selectAll("*").remove();
+            const w = svg.node()?.clientWidth || 640;
+            const h = 230;
+            svg.attr("viewBox", `0 0 ${w} ${h}`);
+            svg.append("text")
+                .attr("x", w / 2)
+                .attr("y", h / 2)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#94a3b8")
+                .attr("font-size", "12px")
+                .text(message || "비교 데이터를 불러오는 중입니다.");
+            const legend = document.getElementById("dashBenchmarkLegend");
+            if (legend) legend.innerHTML = "";
+        }
+
+        function renderDashboardBenchmarkChart(result) {
+            const rangeEl = document.getElementById("dashBenchmarkRange");
+            const noteEl = document.getElementById("dashBenchmarkNote");
+            const legendEl = document.getElementById("dashBenchmarkLegend");
+            const rawSeries = Array.isArray(result?.series) ? result.series : [];
+            if (!rawSeries.length) {
+                renderDashboardBenchmarkPlaceholder("비교 시계열 데이터가 없습니다.");
+                if (rangeEl) rangeEl.textContent = "최근 1년 벤치마크 비교";
+                if (noteEl) noteEl.textContent = "";
+                return;
+            }
+
+            const parseDate = d3.timeParse("%Y-%m-%d");
+            const toNumOrNaN = (v) => (v === null || v === undefined || v === "" ? NaN : Number(v));
+            const data = rawSeries
+                .map((d) => ({
+                    date: parseDate(d.date),
+                    portfolio_return_pct: toNumOrNaN(d.portfolio_return_pct),
+                    kospi_return_pct: toNumOrNaN(d.kospi_return_pct),
+                    sp500_return_pct: toNumOrNaN(d.sp500_return_pct),
+                    nasdaq_return_pct: toNumOrNaN(d.nasdaq_return_pct),
+                }))
+                .filter((d) => d.date != null);
+            if (!data.length) {
+                renderDashboardBenchmarkPlaceholder("비교 시계열 파싱에 실패했습니다.");
+                if (rangeEl) rangeEl.textContent = "최근 1년 벤치마크 비교";
+                if (noteEl) noteEl.textContent = "";
+                return;
+            }
+
+            const hasSeries = (key) => data.some((d) => Number.isFinite(d[key]));
+            const availableLines = DASH_BENCHMARK_LINES.filter((line) => hasSeries(line.key));
+            if (!availableLines.length) {
+                renderDashboardBenchmarkPlaceholder("표시 가능한 수익률 데이터가 없습니다.");
+                if (rangeEl) rangeEl.textContent = "최근 1년 벤치마크 비교";
+                if (noteEl) noteEl.textContent = "";
+                return;
+            }
+
+            const allValues = [];
+            availableLines.forEach((line) => {
+                data.forEach((d) => {
+                    const v = Number(d[line.key]);
+                    if (Number.isFinite(v)) allValues.push(v);
+                });
+            });
+            const yMin = Math.min(...allValues, 0);
+            const yMax = Math.max(...allValues, 0);
+            const yPad = Math.max((yMax - yMin) * 0.12, 1.8);
+
+            const svg = d3.select("#dashBenchmarkSvg");
+            svg.selectAll("*").remove();
+            const w = svg.node()?.clientWidth || 640;
+            const h = 230;
+            svg.attr("viewBox", `0 0 ${w} ${h}`);
+
+            const margin = { top: 18, right: 18, bottom: 32, left: 60 };
+            const innerW = w - margin.left - margin.right;
+            const innerH = h - margin.top - margin.bottom;
+
+            const x = d3.scaleTime()
+                .domain(d3.extent(data, (d) => d.date))
+                .range([0, innerW]);
+            const y = d3.scaleLinear()
+                .domain([yMin - yPad, yMax + yPad])
+                .range([innerH, 0]);
+
+            const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+            const periodDays = Math.round((data[data.length - 1].date - data[0].date) / (1000 * 60 * 60 * 24));
+            const xFmt = periodDays > 360 ? d3.timeFormat("%Y-%m") : d3.timeFormat("%m/%d");
+
+            g.append("g")
+                .attr("transform", `translate(0,${innerH})`)
+                .call(d3.axisBottom(x).ticks(6).tickFormat(xFmt))
+                .selectAll("text")
+                .attr("fill", "#64748b")
+                .attr("font-size", "10px");
+
+            g.append("g")
+                .call(d3.axisLeft(y).ticks(5).tickFormat((d) => `${d > 0 ? "+" : ""}${d.toFixed(0)}%`))
+                .selectAll("text")
+                .attr("fill", "#64748b")
+                .attr("font-size", "10px");
+
+            g.selectAll(".domain, .tick line").attr("stroke", "#e2e8f0");
+
+            g.append("line")
+                .attr("x1", 0)
+                .attr("x2", innerW)
+                .attr("y1", y(0))
+                .attr("y2", y(0))
+                .attr("stroke", "#94a3b8")
+                .attr("stroke-width", 1)
+                .attr("stroke-dasharray", "4,3");
+
+            const lineBuilder = (key) => d3.line()
+                .defined((d) => Number.isFinite(d[key]))
+                .x((d) => x(d.date))
+                .y((d) => y(d[key]))
+                .curve(d3.curveMonotoneX);
+
+            availableLines.forEach((line) => {
+                g.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", line.color)
+                    .attr("stroke-width", line.width)
+                    .attr("d", lineBuilder(line.key));
+
+                const pts = data.filter((d) => Number.isFinite(d[line.key]));
+                if (!pts.length) return;
+                const last = pts[pts.length - 1];
+                g.append("circle")
+                    .attr("cx", x(last.date))
+                    .attr("cy", y(last[line.key]))
+                    .attr("r", 3.2)
+                    .attr("fill", line.color);
+            });
+
+            const getLastValue = (key) => {
+                for (let i = data.length - 1; i >= 0; i--) {
+                    if (Number.isFinite(data[i][key])) return data[i][key];
+                }
+                return null;
+            };
+            if (legendEl) {
+                legendEl.innerHTML = availableLines.map((line) => {
+                    const v = getLastValue(line.key);
+                    return `
+                        <span class="dash-bench-item">
+                            <span class="dash-bench-dot" style="background:${line.color};"></span>
+                            <span>${line.label} ${formatSignedPct(v)}</span>
+                        </span>
+                    `;
+                }).join("");
+            }
+
+            const missingLabels = DASH_BENCHMARK_LINES
+                .filter((line) => line.key !== "portfolio_return_pct" && !availableLines.some((x) => x.key === line.key))
+                .map((line) => line.label);
+            const coverageText = `포트폴리오 커버리지 ${(Number(result?.data_coverage || 0) * 100).toFixed(0)}%`;
+            const actualStart = rawSeries[0]?.date || result.start;
+            const actualEnd = rawSeries[rawSeries.length - 1]?.date || result.end;
+            if (rangeEl) {
+                rangeEl.textContent = `${actualStart} ~ ${actualEnd} · 기준일 대비 누적 수익률`;
+            }
+            if (noteEl) {
+                noteEl.textContent = missingLabels.length
+                    ? `${coverageText} · 미수신 벤치마크: ${missingLabels.join(", ")}`
+                    : coverageText;
+            }
+        }
+
+        async function renderDashboardBenchmarkComparison() {
+            const rangeEl = document.getElementById("dashBenchmarkRange");
+            const noteEl = document.getElementById("dashBenchmarkNote");
+
+            if (!graphData || !graphData.tickerNodes || graphData.tickerNodes.size === 0) {
+                renderDashboardBenchmarkPlaceholder("먼저 포트폴리오 분석을 실행해주세요.");
+                if (rangeEl) rangeEl.textContent = "최근 1년 벤치마크 비교";
+                if (noteEl) noteEl.textContent = "";
+                return;
+            }
+
+            const positions = Array.from(graphData.tickerNodes.values())
+                .filter((n) => Number(n.amount) > 0)
+                .map((n) => ({ ticker: n.ticker, amount: Number(n.amount) || 0 }));
+            if (!positions.length) {
+                renderDashboardBenchmarkPlaceholder("비교할 종목이 없습니다.");
+                if (rangeEl) rangeEl.textContent = "최근 1년 벤치마크 비교";
+                if (noteEl) noteEl.textContent = "";
+                return;
+            }
+
+            const reqSeq = ++dashboardBenchmarkReqSeq;
+            if (rangeEl) rangeEl.textContent = "최근 1년 데이터를 불러오는 중입니다.";
+            if (noteEl) noteEl.textContent = "";
+            renderDashboardBenchmarkPlaceholder("시계열 데이터를 조회하고 있습니다...");
+
+            try {
+                const resp = await fetch("/api/portfolio/benchmark-compare", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ positions, period_days: 365 }),
+                });
+                const raw = await resp.text();
+                if (reqSeq !== dashboardBenchmarkReqSeq) return;
+
+                let result;
+                try {
+                    result = JSON.parse(raw);
+                } catch (parseErr) {
+                    throw new Error(`응답 파싱 실패: ${parseErr.message}`);
+                }
+                if (!resp.ok) {
+                    throw new Error(result?.message || `HTTP ${resp.status}`);
+                }
+                if (result?.status !== "success") {
+                    throw new Error(result?.message || "비교 데이터 조회 실패");
+                }
+                renderDashboardBenchmarkChart(result);
+            } catch (err) {
+                if (reqSeq !== dashboardBenchmarkReqSeq) return;
+                renderDashboardBenchmarkPlaceholder("비교 데이터를 불러오지 못했습니다.");
+                if (rangeEl) rangeEl.textContent = "최근 1년 벤치마크 비교";
+                if (noteEl) noteEl.textContent = `오류: ${err?.message || "알 수 없는 오류"}`;
+            }
+        }
+
         function renderDashboard() {
             const stockNodes = graphData.nodes.filter((n) => n.type === "stock");
             const sectorMap = {};
@@ -5777,6 +6355,8 @@
             document.getElementById("dashMaxStock").textContent = topName
                 ? `${topName} ${topPct.toFixed(1)}%`
                 : "-";
+
+            renderDashboardBenchmarkComparison();
         }
 
         // 패널 토글 제어

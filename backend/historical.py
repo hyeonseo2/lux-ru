@@ -15,6 +15,8 @@
 """
 from __future__ import annotations
 
+from bisect import bisect_right
+from datetime import date, timedelta
 import logging
 import time
 from typing import Any, Optional
@@ -93,6 +95,11 @@ DEFAULT_TTL_SECONDS = 7 * 24 * 3600
 # ── Symbol mapping ────────────────────────────────────────────────
 
 BOND_PROXY = "273130.KS"  # KODEX 종합채권(AA-이상)액티브
+BENCHMARK_SYMBOLS: dict[str, str] = {
+    "kospi": "^KS11",
+    "sp500": "^GSPC",
+    "nasdaq": "^IXIC",
+}
 
 
 def map_to_yfinance(ticker: str) -> Optional[str]:
@@ -187,6 +194,21 @@ def fetch_prices(symbols: list[str], start: str, end: str) -> dict[str, dict[str
             out[sym] = series
 
     return out
+
+
+def _prepare_series_lookup(series: dict[str, float]) -> tuple[list[str], list[float]]:
+    dates = sorted(series.keys())
+    values = [float(series[d]) for d in dates]
+    return dates, values
+
+
+def _value_on_or_before(dates: list[str], values: list[float], target_date: str) -> Optional[float]:
+    if not dates:
+        return None
+    idx = bisect_right(dates, target_date) - 1
+    if idx < 0:
+        return None
+    return values[idx]
 
 
 # ── Backtest ──────────────────────────────────────────────────────
@@ -316,4 +338,183 @@ def compute_backtest(positions: list[dict[str, Any]], scenario_id: str) -> dict[
         "data_coverage": data_coverage,
         "ticker_impacts": ticker_impacts,
         "daily_series": daily_series,
+    }
+
+
+def compute_benchmark_comparison(
+    positions: list[dict[str, Any]],
+    period_days: int = 365,
+) -> dict[str, Any]:
+    """Compare portfolio return series against benchmark indices.
+
+    Args:
+        positions: [{ticker, amount}] (amount in KRW)
+        period_days: lookback window in days (clamped 90~1825)
+
+    Returns:
+        {
+          status, start, end, period_days, data_coverage,
+          summary: {portfolio_return_pct, kospi_return_pct, sp500_return_pct, nasdaq_return_pct},
+          series: [{date, portfolio_return_pct, kospi_return_pct, sp500_return_pct, nasdaq_return_pct}]
+        }
+    """
+    days = int(period_days or 365)
+    days = max(90, min(days, 1825))
+
+    end_date = date.today() + timedelta(days=1)
+    start_date = end_date - timedelta(days=days)
+    start = start_date.isoformat()
+    end = end_date.isoformat()
+
+    valid: list[dict[str, Any]] = []
+    for p in positions or []:
+        ticker = str(p.get("ticker", "")).strip()
+        try:
+            amount = float(p.get("amount", 0))
+        except (TypeError, ValueError):
+            amount = 0.0
+        if not ticker or amount <= 0:
+            continue
+        yf_symbol = map_to_yfinance(ticker)
+        valid.append({
+            "ticker": ticker,
+            "amount": amount,
+            "yf_symbol": yf_symbol,
+        })
+
+    if not valid:
+        return {"status": "error", "message": "no valid positions"}
+
+    total_value = sum(p["amount"] for p in valid)
+    bench_symbols = list(BENCHMARK_SYMBOLS.values())
+    target_symbols = sorted({
+        *(p["yf_symbol"] for p in valid if p["yf_symbol"]),
+        *bench_symbols,
+    })
+    prices = fetch_prices(target_symbols, start, end)
+
+    # 포지션별 룩업 준비
+    portfolio_nodes: list[dict[str, Any]] = []
+    matched_amount = 0.0
+    for p in valid:
+        series = prices.get(p["yf_symbol"]) if p["yf_symbol"] else None
+        if not series or len(series) < 2:
+            portfolio_nodes.append({
+                **p,
+                "has_data": False,
+                "dates": [],
+                "values": [],
+                "first": None,
+            })
+            continue
+
+        dates, values = _prepare_series_lookup(series)
+        first = values[0] if values and values[0] > 0 else None
+        if first is None:
+            portfolio_nodes.append({
+                **p,
+                "has_data": False,
+                "dates": [],
+                "values": [],
+                "first": None,
+            })
+            continue
+        matched_amount += p["amount"]
+        portfolio_nodes.append({
+            **p,
+            "has_data": True,
+            "dates": dates,
+            "values": values,
+            "first": first,
+        })
+
+    # 벤치마크 룩업 준비
+    benchmark_lookup: dict[str, dict[str, Any]] = {}
+    for key, sym in BENCHMARK_SYMBOLS.items():
+        series = prices.get(sym)
+        if not series or len(series) < 2:
+            benchmark_lookup[key] = {
+                "has_data": False,
+                "dates": [],
+                "values": [],
+                "first": None,
+            }
+            continue
+        dates, values = _prepare_series_lookup(series)
+        first = values[0] if values and values[0] > 0 else None
+        benchmark_lookup[key] = {
+            "has_data": first is not None,
+            "dates": dates,
+            "values": values,
+            "first": first,
+        }
+
+    # 타임라인은 벤치마크 거래일 우선
+    all_dates: set[str] = set()
+    for key in ("kospi", "sp500", "nasdaq"):
+        b = benchmark_lookup.get(key) or {}
+        for d in b.get("dates", []):
+            all_dates.add(d)
+    if not all_dates:
+        for n in portfolio_nodes:
+            for d in n.get("dates", []):
+                all_dates.add(d)
+
+    sorted_dates = sorted(all_dates)
+    if not sorted_dates:
+        return {"status": "error", "message": "insufficient market data"}
+
+    series_rows: list[dict[str, Any]] = []
+    for d in sorted_dates:
+        portfolio_value = 0.0
+        for n in portfolio_nodes:
+            if not n["has_data"]:
+                portfolio_value += n["amount"]
+                continue
+            cur = _value_on_or_before(n["dates"], n["values"], d)
+            if cur is None:
+                cur = n["first"]
+            factor = cur / n["first"] if n["first"] and n["first"] > 0 else 1.0
+            portfolio_value += n["amount"] * factor
+        portfolio_return = (portfolio_value / total_value - 1.0) * 100 if total_value > 0 else 0.0
+
+        row = {
+            "date": d,
+            "portfolio_return_pct": portfolio_return,
+            "kospi_return_pct": None,
+            "sp500_return_pct": None,
+            "nasdaq_return_pct": None,
+        }
+
+        for bench_key, out_key in (
+            ("kospi", "kospi_return_pct"),
+            ("sp500", "sp500_return_pct"),
+            ("nasdaq", "nasdaq_return_pct"),
+        ):
+            b = benchmark_lookup.get(bench_key) or {}
+            if not b.get("has_data"):
+                continue
+            cur = _value_on_or_before(b["dates"], b["values"], d)
+            if cur is None:
+                cur = b["first"]
+            ret = (cur / b["first"] - 1.0) * 100 if b["first"] and b["first"] > 0 else 0.0
+            row[out_key] = ret
+
+        series_rows.append(row)
+
+    last_row = series_rows[-1]
+    data_coverage = (matched_amount / total_value) if total_value > 0 else 0.0
+    return {
+        "status": "success",
+        "start": start,
+        "end": end,
+        "period_days": days,
+        "data_coverage": data_coverage,
+        "summary": {
+            "portfolio_return_pct": last_row.get("portfolio_return_pct", 0.0),
+            "kospi_return_pct": last_row.get("kospi_return_pct"),
+            "sp500_return_pct": last_row.get("sp500_return_pct"),
+            "nasdaq_return_pct": last_row.get("nasdaq_return_pct"),
+        },
+        "series": series_rows,
     }

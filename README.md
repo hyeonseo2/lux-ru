@@ -97,9 +97,16 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 영
 ### 시장 충격 시뮬레이션 (실측 백테스트)
 5개 실제 과거 이벤트(2008 금융위기 · 2018 미중 무역분쟁 · 2020 코로나19 · 2022 美 금리 인상 · 2024 엔비디아 쇼크)에 대해 **yfinance 일봉 실측 데이터**로 종목별 수익률 + 일별 시계열을 계산. 채권형 종목은 KODEX 종합채권(273130.KS) 프록시로 대체. Gemini API로 근거(Rationale) 생성 + 리밸런싱 제안 카드 표시.
 
+### 대시보드 벤치마크 비교 차트 (NEW)
+포트폴리오 대시보드에서 **내 포트폴리오 누적 수익률**을 `KOSPI`, `S&P 500`, `NASDAQ`과 동일 기간(기본 최근 1년) 기준으로 비교하는 선그래프를 제공합니다.
+- 백엔드 `POST /api/portfolio/benchmark-compare`가 종목별 실질 익스포저를 기반으로 포트폴리오 시계열을 계산
+- 지수 심볼은 `^KS11`, `^GSPC`, `^IXIC` 사용
+- 축/범례에 각 시리즈 최종 수익률과 데이터 커버리지를 함께 표시
+
 ### 사용자 입력/표시 정합성 (2026-05 개선)
 - 직접 입력 목록, 내 종목 현황, 시뮬레이션 영향 종목에서 종목 코드를 그대로 노출하지 않고 종목명을 우선 표시합니다.
 - 내 종목 현황 탭은 최초 계좌만 표시하지 않고, 추가된 모든 계좌의 상품을 함께 렌더링하며 단일 계좌 입력 케이스도 누락 없이 표시합니다.
+- `목표 포트폴리오 설정` 버튼/모달/목표비중 오버레이 기능은 제거되어 도넛 비교 UI를 단순화했습니다.
 
 ### AI 챗봇 (Gemini, `gemini-2.5-flash`)
 - **Look-through 결과만을 컨텍스트로 사용** — 임의 추정·계산 금지가 시스템 프롬프트에 명시
@@ -231,6 +238,7 @@ lux-ru/
 | `POST` | `/api/upload/screenshot` | 📸 스크린샷에서 종목 추출 (Gemini Vision) |
 | `POST` | `/api/portfolio/analyze` | CSV 결과에 대한 전체 Look-through 분석 |
 | `POST` | `/api/portfolio/analyze_real` | 사용자 직접 입력 종목 라이브 분석 |
+| `POST` | `/api/portfolio/benchmark-compare` | 포트폴리오 vs KOSPI/S&P500/NASDAQ 누적 수익률 비교 |
 | `GET`  | `/api/portfolio/backtest/scenarios` | 5개 과거 이벤트 시나리오 메타 |
 | `POST` | `/api/portfolio/backtest` | 시나리오별 yfinance 실측 백테스트 |
 | `GET`  | `/api/portfolio/analysis/{sid}` | 세션의 최신 분석 결과 조회 |
@@ -291,4 +299,4 @@ lux-ru/
 
 ---
 
-*문서 최종 업데이트: 2026-05-15*
+*문서 최종 업데이트: 2026-05-16*
