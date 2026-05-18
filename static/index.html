@@ -2125,7 +2125,7 @@
 
     <div id="mobile-panel-bar">
         <button id="mobile-left-toggle" class="mobile-panel-btn panel-toggle-btn" type="button">◀ 포트폴리오</button>
-        <button id="mobile-right-toggle" class="mobile-panel-btn panel-toggle-btn" type="button">☰ 스크리너</button>
+        <button id="mobile-right-toggle" class="mobile-panel-btn panel-toggle-btn" type="button">☰ 워크플로우</button>
     </div>
 
     <div id="desktop-panel-controls">
@@ -2401,9 +2401,9 @@
         <!-- ============ 우측 ============ -->
         <div id="right-panel">
             <div class="mobile-side-close mobile-side-close-right">
-                <button id="mobile-right-close" class="mobile-panel-btn panel-toggle-btn" type="button">☰ 스크리너</button>
+                <button id="mobile-right-close" class="mobile-panel-btn panel-toggle-btn" type="button">☰ 워크플로우</button>
             </div>
-            <h2>스크리너 상세</h2>
+            <h2>워크플로우 상세</h2>
             <div id="empty-state" style="color:#64748b;font-size:12px;">
                 그래프의 노드를 클릭하면<br>상세 정보가 표시됩니다.
             </div>
@@ -6405,7 +6405,7 @@
             document.body.style.overflow = "";
 
             if (mobileLeftToggle) mobileLeftToggle.textContent = "◀ 포트폴리오";
-            if (mobileRightToggle) mobileRightToggle.textContent = "☰ 스크리너";
+            if (mobileRightToggle) mobileRightToggle.textContent = "☰ 워크플로우";
             if (desktopLeftToggle) {
                 desktopLeftToggle.textContent = isLeftPanelCollapsed ? "◀ 열기" : "◀ 접기";
                 if (isLeftPanelCollapsed) {
@@ -6417,7 +6417,7 @@
                 }
             }
             if (desktopRightToggle) {
-                desktopRightToggle.textContent = isRightPanelCollapsed ? "☰ 스크리너" : "접기 ▶";
+                desktopRightToggle.textContent = isRightPanelCollapsed ? "☰ 워크플로우" : "접기 ▶";
                 if (isRightPanelCollapsed) {
                     desktopRightToggle.classList.add("folded");
                     desktopRightToggle.style.right = "0";
@@ -6442,14 +6442,14 @@
                 mobileLeftClose.textContent = isLeftPanelOpen ? "◀ 접기" : "◀ 열기";
             }
             if (mobileRightClose) {
-                mobileRightClose.textContent = isRightPanelOpen ? "접기 ▶" : "☰ 스크리너";
+                mobileRightClose.textContent = isRightPanelOpen ? "접기 ▶" : "☰ 워크플로우";
             }
 
             if (mobileLeftToggle) {
                 mobileLeftToggle.textContent = isLeftPanelOpen ? "◀ 접기" : "◀ 포트폴리오";
             }
             if (mobileRightToggle) {
-                mobileRightToggle.textContent = isRightPanelOpen ? "접기 ▶" : "☰ 스크리너";
+                mobileRightToggle.textContent = isRightPanelOpen ? "접기 ▶" : "☰ 워크플로우";
             }
 
             if (desktopLeftToggle) {
@@ -6458,7 +6458,7 @@
                 desktopLeftToggle.style.left = "0";
             }
             if (desktopRightToggle) {
-                desktopRightToggle.textContent = "☰ 스크리너";
+                desktopRightToggle.textContent = "☰ 워크플로우";
                 desktopRightToggle.classList.add("folded");
                 desktopRightToggle.style.right = "0";
             }
