@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from ..historical import compute_backtest, compute_benchmark_comparison, list_scenarios
 from ..instrument_insights import get_instrument_insights
@@ -10,7 +11,8 @@ from ..live_data import analyze_live_portfolio
 from ..lookthrough import compute_exposure
 from ..overlap import find_overlaps
 from ..models import Position, PortfolioAnalysis
-from ..seed_data import FINLIFE_PRODUCTS, ALL_INSTRUMENTS
+from ..seed_data import FINLIFE_PRODUCTS
+from ..search_universe import search_instruments as search_universe_instruments
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 
@@ -29,77 +31,9 @@ class AnalyzeResponse(BaseModel):
     data: dict | None = None
 
 
-def _normalize_search_query(raw: str) -> str:
-    return str(raw or "").strip().lower()
-
-
-def _instrument_name_for_search(inst):
-    candidates = []
-    if inst.name_ko:
-        candidates.append(str(inst.name_ko).strip())
-    if inst.name_en:
-        candidates.append(str(inst.name_en).strip())
-    if inst.symbol:
-        candidates.append(str(inst.symbol).strip())
-    if inst.market:
-        candidates.append(str(inst.market).strip())
-    return candidates
-
-
-def _score_symbol_match(query: str, symbol: str, display_name: str) -> int:
-    if not query:
-        return 99
-    q = query.strip().lower()
-    s = symbol.strip().lower()
-    d = display_name.strip().lower()
-
-    if s == q:
-        return 0
-    if s.startswith(q):
-        return 1
-    if q in s:
-        return 2
-    if d:
-        if d.startswith(q):
-            return 3
-        if q in d:
-            return 4
-    return 5
-
-
-def _search_instruments(query: str, limit: int = 20) -> list[dict]:
-    q = _normalize_search_query(query)
-    if not q:
-        return []
-
-    results: list[dict] = []
-    for inst in ALL_INSTRUMENTS.values():
-        symbol = str(inst.symbol or "").strip()
-        if not symbol:
-            continue
-        name_candidates = _instrument_name_for_search(inst)
-        merged_name = " ".join([x for x in name_candidates if x]).strip()
-
-        if q in symbol.lower() or any(q in (x.lower()) for x in [x for x in name_candidates if x]):
-            score = _score_symbol_match(q, symbol, merged_name)
-            item = {
-                "symbol": symbol,
-                "name": merged_name or symbol,
-                "name_ko": inst.name_ko or "",
-                "name_en": inst.name_en or "",
-                "type": (inst.instrument_type.value if getattr(inst, "instrument_type", None) else "instrument"),
-                "market": inst.market,
-                "score": score,
-            }
-            results.append(item)
-
-    results.sort(key=lambda x: (x["score"], len(x["symbol"]), x["name"].lower()))
-    return results[: max(1, limit)]
-
-
 def _to_search_payload(query: str, limit: int = 20) -> dict:
     query = query or ""
-    hits = _search_instruments(query, limit=limit)
+    hits = search_universe_instruments(query, limit=limit)
     return {
         "query": query,
         "results": [
@@ -108,9 +42,9 @@ def _to_search_payload(query: str, limit: int = 20) -> dict:
                 "name": item["name"],
                 "name_ko": item.get("name_ko", ""),
                 "name_en": item.get("name_en", ""),
-                "symbol_type": item["type"],
-                "market": item["market"],
-                "score": item["score"],
+                "symbol_type": item.get("symbol_type", "stock"),
+                "market": item.get("market", ""),
+                "score": item.get("score", 5),
             }
             for item in hits
         ],
@@ -249,14 +183,54 @@ async def run_backtest(req: BacktestRequest) -> dict:
 @router.post("/benchmark-compare")
 async def compare_benchmarks(req: BenchmarkCompareRequest) -> dict:
     """Compare portfolio cumulative return with benchmark indices."""
-    return compute_benchmark_comparison(req.positions, req.period_days)
+    return await run_in_threadpool(compute_benchmark_comparison, req.positions, req.period_days)
 
 
 @router.get("/instrument-insights")
 async def instrument_insights_api(
     ticker: str = Query(default="", description="Stock ticker/symbol"),
     days: int = Query(default=30, ge=7, le=90),
-    news_limit: int = Query(default=30, ge=10, le=80),
+    news_limit: int = Query(default=3, ge=1, le=80),
 ) -> dict:
     """Return recent event/news insights for a selected stock node."""
-    return get_instrument_insights(ticker=ticker, days=days, news_limit=news_limit)
+    return await run_in_threadpool(
+        get_instrument_insights,
+        ticker=ticker,
+        days=days,
+        news_limit=news_limit,
+    )
+
+
+class ScreenerRequest(BaseModel):
+    sectors: list[str] | None = None
+    countries: list[str] | None = None
+    instrument_types: list[str] | None = None
+    pe_min: float | None = None
+    pe_max: float | None = None
+    mcap_min: float | None = None
+    mcap_max: float | None = None
+    sort_by: str = "market_cap"
+    sort_desc: bool = True
+    query: str = ""
+    limit: int = 80
+
+
+@router.post("/screener")
+async def run_screener(req: ScreenerRequest) -> dict:
+    """Screen and rank universe of instruments based on filters and real-time metrics."""
+    from ..screener import screen_instruments
+    results = await run_in_threadpool(
+        screen_instruments,
+        sectors=req.sectors,
+        countries=req.countries,
+        instrument_types=req.instrument_types,
+        pe_min=req.pe_min,
+        pe_max=req.pe_max,
+        mcap_min=req.mcap_min,
+        mcap_max=req.mcap_max,
+        sort_by=req.sort_by,
+        sort_desc=req.sort_desc,
+        query=req.query,
+        limit=req.limit,
+    )
+    return {"success": True, "results": results}

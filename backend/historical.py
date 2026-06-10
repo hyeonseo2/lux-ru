@@ -16,8 +16,10 @@
 from __future__ import annotations
 
 from bisect import bisect_right
+import copy
 from datetime import date, timedelta
 import logging
+import os
 import time
 from typing import Any, Optional
 
@@ -90,6 +92,8 @@ SCENARIOS: dict[str, dict[str, Any]] = {
 # close_series_dict는 {iso_date_str: float} 형태로 보관 (pandas 의존성 회피).
 _PRICE_CACHE: dict[tuple[str, str, str], tuple[dict[str, float], float]] = {}
 DEFAULT_TTL_SECONDS = 7 * 24 * 3600
+_BENCHMARK_RESULT_CACHE: dict[tuple[Any, ...], tuple[dict[str, Any], float]] = {}
+BENCHMARK_RESULT_TTL_SECONDS = int(os.getenv("BENCHMARK_RESULT_TTL_SECONDS", str(6 * 3600)))
 
 
 # ── Symbol mapping ────────────────────────────────────────────────
@@ -139,6 +143,7 @@ def _fetch_series_bulk(symbols: list[str], start: str, end: str) -> dict[str, di
             auto_adjust=True,
             group_by="ticker",
             threads=True,
+            timeout=12,
         )
     except Exception as exc:
         LOG.warning("yfinance.download(%s) failed: %s", symbols, exc)
@@ -366,7 +371,7 @@ def compute_benchmark_comparison(
     start = start_date.isoformat()
     end = end_date.isoformat()
 
-    valid: list[dict[str, Any]] = []
+    raw_valid: list[dict[str, Any]] = []
     for p in positions or []:
         ticker = str(p.get("ticker", "")).strip()
         try:
@@ -376,16 +381,40 @@ def compute_benchmark_comparison(
         if not ticker or amount <= 0:
             continue
         yf_symbol = map_to_yfinance(ticker)
-        valid.append({
+        raw_valid.append({
             "ticker": ticker,
             "amount": amount,
             "yf_symbol": yf_symbol,
         })
 
-    if not valid:
+    if not raw_valid:
         return {"status": "error", "message": "no valid positions"}
 
-    total_value = sum(p["amount"] for p in valid)
+    total_value = sum(p["amount"] for p in raw_valid)
+    aggregated: dict[str, dict[str, Any]] = {}
+    for p in raw_valid:
+        key = p["yf_symbol"] or p["ticker"]
+        if key not in aggregated:
+            aggregated[key] = {
+                "ticker": p["ticker"],
+                "amount": 0.0,
+                "yf_symbol": p["yf_symbol"],
+            }
+        aggregated[key]["amount"] += p["amount"]
+
+    valid = sorted(aggregated.values(), key=lambda x: x["amount"], reverse=True)
+
+    cache_key = (
+        start,
+        end,
+        days,
+        tuple((p["yf_symbol"] or p["ticker"], round(float(p["amount"]), 2)) for p in valid),
+    )
+    now = time.time()
+    cached = _BENCHMARK_RESULT_CACHE.get(cache_key)
+    if cached and cached[1] > now:
+        return copy.deepcopy(cached[0])
+
     bench_symbols = list(BENCHMARK_SYMBOLS.values())
     target_symbols = sorted({
         *(p["yf_symbol"] for p in valid if p["yf_symbol"]),
@@ -504,12 +533,14 @@ def compute_benchmark_comparison(
 
     last_row = series_rows[-1]
     data_coverage = (matched_amount / total_value) if total_value > 0 else 0.0
-    return {
+    result = {
         "status": "success",
         "start": start,
         "end": end,
         "period_days": days,
         "data_coverage": data_coverage,
+        "included_positions": len(valid),
+        "total_positions": len(aggregated),
         "summary": {
             "portfolio_return_pct": last_row.get("portfolio_return_pct", 0.0),
             "kospi_return_pct": last_row.get("kospi_return_pct"),
@@ -518,3 +549,8 @@ def compute_benchmark_comparison(
         },
         "series": series_rows,
     }
+    _BENCHMARK_RESULT_CACHE[cache_key] = (
+        copy.deepcopy(result),
+        time.time() + BENCHMARK_RESULT_TTL_SECONDS,
+    )
+    return result

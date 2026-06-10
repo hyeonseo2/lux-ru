@@ -33,6 +33,7 @@ ROADMAP.md
 .agents/
 .codex/
 .claude/
+.antigravitycli/
 .anthropic/
 .aider*
 .cursor/

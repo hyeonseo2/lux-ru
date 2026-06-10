@@ -92,7 +92,7 @@ TIGER 미국S&P500 + TIGER 미국나스닥100 + 엔비디아 직접 보유분을
 실질 종목 비중을 제곱 합산한 Herfindahl-Hirschman Index로 포트폴리오 편중도 정량화.
 
 ### 섹터/국가/통화 노출
-Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 영문 GICS 섹터를 한국어 라벨로 정규화하고, NVDA·005930 등 반도체 본업 종목은 ticker 기반 오버라이드로 격상합니다. 프런트 범례는 실질 노출된 섹터 전체를 대상으로 동적으로 렌더링됩니다.
+Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfinance 영문 섹터와 KRX 공식 `업종명`을 같은 한국어 canonical 라벨로 정규화하고, NVDA·005930 등 반도체 본업 종목은 ticker 기반 오버라이드로 격상합니다. 프런트 범례는 실질 노출된 섹터 전체를 대상으로 동적으로 렌더링됩니다.
 
 ### 시장 충격 시뮬레이션 (실측 백테스트)
 5개 실제 과거 이벤트(2008 금융위기 · 2018 미중 무역분쟁 · 2020 코로나19 · 2022 美 금리 인상 · 2024 엔비디아 쇼크)에 대해 **yfinance 일봉 실측 데이터**로 종목별 수익률 + 일별 시계열을 계산. 채권형 종목은 KODEX 종합채권(273130.KS) 프록시로 대체. Gemini API로 근거(Rationale) 생성 + 리밸런싱 제안 카드 표시.
@@ -155,7 +155,7 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 영
 | Frontend | Vanilla JS, HTML5, CSS3, **D3.js v7 (Canvas)**, Chart.js, Cytoscape |
 | Backend | Python 3.12, FastAPI, Pydantic v2 |
 | AI/LLM | Google Gemini (`gemini-2.5-flash`, 텍스트 + 비전) |
-| Data | yfinance, SQLAlchemy, Neo4j (옵션) |
+| Data | yfinance, pykrx(KRX ETF), SQLAlchemy, Neo4j (옵션) |
 | Infra | Docker, Google Cloud Run (asia-northeast3) |
 
 ---
@@ -165,10 +165,18 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 영
 ### 로컬 실행
 ```bash
 pip install -r requirements.txt
+```
 
-# Gemini 챗/스크린샷 파싱 사용 시 (없으면 룰 기반 fallback)
-export GOOGLE_API_KEY=your_gemini_api_key
+`.env` 파일에 필요한 키를 넣습니다.
 
+```bash
+GOOGLE_API_KEY=your_gemini_api_key
+DART_API_KEY=your_dart_api_key
+KRX_ID=your_krx_id
+KRX_PW=your_krx_password
+```
+
+```bash
 python main.py
 # 또는
 uvicorn main:app --host 0.0.0.0 --port 8080 --reload
@@ -183,11 +191,10 @@ docker run -p 8080:8080 -e GOOGLE_API_KEY=$GOOGLE_API_KEY lux-ru
 
 ### Cloud Run 배포
 ```bash
-gcloud run deploy lux-ru \
-  --source . \
-  --region=asia-northeast3 \
-  --timeout=600
+./scripts/deploy_cloud_run.sh
 ```
+
+이 스크립트는 `.env`의 `KRX_ID`, `KRX_PW`를 Secret Manager(`krx-id`, `krx-pw`)에 자동 반영하고 Cloud Run에 secret env로 연결합니다. `.env` 자체는 배포 소스에 포함하지 않습니다.
 
 운영 URL: `https://lux-ru-415500942280.asia-northeast3.run.app`
 
@@ -212,6 +219,8 @@ lux-ru/
 │   ├── ai_chat.py                # Gemini 텍스트 챗
 │   ├── compliance.py             # 금지 표현 필터 + 면책 부착
 │   ├── seed_data.py              # ETF 구성/주식/예적금 시드
+│   ├── search_universe.py        # 대형 검색 유니버스 + KRX ETF 병합
+│   ├── krx_etf.py                # pykrx 기반 국내 ETF 리스트/PDF 구성종목
 │   ├── routers/                  # FastAPI 라우터
 │   └── worker/crawler.py         # yfinance 기반 미국 ETF 크롤러
 ├── static/
@@ -257,11 +266,11 @@ lux-ru/
 사용자가 ISA 계좌에 **TIGER 미국S&P500 500만 원**, 연금저축에 **SPY $2,000**을 입력하면:
 
 1. **정규화** : 티커 대문자 변환, USD→KRW 환산(`backend.fx.convert`, yfinance + TTL 캐시), 계좌 라벨 표준화
-2. **시드 매칭** : `resolve_instrument()`로 결정론적 UUID 조회 (없으면 yfinance crawler로 fallback)
-3. **재귀 분해** : `expand()`가 각 ETF의 `HoldingSnapshot`을 따라 stock leaf까지 트리 전개
+2. **시드/KRX 매칭** : `resolve_instrument()`로 시드 ETF를 찾고, 국내 ETF는 `pykrx` + `KRX_ID/KRX_PW`가 있으면 KRX ETF 리스트/PDF로 확장
+3. **재귀 분해** : 시드 `HoldingSnapshot`, KRX ETF PDF, yfinance crawler 순으로 구성종목을 찾아 stock leaf까지 트리 전개
 4. **금액 배분** : 보유 금액 × 각 종목 비중 = 실질 노출 금액
 5. **동일 종목 합산** : `aggregate()`가 UUID 기준으로 leaf를 머지 — **여기서 "S&P 500 ETF 두 개"가 같은 AAPL/NVDA로 합쳐짐**
-6. **차원별 집계** : 섹터/국가/통화 weight 합산, HHI 계산, 데이터 등급 산출
+6. **차원별 집계** : yfinance sector 또는 KRX 업종명을 canonical 섹터로 맞춘 뒤 섹터/국가/통화 weight 합산, HHI 계산, 데이터 등급 산출
 7. **그래프 빌드** : `live_data.py`가 Account → Fund → Stock 3계층 노드 + 링크 구조로 직렬화
 8. **응답** : 그래프 + 상위 30개 종목 + 중복 ETF 쌍 + `debug_trace`(단계별 로그)를 단일 JSON으로 반환
 9. **렌더링** : D3.js Canvas force simulation, 노드 크기는 노출 금액의 제곱근
@@ -287,7 +296,8 @@ lux-ru/
 - [ ] 증권사 OpenAPI 연동 (현재는 CSV 업로드 / 스크린샷 / 수동 입력)
 - [ ] 분석 결과 영속화 (현재는 in-memory 세션)
 - [ ] 종목 클릭 시 역추적(Back-tracing): 그 종목이 들어있는 모든 ETF/펀드를 그래프에서 하이라이트
-- [ ] KOFIA·DART·KRX 공시 기반 펀드 구성 자동 갱신 (현재는 시드 + yfinance)
+- [x] 국내 ETF 검색/추가 기반 확장 (`pykrx` KRX ETF 리스트 + PDF 구성종목, `KRX_ID/KRX_PW` 필요)
+- [ ] KOFIA·DART·KRX 공시 기반 펀드 구성 자동 갱신 (현재는 시드 + KRX ETF PDF + yfinance)
 - [ ] 모바일 반응형 디자인 고도화
 - [ ] 한국 PIPA 국외이전 대응: Gemini → Vertex AI `asia-northeast3` 리전 마이그레이션
 
@@ -299,4 +309,4 @@ lux-ru/
 
 ---
 
-*문서 최종 업데이트: 2026-05-16*
+*문서 최종 업데이트: 2026-05-30*

@@ -1,11 +1,17 @@
 from typing import List, Dict, Any
 
 import logging
-import re
 import time
 
-from .sector_labels import normalize_sector, normalize_sector_for_symbol
+from .sector_labels import is_unknown_sector, normalize_sector_for_symbol
 from .seed_data import resolve_instrument, ALL_INSTRUMENTS
+from .symbol_normalizer import canonicalize_symbol, normalize_ticker
+from .krx_etf import (
+    get_krx_etf_holdings,
+    get_krx_etf_name,
+    get_krx_stock_sector,
+    is_krx_etf_symbol,
+)
 
 
 LOG = logging.getLogger(__name__)
@@ -64,6 +70,17 @@ def _seed_holdings_for_ticker(ticker: str) -> List[Dict[str, Any]]:
     return result
 
 
+def _krx_holdings_for_ticker(ticker: str) -> List[Dict[str, Any]]:
+    """Fetch KRX ETF PDF holdings for domestic ETFs when available."""
+    try:
+        if not is_krx_etf_symbol(ticker):
+            return []
+        return get_krx_etf_holdings(ticker)
+    except Exception as exc:
+        LOG.warning("KRX ETF holdings lookup failed for %s: %s", ticker, exc)
+        return []
+
+
 def _escape_html(text: str) -> str:
     return (text
             .replace("&", "&amp;")
@@ -74,9 +91,14 @@ def _escape_html(text: str) -> str:
 
 
 def _normalize_ticker(raw: Any) -> str:
-    text = str(raw or "").upper().strip()
-    text = re.sub(r"[^A-Z0-9.\-]", "", text)
-    return text[:20]
+    return normalize_ticker(raw)
+
+
+def _position_symbol(pos: Dict[str, Any]) -> str:
+    return canonicalize_symbol(
+        pos.get("ticker", ""),
+        pos.get("name") or pos.get("instrument_name") or pos.get("product_name"),
+    )
 
 
 def _resolve_asset_metadata(symbol: str) -> tuple[str, str]:
@@ -90,6 +112,11 @@ def _resolve_asset_metadata(symbol: str) -> tuple[str, str]:
 
     instrument_id = resolve_instrument(symbol)
     if not instrument_id:
+        if is_krx_etf_symbol(symbol):
+            return _escape_html(get_krx_etf_name(symbol)), "기타"
+        krx_sector = get_krx_stock_sector(symbol)
+        if krx_sector:
+            return _escape_html(symbol), normalize_sector_for_symbol(symbol, krx_sector)
         return _escape_html(symbol), normalize_sector_for_symbol(symbol, None)
 
     instrument = ALL_INSTRUMENTS.get(instrument_id)
@@ -159,6 +186,7 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
     stock_exposures = {}  # stock_symbol -> amount
     source_metrics = {
         "yfinance": 0,
+        "krx": 0,
         "seed": 0,
         "direct": 0,
         "invalid": 0,
@@ -168,7 +196,7 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     _log("INFO", "입력 수집 시작", f"요청 포지션 수신: {len(positions)}건")
     for idx, pos in enumerate(positions, start=1):
-        ticker = _normalize_ticker(pos.get("ticker", ""))
+        ticker = _position_symbol(pos)
         amount = float(pos.get("amount", 0))
         if amount <= 0 or not ticker:
             _log("WARN", "입력 스킵", f"{idx}번 항목 누락/무효 (ticker={ticker}, amount={amount})")
@@ -186,25 +214,50 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
 
         _log("DEBUG", "정규화", f"{idx}번: {ticker} / {int(amount):,}원 정규화 완료")
 
-        # Determine if it's likely an ETF or Stock
-        # If yfinance returns empty, use static fallback for known ETFs
-        raw_holdings = _get_holdings_from_crawler(ticker)
-        if raw_holdings:
-            holdings = raw_holdings
-            source = "yfinance"
-            source_metrics["yfinance"] += 1
-            _log(
-                "INFO",
-                "데이터 수집 (실시간)",
-                f"{ticker}: yfinance에서 상위 보유종목 {len(holdings)}개 수집",
-                {
-                    "ticker": ticker,
-                    "source": "yfinance",
-                    "count": len(holdings),
-                    "top": [h.get("holding_symbol") for h in holdings[:5]]
-                }
-            )
+        # Determine if it's likely an ETF or stock.
+        # Domestic ETFs use KRX PDF first. US ETFs use yfinance crawler.
+        if is_krx_etf_symbol(ticker):
+            krx_holdings = _krx_holdings_for_ticker(ticker)
+            if krx_holdings:
+                holdings = krx_holdings
+                source = "krx"
+                source_metrics["krx"] += 1
+                _log(
+                    "INFO",
+                    "데이터 수집 (KRX)",
+                    f"{ticker}: KRX ETF PDF에서 구성종목 {len(holdings)}개 조회",
+                    {
+                        "ticker": ticker,
+                        "source": "krx_pdf",
+                        "count": len(holdings),
+                        "top": [h.get("holding_symbol") for h in holdings[:5]]
+                    }
+                )
+            else:
+                holdings = []
+                source = ""
         else:
+            raw_holdings = _get_holdings_from_crawler(ticker)
+            if raw_holdings:
+                holdings = raw_holdings
+                source = "yfinance"
+                source_metrics["yfinance"] += 1
+                _log(
+                    "INFO",
+                    "데이터 수집 (실시간)",
+                    f"{ticker}: yfinance에서 상위 보유종목 {len(holdings)}개 수집",
+                    {
+                        "ticker": ticker,
+                        "source": "yfinance",
+                        "count": len(holdings),
+                        "top": [h.get("holding_symbol") for h in holdings[:5]]
+                    }
+                )
+            else:
+                holdings = []
+                source = ""
+
+        if not holdings:
             seed_holdings = _seed_holdings_for_ticker(ticker)
             if seed_holdings:
                 holdings = seed_holdings
@@ -246,17 +299,21 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
             _log("DEBUG", "노드 생성", f"{ticker} 상품 노드 생성, 계좌 연결선 등록")
 
             for h in holdings:
-                h_sym = _normalize_ticker(h.get("holding_symbol", ""))
+                h_sym = canonicalize_symbol(h.get("holding_symbol", ""), h.get("holding_name", ""))
                 if not h_sym:
                     continue
                 h_weight = h["weight"]
                 h_amt = amount * h_weight
                 h_name = _escape_html(str(h.get("holding_name", h_sym)))
-                # 보유 종목의 raw sector + symbol을 모두 활용해 반도체/2차전지 본업을 격상.
+                meta_name, meta_sector = _resolve_asset_metadata(h_sym)
+                if meta_name and meta_name != _escape_html(h_sym):
+                    h_name = meta_name
+                # yfinance/seed sector를 우선 사용하고, 없으면 KRX 공식 업종명으로 보강한다.
                 raw_sector = h.get("sector")
-                # yfinance top-holdings 경로는 sector를 "Other"로 반환하는 경우가 많다.
-                # 시드 메타에 있는 종목이면 해당 섹터로 보정해 과도한 "기타" 쏠림을 줄인다.
-                if str(raw_sector or "").strip().lower() in {"", "other", "unknown", "none", "n/a"}:
+                if is_unknown_sector(raw_sector):
+                    if not is_unknown_sector(meta_sector):
+                        raw_sector = meta_sector
+                if is_unknown_sector(raw_sector):
                     try:
                         uid = resolve_instrument(h_sym)
                         inst = ALL_INSTRUMENTS.get(uid) if uid else None
@@ -264,6 +321,10 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
                             raw_sector = inst.sector
                     except Exception:
                         pass
+                if is_unknown_sector(raw_sector):
+                    krx_sector = get_krx_stock_sector(h_sym)
+                    if krx_sector:
+                        raw_sector = krx_sector
                 h_sector = normalize_sector_for_symbol(h_sym, raw_sector)
 
                 if h_sym not in stock_exposures:
@@ -323,9 +384,9 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
         "description": "사용자가 직접 입력한 실시간 포트폴리오 분석 결과",
         "positions": [{
             "account": _normalize_account(p.get("account_type", p.get("account_label")))[0],
-            "name": resolved_meta_map.get(_normalize_ticker(p.get("ticker", "")), (_escape_html(_normalize_ticker(p.get("ticker", ""))), "기타"))[0],
+            "name": resolved_meta_map.get(_position_symbol(p), (_escape_html(_position_symbol(p)), "기타"))[0],
             "value": p.get("amount", 0),
-        } for p in positions if _normalize_ticker(p.get("ticker", ""))],
+        } for p in positions if _position_symbol(p)],
         "sectors": sectors,
         "source_summary": source_metrics,
         "debug_trace": trace,

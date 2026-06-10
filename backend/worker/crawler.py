@@ -23,6 +23,10 @@ def fetch_us_etf_holdings(symbol: str):
         return []
 
     import yfinance as yf
+    try:
+        from ..symbol_normalizer import canonicalize_symbol
+    except ImportError:
+        from backend.symbol_normalizer import canonicalize_symbol
 
     ticker = yf.Ticker(symbol)
     try:
@@ -35,9 +39,10 @@ def fetch_us_etf_holdings(symbol: str):
         for index, row in holdings.iterrows():
             # row: name, weight (float)
             weight = float(row.get('Weight', 0))
-            # Sometimes index is the symbol
-            h_symbol = str(index) if index else row.get('Name')
-            name = str(row.get('Name', h_symbol))
+            # yfinance may expose either a ticker, an exchange code, or a company name as index.
+            raw_symbol = row.get('Symbol') or row.get('Ticker') or (str(index) if index else "")
+            name = str(row.get('Name', raw_symbol))
+            h_symbol = canonicalize_symbol(raw_symbol, name)
 
             if weight > 0:
                 results.append({

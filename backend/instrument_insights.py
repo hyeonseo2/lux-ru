@@ -1,6 +1,7 @@
 """Instrument-level event and news insights for workflow detail panel."""
 from __future__ import annotations
 
+import copy
 from datetime import date, datetime, time as dtime, timedelta, timezone
 import io
 import json
@@ -25,9 +26,54 @@ OPENDART_ROOT = "https://opendart.fss.or.kr/api"
 DART_VIEWER_ROOT = "https://dart.fss.or.kr/dsaf001/main.do"
 US_SEC_FORMS = {"20-F", "10-K", "10-Q", "8-K", "6-K"}
 DART_CORP_MAP_TTL_SECONDS = 24 * 3600
+INSIGHTS_SOURCE_CACHE_TTL_SECONDS = int(os.getenv("INSTRUMENT_INSIGHTS_SOURCE_CACHE_TTL_SECONDS", "180"))
+INSIGHTS_ERROR_CACHE_TTL_SECONDS = int(os.getenv("INSTRUMENT_INSIGHTS_ERROR_CACHE_TTL_SECONDS", "60"))
+INSIGHTS_SOURCE_CACHE_MAX_ENTRIES = int(os.getenv("INSTRUMENT_INSIGHTS_SOURCE_CACHE_MAX_ENTRIES", "128"))
 
 _DART_CORP_MAP_CACHE: dict[str, tuple[dict[str, str], float]] = {}
 _DART_CORP_MAP_LOCK = threading.Lock()
+_INSIGHTS_SOURCE_CACHE: dict[tuple[Any, ...], tuple[float, Any]] = {}
+_INSIGHTS_SOURCE_CACHE_LOCK = threading.Lock()
+
+
+def _source_cache_get(key: tuple[Any, ...]) -> Any | None:
+    now = time.time()
+    with _INSIGHTS_SOURCE_CACHE_LOCK:
+        cached = _INSIGHTS_SOURCE_CACHE.get(key)
+        if not cached:
+            return None
+        expires_at, value = cached
+        if expires_at <= now:
+            _INSIGHTS_SOURCE_CACHE.pop(key, None)
+            return None
+        return copy.deepcopy(value)
+
+
+def _source_cache_set(key: tuple[Any, ...], value: Any, ttl_seconds: int) -> None:
+    ttl = max(1, int(ttl_seconds or 1))
+    with _INSIGHTS_SOURCE_CACHE_LOCK:
+        now = time.time()
+        if len(_INSIGHTS_SOURCE_CACHE) >= max(1, INSIGHTS_SOURCE_CACHE_MAX_ENTRIES):
+            expired = [k for k, (expires_at, _) in _INSIGHTS_SOURCE_CACHE.items() if expires_at <= now]
+            for expired_key in expired:
+                _INSIGHTS_SOURCE_CACHE.pop(expired_key, None)
+        if len(_INSIGHTS_SOURCE_CACHE) >= max(1, INSIGHTS_SOURCE_CACHE_MAX_ENTRIES):
+            oldest_key = min(_INSIGHTS_SOURCE_CACHE.items(), key=lambda item: item[1][0])[0]
+            _INSIGHTS_SOURCE_CACHE.pop(oldest_key, None)
+        _INSIGHTS_SOURCE_CACHE[key] = (time.time() + ttl, copy.deepcopy(value))
+
+
+def _source_cache_ttl(errors: list[str] | None = None, notes: list[str] | None = None) -> int:
+    if errors:
+        return INSIGHTS_ERROR_CACHE_TTL_SECONDS
+    if any(("미설정" in note or "실패" in note) for note in (notes or [])):
+        return INSIGHTS_ERROR_CACHE_TTL_SECONDS
+    return INSIGHTS_SOURCE_CACHE_TTL_SECONDS
+
+
+def _window_cache_key_parts(since_kst: datetime, now_kst: datetime) -> tuple[str, str]:
+    # Day-bucketed windows keep "recent N days" calls reusable without hiding intraday updates past TTL.
+    return (_to_dart_date(since_kst), _to_dart_date(now_kst))
 
 
 def _normalize_ticker(raw: Any) -> str:
@@ -386,108 +432,128 @@ def _iter_filings(raw: Any) -> list[dict[str, Any]]:
     return []
 
 
-def get_instrument_insights(ticker: str, days: int = 30, news_limit: int = 40) -> dict[str, Any]:
-    """
-    Build event/news insight payload for a single ticker.
-
-    Data window is recent `days` from now, filtered in KST.
-    """
-    normalized = _normalize_ticker(ticker)
-    if not normalized:
-        return {"status": "error", "message": "ticker is required"}
-
-    try:
-        import yfinance as yf
-    except Exception as exc:
-        LOG.warning("yfinance import failed: %s", exc)
-        return {"status": "error", "message": "market data source unavailable"}
-
-    days = max(7, min(int(days or 30), 90))
-    news_limit = max(10, min(int(news_limit or 40), 80))
-    now_kst = datetime.now(KST)
-    since_kst = now_kst - timedelta(days=days)
-    yf_symbol = map_to_yfinance(normalized) or normalized
-    is_korean = normalized.isdigit() and len(normalized) == 6
-    is_us = _is_us_symbol(normalized, yf_symbol)
+def _fetch_sec_filings_cached(
+    ticker_client: Any,
+    yf_symbol: str,
+    since_kst: datetime,
+    now_kst: datetime,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    key = ("sec_filings", yf_symbol, *_window_cache_key_parts(since_kst, now_kst))
+    cached = _source_cache_get(key)
+    if cached is not None:
+        return cached
 
     filings_us: list[dict[str, Any]] = []
-    filings_kr: list[dict[str, Any]] = []
-    earnings_us: list[dict[str, Any]] = []
-    earnings_kr: list[dict[str, Any]] = []
-    transcripts_us_earnings: list[dict[str, Any]] = []
-    transcripts_us_corporate: list[dict[str, Any]] = []
-    news_items: list[dict[str, Any]] = []
-    notes: list[str] = []
     errors: list[str] = []
+    try:
+        sec_filings = _iter_filings(ticker_client.get_sec_filings())
+        for filing in sec_filings:
+            form = str(filing.get("type") or filing.get("form") or "").upper().strip()
+            if form not in US_SEC_FORMS:
+                continue
+            dt_kst = _to_kst(_parse_datetime(filing.get("date") or filing.get("epochDate")))
+            if not dt_kst or dt_kst < since_kst or dt_kst > now_kst:
+                continue
+            title = str(filing.get("title") or f"{form} filing").strip()
+            url = _normalize_url(
+                str(filing.get("edgarUrl") or filing.get("link") or filing.get("url") or "").strip()
+            )
+            filings_us.append({
+                "kind": form,
+                "title": title,
+                "occurred_at_kst": dt_kst.isoformat(),
+                "source": "SEC / Yahoo Finance",
+                "url": url,
+            })
+    except Exception as exc:
+        LOG.warning("sec_filings fetch failed for %s: %s", yf_symbol, exc)
+        errors.append(f"SEC filings unavailable: {exc}")
 
-    ticker_client = yf.Ticker(yf_symbol)
+    result = (filings_us, errors)
+    _source_cache_set(key, result, _source_cache_ttl(errors=errors))
+    return result
 
-    # SEC filings (US only in Yahoo data)
-    if is_us:
-        try:
-            sec_filings = _iter_filings(ticker_client.get_sec_filings())
-            for filing in sec_filings:
-                form = str(filing.get("type") or filing.get("form") or "").upper().strip()
-                if form not in US_SEC_FORMS:
-                    continue
-                dt_kst = _to_kst(_parse_datetime(filing.get("date") or filing.get("epochDate")))
+
+def _fetch_dart_disclosures_cached(
+    ticker: str,
+    since_kst: datetime,
+    now_kst: datetime,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str], list[str]]:
+    key = ("dart_disclosures", ticker, *_window_cache_key_parts(since_kst, now_kst))
+    cached = _source_cache_get(key)
+    if cached is not None:
+        return cached
+
+    result = _fetch_dart_disclosures(
+        ticker=ticker,
+        since_kst=since_kst,
+        now_kst=now_kst,
+    )
+    _filings_kr, _earnings_kr, notes, errors = result
+    _source_cache_set(key, result, _source_cache_ttl(errors=errors, notes=notes))
+    return result
+
+
+def _fetch_earnings_dates_cached(
+    ticker_client: Any,
+    yf_symbol: str,
+    since_kst: datetime,
+    now_kst: datetime,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    key = ("earnings_dates", yf_symbol, *_window_cache_key_parts(since_kst, now_kst))
+    cached = _source_cache_get(key)
+    if cached is not None:
+        return cached
+
+    earnings_us: list[dict[str, Any]] = []
+    errors: list[str] = []
+    try:
+        earnings_df = ticker_client.get_earnings_dates(limit=20, offset=0)
+        if earnings_df is not None and hasattr(earnings_df, "iterrows"):
+            for idx, row in earnings_df.iterrows():
+                dt_kst = _to_kst(_parse_datetime(idx))
                 if not dt_kst or dt_kst < since_kst or dt_kst > now_kst:
                     continue
-                title = str(filing.get("title") or f"{form} filing").strip()
-                url = _normalize_url(
-                    str(filing.get("edgarUrl") or filing.get("link") or filing.get("url") or "").strip()
-                )
-                filings_us.append({
-                    "kind": form,
-                    "title": title,
+                eps_est = row.get("EPS Estimate") if hasattr(row, "get") else None
+                eps_rep = row.get("Reported EPS") if hasattr(row, "get") else None
+                surprise = row.get("Surprise(%)") if hasattr(row, "get") else None
+                item = {
+                    "title": "실적 발표(Earnings)",
                     "occurred_at_kst": dt_kst.isoformat(),
-                    "source": "SEC / Yahoo Finance",
-                    "url": url,
-                })
-        except Exception as exc:
-            LOG.warning("sec_filings fetch failed for %s: %s", yf_symbol, exc)
-            errors.append(f"SEC filings unavailable: {exc}")
+                    "source": "Yahoo Finance Earnings Calendar",
+                    "eps_estimate": None if eps_est is None else str(eps_est),
+                    "eps_reported": None if eps_rep is None else str(eps_rep),
+                    "surprise_pct": None if surprise is None else str(surprise),
+                    "url": _normalize_url(f"/calendar/earnings?symbol={yf_symbol}"),
+                }
+                earnings_us.append(item)
+    except Exception as exc:
+        LOG.warning("earnings_dates fetch failed for %s: %s", yf_symbol, exc)
+        errors.append(f"Earnings calendar unavailable: {exc}")
 
-    if is_korean:
-        kr_filings, kr_earnings, kr_notes, kr_errors = _fetch_dart_disclosures(
-            ticker=normalized,
-            since_kst=since_kst,
-            now_kst=now_kst,
-        )
-        filings_kr.extend(kr_filings)
-        earnings_kr.extend(kr_earnings)
-        notes.extend(kr_notes)
-        errors.extend(kr_errors)
-    elif is_us:
-        notes.append("미국 공시는 SEC 20-F/10-K/10-Q/8-K/6-K 기준으로 최근 1개월만 제공합니다.")
+    result = (earnings_us, errors)
+    _source_cache_set(key, result, _source_cache_ttl(errors=errors))
+    return result
 
-    # Earnings dates (US only from Yahoo earnings calendar)
-    if is_us:
-        try:
-            earnings_df = ticker_client.get_earnings_dates(limit=20, offset=0)
-            if earnings_df is not None and hasattr(earnings_df, "iterrows"):
-                for idx, row in earnings_df.iterrows():
-                    dt_kst = _to_kst(_parse_datetime(idx))
-                    if not dt_kst or dt_kst < since_kst or dt_kst > now_kst:
-                        continue
-                    eps_est = row.get("EPS Estimate") if hasattr(row, "get") else None
-                    eps_rep = row.get("Reported EPS") if hasattr(row, "get") else None
-                    surprise = row.get("Surprise(%)") if hasattr(row, "get") else None
-                    item = {
-                        "title": "실적 발표(Earnings)",
-                        "occurred_at_kst": dt_kst.isoformat(),
-                        "source": "Yahoo Finance Earnings Calendar",
-                        "eps_estimate": None if eps_est is None else str(eps_est),
-                        "eps_reported": None if eps_rep is None else str(eps_rep),
-                        "surprise_pct": None if surprise is None else str(surprise),
-                        "url": _normalize_url(f"/calendar/earnings?symbol={yf_symbol}"),
-                    }
-                    earnings_us.append(item)
-        except Exception as exc:
-            LOG.warning("earnings_dates fetch failed for %s: %s", yf_symbol, exc)
-            errors.append(f"Earnings calendar unavailable: {exc}")
 
-    # News + transcript classification
+def _fetch_news_cached(
+    ticker_client: Any,
+    yf_symbol: str,
+    news_limit: int,
+    since_kst: datetime,
+    now_kst: datetime,
+    is_us: bool,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    key = ("news", yf_symbol, int(news_limit), bool(is_us), *_window_cache_key_parts(since_kst, now_kst))
+    cached = _source_cache_get(key)
+    if cached is not None:
+        return cached
+
+    news_items: list[dict[str, Any]] = []
+    transcripts_us_earnings: list[dict[str, Any]] = []
+    transcripts_us_corporate: list[dict[str, Any]] = []
+    errors: list[str] = []
+
     try:
         raw_news = ticker_client.get_news(count=news_limit, tab="all") or []
         for article in raw_news:
@@ -559,6 +625,96 @@ def get_instrument_insights(ticker: str, days: int = 30, news_limit: int = 40) -
     except Exception as exc:
         LOG.warning("news fetch failed for %s: %s", yf_symbol, exc)
         errors.append(f"News feed unavailable: {exc}")
+
+    result = (news_items, transcripts_us_earnings, transcripts_us_corporate, errors)
+    _source_cache_set(key, result, _source_cache_ttl(errors=errors))
+    return result
+
+
+def get_instrument_insights(ticker: str, days: int = 30, news_limit: int = 3) -> dict[str, Any]:
+    """
+    Build event/news insight payload for a single ticker.
+
+    Data window is recent `days` from now, filtered in KST.
+    """
+    normalized = _normalize_ticker(ticker)
+    if not normalized:
+        return {"status": "error", "message": "ticker is required"}
+
+    try:
+        import yfinance as yf
+    except Exception as exc:
+        LOG.warning("yfinance import failed: %s", exc)
+        return {"status": "error", "message": "market data source unavailable"}
+
+    days = max(7, min(int(days or 30), 90))
+    news_limit = max(1, min(int(news_limit or 3), 80))
+    now_kst = datetime.now(KST)
+    since_kst = now_kst - timedelta(days=days)
+    yf_symbol = map_to_yfinance(normalized) or normalized
+    is_korean = normalized.isdigit() and len(normalized) == 6
+    is_us = _is_us_symbol(normalized, yf_symbol)
+
+    filings_us: list[dict[str, Any]] = []
+    filings_kr: list[dict[str, Any]] = []
+    earnings_us: list[dict[str, Any]] = []
+    earnings_kr: list[dict[str, Any]] = []
+    transcripts_us_earnings: list[dict[str, Any]] = []
+    transcripts_us_corporate: list[dict[str, Any]] = []
+    news_items: list[dict[str, Any]] = []
+    notes: list[str] = []
+    errors: list[str] = []
+
+    ticker_client = yf.Ticker(yf_symbol)
+
+    # SEC filings (US only in Yahoo data)
+    if is_us:
+        us_filings, us_filing_errors = _fetch_sec_filings_cached(
+            ticker_client=ticker_client,
+            yf_symbol=yf_symbol,
+            since_kst=since_kst,
+            now_kst=now_kst,
+        )
+        filings_us.extend(us_filings)
+        errors.extend(us_filing_errors)
+
+    if is_korean:
+        kr_filings, kr_earnings, kr_notes, kr_errors = _fetch_dart_disclosures_cached(
+            ticker=normalized,
+            since_kst=since_kst,
+            now_kst=now_kst,
+        )
+        filings_kr.extend(kr_filings)
+        earnings_kr.extend(kr_earnings)
+        notes.extend(kr_notes)
+        errors.extend(kr_errors)
+    elif is_us:
+        notes.append("미국 공시는 SEC 20-F/10-K/10-Q/8-K/6-K 기준으로 최근 1개월만 제공합니다.")
+
+    # Earnings dates (US only from Yahoo earnings calendar)
+    if is_us:
+        us_earnings, us_earnings_errors = _fetch_earnings_dates_cached(
+            ticker_client=ticker_client,
+            yf_symbol=yf_symbol,
+            since_kst=since_kst,
+            now_kst=now_kst,
+        )
+        earnings_us.extend(us_earnings)
+        errors.extend(us_earnings_errors)
+
+    # News + transcript classification
+    cached_news, cached_earnings_transcripts, cached_corporate_transcripts, news_errors = _fetch_news_cached(
+        ticker_client=ticker_client,
+        yf_symbol=yf_symbol,
+        news_limit=news_limit,
+        since_kst=since_kst,
+        now_kst=now_kst,
+        is_us=is_us,
+    )
+    news_items.extend(cached_news)
+    transcripts_us_earnings.extend(cached_earnings_transcripts)
+    transcripts_us_corporate.extend(cached_corporate_transcripts)
+    errors.extend(news_errors)
 
     return {
         "status": "ok",

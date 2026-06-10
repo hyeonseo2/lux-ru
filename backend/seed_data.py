@@ -83,8 +83,22 @@ _stock_data = [
     ("006400", "Samsung SDI", "삼성SDI", "KRX", "KRW", "KR", "Technology"),
     ("003670", "POSCO Holdings", "포스코홀딩스", "KRX", "KRW", "KR", "Basic Materials"),
     ("051910", "LG Chem", "LG화학", "KRX", "KRW", "KR", "Basic Materials"),
+    ("005940", "NH Investment & Securities", "NH투자증권", "KRX", "KRW", "KR", "Financial Services"),
+    ("086520", "Ecopro", "에코프로", "KOSDAQ", "KRW", "KR", "Basic Materials"),
+    ("247540", "Ecopro BM", "에코프로비엠", "KOSDAQ", "KRW", "KR", "Industrials"),
     ("028260", "Samsung C&T", "삼성물산", "KRX", "KRW", "KR", "Industrials"),
     ("012330", "Hyundai Mobis", "현대모비스", "KRX", "KRW", "KR", "Consumer Cyclical"),
+    ("042700", "Hanmi Semiconductor", "한미반도체", "KRX", "KRW", "KR", "Technology"),
+    ("058470", "Leeno Industrial", "리노공업", "KOSDAQ", "KRW", "KR", "Technology"),
+    ("000990", "DB HiTek", "DB하이텍", "KRX", "KRW", "KR", "Technology"),
+    ("095340", "ISC", "ISC", "KOSDAQ", "KRW", "KR", "Technology"),
+    ("403870", "HPSP", "HPSP", "KOSDAQ", "KRW", "KR", "Technology"),
+    ("357780", "Soulbrain", "솔브레인", "KOSDAQ", "KRW", "KR", "Technology"),
+    ("240810", "Wonik IPS", "원익IPS", "KOSDAQ", "KRW", "KR", "Technology"),
+    ("005290", "Dongjin Semichem", "동진쎄미켐", "KOSDAQ", "KRW", "KR", "Technology"),
+    ("108320", "LX Semicon", "LX세미콘", "KRX", "KRW", "KR", "Technology"),
+    ("039030", "EO Technics", "이오테크닉스", "KOSDAQ", "KRW", "KR", "Technology"),
+    ("036930", "Jusung Engineering", "주성엔지니어링", "KOSDAQ", "KRW", "KR", "Technology"),
     # Bond proxy — yfinance에는 없는 분류이지만 시드 전용. 기본 매핑은 "기타".
     ("BOND_KR", "Korea Treasury Bond", "한국 국채", "KRX", "KRW", "KR", "Fixed Income"),
     ("BOND_US", "US Treasury Bond", "미국 국채", "NYSE", "USD", "US", "Fixed Income"),
@@ -120,6 +134,7 @@ _etf_data = [
     ("360750", "TIGER 미국S&P500", "TIGER US S&P500", "KRX", "KRW", "KR", "미래에셋자산운용"),
     ("133690", "TIGER 미국나스닥100", "TIGER US NASDAQ100", "KRX", "KRW", "KR", "미래에셋자산운용"),
     ("069500", "KODEX 200", "KODEX 200", "KRX", "KRW", "KR", "삼성자산운용"),
+    ("091160", "KODEX 반도체", "KODEX Semiconductor", "KRX", "KRW", "KR", "삼성자산운용"),
     ("379800", "KODEX 미국S&P500TR", "KODEX US S&P500TR", "KRX", "KRW", "KR", "삼성자산운용"),
     ("273130", "KODEX 종합채권(AA-이상)액티브", "KODEX Active Bond", "KRX", "KRW", "KR", "삼성자산운용"),
     ("SPY", "SPDR S&P 500 ETF Trust", "SPY", "NYSE", "USD", "US", "State Street"),
@@ -228,6 +243,33 @@ ETF_HOLDINGS[_id("etf.069500")] = HoldingSnapshot(
     source="seed_data", coverage=Coverage.FULL, confidence=Decimal("0.95"),
 )
 
+# KODEX 반도체 (091160) — KRX PDF 실패 시 사용하는 fallback.
+_kodex_semiconductor_top = [
+    ("005930", 0.2800, "Technology", "KR", "KRW"),
+    ("000660", 0.2300, "Technology", "KR", "KRW"),
+    ("042700", 0.1200, "Technology", "KR", "KRW"),
+    ("058470", 0.0600, "Technology", "KR", "KRW"),
+    ("000990", 0.0500, "Technology", "KR", "KRW"),
+    ("095340", 0.0500, "Technology", "KR", "KRW"),
+    ("403870", 0.0400, "Technology", "KR", "KRW"),
+    ("357780", 0.0400, "Technology", "KR", "KRW"),
+    ("240810", 0.0300, "Technology", "KR", "KRW"),
+    ("005290", 0.0300, "Technology", "KR", "KRW"),
+    ("108320", 0.0300, "Technology", "KR", "KRW"),
+    ("039030", 0.0200, "Technology", "KR", "KRW"),
+    ("036930", 0.0200, "Technology", "KR", "KRW"),
+]
+_kodex_semiconductor_sum = sum(w for _, w, _, _, _ in _kodex_semiconductor_top)
+ETF_HOLDINGS[_id("etf.091160")] = HoldingSnapshot(
+    product_instrument_id=_id("etf.091160"),
+    as_of_date=date(2026, 5, 8),
+    holdings=[
+        _h(s, w / _kodex_semiconductor_sum, sec, ctry, ccy)
+        for s, w, sec, ctry, ccy in _kodex_semiconductor_top
+    ],
+    source="seed_data", coverage=Coverage.PARTIAL, confidence=Decimal("0.85"),
+)
+
 # KODEX 미국S&P500TR (379800) — same as SP500 tracker
 ETF_HOLDINGS[_id("etf.379800")] = HoldingSnapshot(
     product_instrument_id=_id("etf.379800"),
@@ -307,6 +349,8 @@ SYMBOL_TO_ETF["TIGER미국나스닥100"] = _id("etf.133690")
 SYMBOL_TO_ETF["KODEX200"] = _id("etf.069500")
 SYMBOL_TO_ETF["KODEX 200"] = _id("etf.069500")
 SYMBOL_TO_ETF["KOSPI200"] = _id("etf.069500")
+SYMBOL_TO_ETF["KODEX반도체"] = _id("etf.091160")
+SYMBOL_TO_ETF["KODEX 반도체"] = _id("etf.091160")
 SYMBOL_TO_ETF["KODEX미국S&P500TR"] = _id("etf.379800")
 SYMBOL_TO_ETF["KODEX종합채권"] = _id("etf.273130")
 SYMBOL_TO_ETF["KODEX종합채권액티브"] = _id("etf.273130")

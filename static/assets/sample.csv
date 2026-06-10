@@ -2,6 +2,7 @@ account,broker,product_name,short_code,quantity,avg_price,market_value,currency
 일반계좌,미래에셋,TIGER 미국S&P500,360750,150,18000,2700000,KRW
 일반계좌,미래에셋,TIGER 미국나스닥100,133690,80,95000,7600000,KRW
 연금저축,키움,KODEX 200,069500,200,32000,6400000,KRW
+일반계좌,미래에셋,삼성전자,005930,20,62000,1240000,KRW
 연금저축,키움,KODEX 미국S&P500TR,379800,300,15000,4500000,KRW
 일반계좌,미래에셋,SPY,SPY,5,520,2600,USD
 일반계좌,미래에셋,QQQ,QQQ,4,470,1880,USD
