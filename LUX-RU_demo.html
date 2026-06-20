@@ -242,6 +242,7 @@ input,select{font-family:inherit}
 .agent.pink{background:var(--pink)} .agent.blue{background:var(--c-blue);color:#fff}
 .agent.cyan{background:var(--cyan)} .agent.tan{background:var(--tan);color:#fff}
 .agent.mint{background:#b8f3df}
+.agent.lavender{background:#ddd6fe}
 .agent .deco{position:absolute;right:-30px;bottom:-30px;width:140px;height:140px;border-radius:50%;
   border:2px solid currentColor;opacity:.28}
 .agent .deco2{position:absolute;right:14px;bottom:14px;width:80px;height:80px;border-radius:50%;
@@ -289,6 +290,26 @@ input,select{font-family:inherit}
 .q-result{text-align:center;padding:10px 0}
 .q-result .em{font-size:42px} .q-result .rt{font-size:22px;font-weight:800;margin-top:8px;letter-spacing:-.02em}
 .q-result .rd{color:var(--muted);margin-top:10px;font-size:14px;line-height:1.6}
+
+/* 만세력 투자 리듬 분석 */
+.modal.saju-modal{max-width:760px}
+.saju-form{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--bg-soft)}
+.saju-form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+.saju-field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:7px}
+.saju-note{border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-top:12px}
+.saju-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.saju-pillar{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;text-align:center}
+.saju-pillar .l{font-size:11px;color:var(--muted);font-weight:700}
+.saju-pillar .gan{font-size:22px;font-weight:900;margin-top:6px}.saju-pillar .zhi{font-size:22px;font-weight:900}
+.saju-pillar .meta{font-size:11.5px;color:var(--muted);margin-top:5px}
+.saju-bars{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.saju-bar .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}.saju-bar .top b{font-weight:800}
+.saju-bar .track{height:8px;border-radius:999px;background:var(--line-2);overflow:hidden}.saju-bar .track i{display:block;height:100%;border-radius:999px}
+.saju-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.saju-tags span{border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;font-size:12px;font-weight:700;color:var(--ink-2)}
+.saju-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.saju-stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.saju-stat .l{font-size:11px;color:var(--muted)}.saju-stat .v{font-weight:800;margin-top:4px}
+@media(max-width:640px){.saju-form-grid,.saju-pillars,.saju-stat-grid{grid-template-columns:1fr}}
 
 /* 손절·존버 미니게임 */
 .modal.trade-modal{max-width:760px}
@@ -523,7 +544,7 @@ input,select{font-family:inherit}
   <!-- ============ STEP 3 · 검사 ============ -->
   <section class="step-panel" id="panel-3">
     <div class="kicker">검사 · 투자 성향 진단</div>
-    <h1 class="display"><span class="g">5개의 진단 에이전트</span>가<br>당신을 진단합니다.</h1>
+    <h1 class="display"><span class="g">6개의 진단 에이전트</span>가<br>당신을 진단합니다.</h1>
     <p class="lead">숫자만으로는 보이지 않는 당신의 투자 본능을 검사합니다. 각 블록은 독립된 에이전트예요.
       카드를 눌러 가볍게 답해 보세요. 결과는 마지막 솔루션의 근거가 됩니다.</p>
 
@@ -1376,14 +1397,15 @@ function initStep2(){
 }
 
 /* ============================================================
-   STEP 3 — 투자 성향 검사 (4 에이전트)
+   STEP 3 — 투자 성향 검사 (6 에이전트)
    ============================================================ */
 const AGENTS=[
   {key:"master",cls:"pink",ai:"Agent 01",nm:"투자대가와의 상담",ds:"네 명의 거장 중 누구와 가장 통하나요. 대화로 투자 철학을 가늠합니다."},
   {key:"risk",cls:"blue",ai:"Agent 02",nm:"위험 감수 성향 테스트",ds:"손실 앞에서 당신은 어떤 사람인가요. 변동성 내성을 점수화합니다."},
   {key:"balance",cls:"cyan",ai:"Agent 03",nm:"밸런스 게임",ds:"둘 중 하나만. 직감으로 고르는 양자택일로 우선순위를 읽습니다."},
   {key:"bias",cls:"tan",ai:"Agent 04",nm:"행동재무 편향 진단",ds:"손실회피·확증편향·군중심리. 무의식적 투자 습관을 진단합니다."},
-  {key:"trade",cls:"mint",ai:"Agent 05",nm:"손절·존버 미니게임",ds:"10초 매매 챌린지로 손절, 익절, 관망의 실제 반응을 측정합니다.",game:true}
+  {key:"trade",cls:"mint",ai:"Agent 05",nm:"손절·존버 미니게임",ds:"10초 매매 챌린지로 손절, 익절, 관망의 실제 반응을 측정합니다.",game:true},
+  {key:"saju",cls:"lavender",ai:"Agent 06",nm:"만세력 투자 리듬 분석",ds:"생년월일과 출생시간으로 오행·십성 리듬을 투자 습관 언어로 해석합니다.",saju:true}
 ];
 const QUIZZES={
   master:{q:[
@@ -1465,6 +1487,7 @@ function renderAgents(){
   document.querySelectorAll("[data-agent]").forEach(c=>c.onclick=()=>{
     const key=c.dataset.agent;
     if(AGENTS.find(a=>a.key===key)?.game)openTradeGame();
+    else if(AGENTS.find(a=>a.key===key)?.saju)openSajuAnalysis();
     else openQuiz(key);
   });
   renderProfile();
@@ -1475,12 +1498,13 @@ function renderProfile(){
   if(done<1){card.style.display="none";state.profile=null;return;}
   card.style.display="";
   // 프로필 합성
-  const risk=state.tests.risk, bal=state.tests.balance, bias=state.tests.bias, master=state.tests.master, trade=state.tests.trade;
+  const risk=state.tests.risk, bal=state.tests.balance, bias=state.tests.bias, master=state.tests.master, trade=state.tests.trade, saju=state.tests.saju;
   let title=[];
   if(bal)title.push(bal.key==="growth"?"성장추구":"안정지향");
   if(risk)title.push(risk.key==="hi"?"고위험감내":risk.key==="lo"?"손실회피":"위험중립");
   if(bias&&bias.key!=="none")title.push({loss:"손실회피편향",confirm:"확증편향",herd:"군중심리"}[bias.key]);
   if(trade)title.push({timing:"순발매매",discipline:"규칙실행",hold:"존버주의",loss:"손절보강",impulse:"충동주의",avoid:"관망형"}[trade.key]||"매매반응측정");
+  if(saju)title.push({growth:"성장확신",fire:"변동성추격",earth:"안정축적",metal:"원칙방어",water:"정보탐색",balanced:"균형조율"}[saju.key]||"만세력리듬");
   state.profile={
     title:title.join(" · ")||"균형형 투자자",
     risk:risk?.key,
@@ -1489,20 +1513,25 @@ function renderProfile(){
     master:master?.key,
     trade:trade?.key,
     tradeTitle:trade?.t,
-    tradeMetrics:trade?.metrics
+    tradeMetrics:trade?.metrics,
+    saju:saju?.key,
+    sajuTitle:saju?.t,
+    sajuMetrics:saju?.metrics
   };
   $("#profileTitle").textContent=state.profile.title+" 투자자";
-  $("#profileDesc").textContent=trade
-    ?"검사 결과와 손절·존버 미니게임의 실제 의사결정을 함께 반영한 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다."
+  $("#profileDesc").textContent=(trade||saju)
+    ?"검사 결과와 행동형 에이전트의 실제 반응, 만세력 기반 투자 리듬을 함께 반영한 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다."
     :"검사 결과를 종합한 당신의 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다.";
   const riskScore=risk?(risk.key==="hi"?85:risk.key==="mid"?55:25):50;
   const divNeed=bal?(bal.key==="stable"?80:45):60;
   const tradeControl=trade?.metrics?.stopDiscipline??50;
+  const sajuBalance=saju?.metrics?.balanceScore??50;
   const traits=[
     {l:"위험 감수도",v:risk?risk.t.split(" · ")[0]:"미검사",m:riskScore},
     {l:"분산 선호",v:bal?(bal.key==="stable"?"높음":"낮음"):"미검사",m:divNeed},
     {l:"행동 편향",v:bias?bias.t.split(" ")[0]:"미검사",m:bias?(bias.key==="none"?20:70):50},
-    {l:"손절·존버 통제",v:trade?trade.t:"미검사",m:tradeControl}
+    {l:"손절·존버 통제",v:trade?trade.t:"미검사",m:tradeControl},
+    {l:"만세력 리듬",v:saju?saju.t:"미검사",m:sajuBalance}
   ];
   $("#profileTraits").innerHTML=traits.map(t=>`<div class="trait">
     <div class="l">${t.l}</div><div class="v">${t.v}</div>
@@ -1511,7 +1540,7 @@ function renderProfile(){
 let quizState=null;
 function openQuiz(key){
   stopTradeGame();
-  $("#modal").classList.remove("trade-modal");
+  $("#modal").classList.remove("trade-modal","saju-modal");
   const ag=AGENTS.find(a=>a.key===key), qz=QUIZZES[key];
   delete state.tests[key]; // 재검사 시작 — 이전 결과/배지 초기화
   quizState={key,qz,i:0,answers:[]};
@@ -1566,11 +1595,267 @@ function computeQuizResult(key,answers,qz){
 function closeQuiz(){
   stopTradeGame();
   $("#modalBg").classList.remove("open");
-  $("#modal").classList.remove("trade-modal");
+  $("#modal").classList.remove("trade-modal","saju-modal");
   renderAgents();
 }
 function initStep3(){
   $("#modalBg").onclick=e=>{if(e.target===$("#modalBg"))closeQuiz();};
+}
+
+/* 만세력 투자 리듬 분석 */
+const SAJU_GANS=[
+  {h:"甲",k:"갑",element:"목",pol:"yang"},{h:"乙",k:"을",element:"목",pol:"yin"},
+  {h:"丙",k:"병",element:"화",pol:"yang"},{h:"丁",k:"정",element:"화",pol:"yin"},
+  {h:"戊",k:"무",element:"토",pol:"yang"},{h:"己",k:"기",element:"토",pol:"yin"},
+  {h:"庚",k:"경",element:"금",pol:"yang"},{h:"辛",k:"신",element:"금",pol:"yin"},
+  {h:"壬",k:"임",element:"수",pol:"yang"},{h:"癸",k:"계",element:"수",pol:"yin"}
+];
+const SAJU_ZHIS=[
+  {h:"子",k:"자",element:"수",animal:"쥐",main:"癸"},{h:"丑",k:"축",element:"토",animal:"소",main:"己"},
+  {h:"寅",k:"인",element:"목",animal:"호랑이",main:"甲"},{h:"卯",k:"묘",element:"목",animal:"토끼",main:"乙"},
+  {h:"辰",k:"진",element:"토",animal:"용",main:"戊"},{h:"巳",k:"사",element:"화",animal:"뱀",main:"丙"},
+  {h:"午",k:"오",element:"화",animal:"말",main:"丁"},{h:"未",k:"미",element:"토",animal:"양",main:"己"},
+  {h:"申",k:"신",element:"금",animal:"원숭이",main:"庚"},{h:"酉",k:"유",element:"금",animal:"닭",main:"辛"},
+  {h:"戌",k:"술",element:"토",animal:"개",main:"戊"},{h:"亥",k:"해",element:"수",animal:"돼지",main:"壬"}
+];
+const SAJU_ELEMENT_ORDER=["목","화","토","금","수"];
+const SAJU_ELEMENT_META={
+  목:{label:"성장·확장",color:"#16a34a"},
+  화:{label:"속도·반응",color:"#e5484d"},
+  토:{label:"축적·안정",color:"#b45309"},
+  금:{label:"규칙·절제",color:"#64748b"},
+  수:{label:"정보·탐색",color:"#2563eb"}
+};
+const SAJU_TEN_LABELS=["비겁","식상","재성","관성","인성"];
+const mod=(n,m)=>((n%m)+m)%m;
+function ganByHanja(h){return SAJU_GANS.findIndex(g=>g.h===h);}
+function pillarFrom(stemIndex,branchIndex,label){
+  const stem=SAJU_GANS[mod(stemIndex,10)], branch=SAJU_ZHIS[mod(branchIndex,12)];
+  return {label,stemIndex:mod(stemIndex,10),branchIndex:mod(branchIndex,12),stem,branch};
+}
+function parseDateParts(value){
+  const m=String(value||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m)return null;
+  return {y:+m[1],m:+m[2],d:+m[3]};
+}
+function addDaysParts(parts,days){
+  const dt=new Date(parts.y,parts.m-1,parts.d+days);
+  return {y:dt.getFullYear(),m:dt.getMonth()+1,d:dt.getDate()};
+}
+function julianDayNumber(y,m,d){
+  const a=Math.floor((14-m)/12);
+  const yy=y+4800-a;
+  const mm=m+12*a-3;
+  return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;
+}
+function computeYearPillar(parts){
+  let y=parts.y;
+  if(parts.m<2||(parts.m===2&&parts.d<4))y--; // 입춘 근사
+  return pillarFrom(y-4,y-4,"연주");
+}
+function computeMonthPillar(parts,yearStemIndex){
+  const after=(m,d)=>parts.m>m||(parts.m===m&&parts.d>=d);
+  let monthIndex=10; // 자월
+  if(after(2,4))monthIndex=0;
+  if(after(3,6))monthIndex=1;
+  if(after(4,5))monthIndex=2;
+  if(after(5,6))monthIndex=3;
+  if(after(6,6))monthIndex=4;
+  if(after(7,7))monthIndex=5;
+  if(after(8,8))monthIndex=6;
+  if(after(9,8))monthIndex=7;
+  if(after(10,8))monthIndex=8;
+  if(after(11,7))monthIndex=9;
+  if(after(12,7))monthIndex=10;
+  if(parts.m===1&&after(1,6))monthIndex=11; // 축월
+  const monthBranches=[2,3,4,5,6,7,8,9,10,11,0,1]; // 인월부터 축월
+  const startStem={0:2,5:2,1:4,6:4,2:6,7:6,3:8,8:8,4:0,9:0}[yearStemIndex];
+  return pillarFrom(startStem+monthIndex,monthBranches[monthIndex],"월주");
+}
+function computeDayPillar(parts,hour){
+  const dayParts=hour>=23?addDaysParts(parts,1):parts;
+  const jdn=julianDayNumber(dayParts.y,dayParts.m,dayParts.d);
+  return pillarFrom(jdn+49,jdn+49,"일주");
+}
+function computeHourPillar(hour,dayStemIndex){
+  if(hour==null)return null;
+  const branchIndex=Math.floor((hour+1)/2)%12;
+  const startStem={0:0,5:0,1:2,6:2,2:4,7:4,3:6,8:6,4:8,9:8}[dayStemIndex];
+  return pillarFrom(startStem+branchIndex,branchIndex,"시주");
+}
+function tenGodGroup(dayStem,otherStem){
+  const a=SAJU_GANS[dayStem], b=SAJU_GANS[otherStem];
+  const ai=SAJU_ELEMENT_ORDER.indexOf(a.element), bi=SAJU_ELEMENT_ORDER.indexOf(b.element);
+  if(ai===bi)return "비겁";
+  if((ai+1)%5===bi)return "식상";
+  if((ai+2)%5===bi)return "재성";
+  if((bi+2)%5===ai)return "관성";
+  if((bi+1)%5===ai)return "인성";
+  return "기타";
+}
+function dayStrengthLabel(score){
+  if(score>=68)return "강한 일간";
+  if(score>=42)return "균형 일간";
+  return "약한 일간";
+}
+function computeSajuAnalysis({date,time,calendar}){
+  const parts=parseDateParts(date);
+  if(!parts)throw new Error("생년월일을 입력해 주세요.");
+  const hour=time?Number(String(time).split(":")[0]):null;
+  const year=computeYearPillar(parts);
+  const month=computeMonthPillar(parts,year.stemIndex);
+  const day=computeDayPillar(parts,hour??12);
+  const hourP=computeHourPillar(hour,day.stemIndex);
+  const pillars=[year,month,day,hourP].filter(Boolean);
+  const elementCounts=Object.fromEntries(SAJU_ELEMENT_ORDER.map(e=>[e,0]));
+  pillars.forEach(p=>{
+    elementCounts[p.stem.element]+=1.1;
+    elementCounts[p.branch.element]+=1;
+  });
+  const totalElements=Object.values(elementCounts).reduce((a,b)=>a+b,0)||1;
+  const elementRows=SAJU_ELEMENT_ORDER.map(e=>({
+    key:e,
+    label:SAJU_ELEMENT_META[e].label,
+    color:SAJU_ELEMENT_META[e].color,
+    value:elementCounts[e],
+    pct:elementCounts[e]/totalElements*100
+  })).sort((a,b)=>b.value-a.value);
+  const dominant=elementRows[0], second=elementRows[1];
+  const tenCounts=Object.fromEntries(SAJU_TEN_LABELS.map(e=>[e,0]));
+  const stemSources=[year.stemIndex,month.stemIndex,hourP?.stemIndex].filter(v=>v!=null);
+  const branchMainSources=pillars.map(p=>ganByHanja(p.branch.main)).filter(v=>v>=0);
+  stemSources.forEach(st=>tenCounts[tenGodGroup(day.stemIndex,st)]+=1);
+  branchMainSources.forEach(st=>tenCounts[tenGodGroup(day.stemIndex,st)]+=0.7);
+  const tenRows=SAJU_TEN_LABELS.map(k=>({key:k,value:tenCounts[k]})).sort((a,b)=>b.value-a.value);
+  const supportive=elementCounts[day.stem.element]+elementCounts[SAJU_ELEMENT_ORDER[mod(SAJU_ELEMENT_ORDER.indexOf(day.stem.element)-1,5)]];
+  const dayStrength=clamp(supportive/totalElements*100,10,95);
+  const spread=elementRows.reduce((s,row)=>s+Math.abs(row.pct-20),0);
+  const balanceScore=clamp(100-spread*1.45,15,95);
+  const wealth=tenCounts["재성"]||0, output=tenCounts["식상"]||0, officer=tenCounts["관성"]||0, resource=tenCounts["인성"]||0, peer=tenCounts["비겁"]||0;
+  const concentrationRisk=clamp(dominant.pct*1.35+peer*8+wealth*4-balanceScore*.18,15,95);
+  const ruleAffinity=clamp((elementCounts["금"]/totalElements*100)+officer*12+balanceScore*.25,15,95);
+  const decisionDelay=clamp((elementCounts["수"]/totalElements*100)+resource*11+(dayStrength<42?12:0),10,95);
+  const growthDrive=clamp((elementCounts["목"]/totalElements*100)+(elementCounts["화"]/totalElements*100)*.65+output*10+wealth*6,10,95);
+  const stabilityNeed=clamp((elementCounts["토"]/totalElements*100)+resource*8+officer*6+(dayStrength<42?16:0),10,95);
+  let key=dominant.key==="목"?"growth":dominant.key==="화"?"fire":dominant.key==="토"?"earth":dominant.key==="금"?"metal":"water";
+  if(balanceScore>=76&&dominant.pct<31)key="balanced";
+  const catalog={
+    growth:{em:"🌱",t:"성장 확신형",d:"확장과 성장 서사에 빠르게 반응하는 리듬입니다. 좋은 기회를 포착하는 힘이 있지만, 한 산업이나 테마에 확신이 몰릴 때 목표 비중 규칙이 필요합니다."},
+    fire:{em:"🔥",t:"변동성 추격형",d:"가격 변화와 뉴스 흐름에 반응 속도가 빠른 리듬입니다. 단기 상승 구간에서는 추격 매수보다 기존 과집중을 먼저 점검하는 장치가 맞습니다."},
+    earth:{em:"⛰️",t:"안정 축적형",d:"자산을 쌓고 지키는 감각이 강한 리듬입니다. 안정 자산 선호는 장점이지만 성장 자산을 지나치게 늦게 편입하지 않도록 최소 비중 규칙이 필요합니다."},
+    metal:{em:"⚙️",t:"원칙 방어형",d:"규칙과 손절 기준을 세우는 데 강한 리듬입니다. 다만 기회 자체를 너무 엄격히 걸러낼 수 있어 분할 진입과 정기 리밸런싱이 잘 맞습니다."},
+    water:{em:"🌊",t:"정보 탐색형",d:"정보를 모으고 시나리오를 비교하는 데 강한 리듬입니다. 분석이 길어질수록 실행이 늦어질 수 있어 후보를 줄인 단순한 실행 규칙이 필요합니다."},
+    balanced:{em:"⚖️",t:"균형 조율형",d:"오행 흐름이 비교적 균형적이라 특정 투자 습관이 과하게 튀지 않습니다. 현재 포트폴리오의 실제 쏠림을 기준으로 담백하게 조정하는 방식이 적합합니다."}
+  };
+  return {
+    ...catalog[key],
+    key,
+    pillars:{year,month,day,hour:hourP},
+    elementRows,
+    tenRows,
+    metrics:{
+      dominantElement:dominant.key,
+      dominantLabel:dominant.label,
+      dominantPct:Math.round(dominant.pct),
+      secondElement:second.key,
+      balanceScore:Math.round(balanceScore),
+      dayStrength:Math.round(dayStrength),
+      dayStrengthLabel:dayStrengthLabel(dayStrength),
+      concentrationRisk:Math.round(concentrationRisk),
+      ruleAffinity:Math.round(ruleAffinity),
+      decisionDelay:Math.round(decisionDelay),
+      growthDrive:Math.round(growthDrive),
+      stabilityNeed:Math.round(stabilityNeed),
+      calendar
+    }
+  };
+}
+function openSajuAnalysis(){
+  stopTradeGame();
+  const ag=AGENTS.find(a=>a.key==="saju");
+  const prev=state.tests.saju;
+  const modal=$("#modal");
+  modal.classList.remove("trade-modal");
+  modal.classList.add("saju-modal");
+  modal.innerHTML=`<div class="modal-head"><div>
+      <div class="eyebrow">${ag.nm}</div>
+      <div class="muted small" style="margin-top:4px">만세력을 투자 예측이 아니라 의사결정 습관과 리스크 관리 언어로 해석합니다.</div></div>
+      <button class="close" id="sajuClose">×</button></div>
+    <div class="modal-body">
+      <div class="saju-form">
+        <div class="q-result" style="padding:0;text-align:left">
+          <div class="em" style="font-size:34px">🧭</div>
+          <div class="rt" style="font-size:20px">생년월일 기반 투자 리듬</div>
+          <div class="rd" style="text-align:left">연주·월주·일주·시주, 오행 분포, 십성 흐름을 계산해 현재 포트폴리오의 리밸런싱 코멘트에 반영합니다.</div>
+        </div>
+        <div class="saju-form-grid">
+          <div class="saju-field"><label for="sajuDate">생년월일</label><input class="inp" id="sajuDate" type="date"></div>
+          <div class="saju-field"><label for="sajuTime">출생시간</label><input class="inp" id="sajuTime" type="time"></div>
+          <div class="saju-field"><label for="sajuCalendar">날짜 기준</label><select class="inp" id="sajuCalendar"><option value="solar">양력</option><option value="lunar">음력/윤달은 양력 환산 후 입력 권장</option></select></div>
+          <div class="saju-field"><label>&nbsp;</label><button class="btn btn-dark btn-sm" id="sajuRun" style="width:100%;justify-content:center">만세력 분석</button></div>
+        </div>
+        <label class="small muted" style="display:flex;align-items:center;gap:7px;margin-top:12px">
+          <input type="checkbox" id="sajuTimeUnknown" style="width:15px;height:15px"> 출생시간 모름
+        </label>
+        <div class="saju-note">입력값은 브라우저 메모리에서만 분석하고 저장하지 않습니다. 본 분석은 투자 판단 습관을 돌아보기 위한 보조 해석이며 수익률이나 종목 상승을 예측하지 않습니다.</div>
+      </div>
+      ${prev?`<div class="trade-note" style="margin-top:12px"><b>저장된 결과</b><br>${escapeHtml(prev.t)} · 균형 점수 ${Math.round(prev.metrics?.balanceScore??0)}/100</div>`:""}
+    </div>`;
+  $("#sajuClose").onclick=closeQuiz;
+  $("#sajuTimeUnknown").onchange=e=>{$("#sajuTime").disabled=e.target.checked;};
+  $("#sajuRun").onclick=()=>{
+    try{
+      const date=$("#sajuDate").value;
+      const time=$("#sajuTimeUnknown").checked?null:($("#sajuTime").value||null);
+      const calendar=$("#sajuCalendar").value;
+      const result=computeSajuAnalysis({date,time,calendar});
+      state.tests.saju=result;
+      renderSajuResult(result);
+    }catch(err){
+      const note=$(".saju-note");
+      if(note)note.textContent=err.message||"만세력 분석을 진행하지 못했습니다.";
+    }
+  };
+  $("#modalBg").classList.add("open");
+}
+function renderSajuResult(result){
+  const modal=$("#modal"), m=result.metrics||{};
+  const pillars=[result.pillars.year,result.pillars.month,result.pillars.day,result.pillars.hour];
+  modal.classList.remove("trade-modal");
+  modal.classList.add("saju-modal");
+  modal.innerHTML=`<div class="modal-head"><div>
+      <div class="eyebrow">만세력 투자 리듬 결과</div>
+      <div class="muted small" style="margin-top:4px">절기 월 기준 간편 만세력 · ${m.calendar==="lunar"?"음력 입력은 양력 환산 권장":"양력 입력"}</div></div>
+      <button class="close" id="sajuClose">×</button></div>
+    <div class="modal-body">
+      <div class="q-result">
+        <div class="em">${result.em}</div><div class="rt">${escapeHtml(result.t)}</div>
+        <div class="rd">${escapeHtml(result.d)}</div>
+      </div>
+      <div class="saju-pillars">
+        ${pillars.map((p,i)=>p?`<div class="saju-pillar"><div class="l">${p.label}</div>
+          <div class="gan">${p.stem.h} <span style="font-size:13px">${p.stem.k}</span></div>
+          <div class="zhi">${p.branch.h} <span style="font-size:13px">${p.branch.k}</span></div>
+          <div class="meta">${p.stem.element} / ${p.branch.element} · ${p.branch.animal}</div></div>`
+          :`<div class="saju-pillar"><div class="l">${["연주","월주","일주","시주"][i]}</div><div class="gan">?</div><div class="zhi">미상</div><div class="meta">출생시간 미입력</div></div>`).join("")}
+      </div>
+      <div class="saju-bars">
+        ${result.elementRows.map(row=>`<div class="saju-bar"><div class="top"><b>${row.key} · ${row.label}</b><span>${row.pct.toFixed(0)}%</span></div>
+          <div class="track"><i style="width:${Math.max(4,row.pct)}%;background:${row.color}"></i></div></div>`).join("")}
+      </div>
+      <div class="saju-tags">${result.tenRows.slice(0,5).map(t=>`<span>${t.key} ${t.value.toFixed(1)}</span>`).join("")}</div>
+      <div class="saju-stat-grid">
+        <div class="saju-stat"><div class="l">주도 오행</div><div class="v">${m.dominantElement} · ${m.dominantLabel}</div></div>
+        <div class="saju-stat"><div class="l">일간 강약</div><div class="v">${m.dayStrengthLabel}</div></div>
+        <div class="saju-stat"><div class="l">집중 리스크</div><div class="v">${m.concentrationRisk}/100</div></div>
+        <div class="saju-stat"><div class="l">실행 지연</div><div class="v">${m.decisionDelay}/100</div></div>
+      </div>
+      <div class="saju-note">리밸런싱 반영: ${escapeHtml(sajuRebalanceSignal({saju:result.key}).comment)}</div>
+      <button class="btn btn-dark" id="sajuDone" style="width:100%;justify-content:center;margin-top:22px">결과 저장하고 닫기</button>
+      <button class="btn btn-ghost btn-sm" id="sajuRetry" style="width:100%;justify-content:center;margin-top:8px">다시 분석</button>
+    </div>`;
+  $("#sajuClose").onclick=$("#sajuDone").onclick=closeQuiz;
+  $("#sajuRetry").onclick=openSajuAnalysis;
 }
 
 /* 손절·존버 미니게임 */
@@ -1638,6 +1923,7 @@ function renderTradeIntro(){
   const ag=AGENTS.find(a=>a.key==="trade");
   const prev=state.tests.trade;
   const modal=$("#modal");
+  modal.classList.remove("saju-modal");
   modal.classList.add("trade-modal");
   modal.innerHTML=`<div class="modal-head"><div>
       <div class="eyebrow">${ag.nm}</div>
@@ -2118,18 +2404,32 @@ function tradeRebalanceSignal(profile){
   };
   return signals[key]?{active:true,...signals[key]}:{active:false,label:"미측정",targetAdj:0,sellCap:.55,defensive:false,short:"",comment:""};
 }
+function sajuRebalanceSignal(profile){
+  const key=profile?.saju;
+  const signals={
+    growth:{label:"성장 확신형",targetAdj:-3,sellCap:.62,defensive:true,short:"성장 확신 쏠림을 낮추는 목표 비중",comment:"만세력 리듬상 성장 확신형으로 해석되어, 성장·테마 자산은 유지하되 단일 종목과 섹터 목표 비중을 더 엄격하게 둡니다."},
+    fire:{label:"변동성 추격형",targetAdj:-4,sellCap:.66,defensive:true,short:"급등 추격을 줄이는 방어적 분산",comment:"만세력 리듬상 변동성 반응이 빠른 편이라, 신규 추격 매수보다 과집중 자산 축소와 방어 자산 보강을 우선합니다."},
+    earth:{label:"안정 축적형",targetAdj:1,sellCap:.50,defensive:true,short:"급격한 매도보다 완만한 분산",comment:"만세력 리듬상 안정 축적형으로 해석되어, 매도 강도는 낮추되 글로벌 주식과 채권의 균형을 통해 장기 축적 구조를 만듭니다."},
+    metal:{label:"원칙 방어형",targetAdj:0,sellCap:.48,defensive:false,short:"원칙형 분할 리밸런싱",comment:"만세력 리듬상 원칙 방어형으로 해석되어, 한 번에 큰 결정보다 정해진 비중에 맞춘 분할 조정이 잘 맞습니다."},
+    water:{label:"정보 탐색형",targetAdj:-2,sellCap:.58,defensive:true,short:"후보를 줄인 단순 실행 규칙",comment:"만세력 리듬상 정보 탐색형으로 해석되어, 복잡한 후보 확대보다 실행 가능한 ETF 중심의 단순한 리밸런싱을 우선합니다."},
+    balanced:{label:"균형 조율형",targetAdj:0,sellCap:.55,defensive:false,short:"현재 쏠림 기준의 균형 조정",comment:"만세력 리듬이 비교적 균형적이어서, 별도 과장 없이 현재 포트폴리오의 실제 쏠림을 기준으로 조정합니다."}
+  };
+  return signals[key]?{active:true,...signals[key]}:{active:false,label:"미측정",targetAdj:0,sellCap:.55,defensive:false,short:"",comment:""};
+}
 function buildSolutionPlan(analysis,profile){
   const p=profile||{title:"균형형 투자자",bal:"stable",risk:"mid"};
   const tradeSignal=tradeRebalanceSignal(p);
+  const sajuSignal=sajuRebalanceSignal(p);
   const baseAggressive=p.bal==="growth"||p.risk==="hi";
-  const aggressive=baseAggressive&&!tradeSignal.defensive;
-  const targetTop=clamp((baseAggressive?25:18)+tradeSignal.targetAdj,12,28);
+  const aggressive=baseAggressive&&!tradeSignal.defensive&&!sajuSignal.defensive;
+  const targetTop=clamp((baseAggressive?25:18)+tradeSignal.targetAdj+sajuSignal.targetAdj,12,28);
   const top=analysis.top;
   const cutPct=Math.max(0,top.weight-targetTop);
   const cutAmt=Math.round(analysis.total*cutPct/100);
   const contributors=topExposureContributors(analysis);
   const sellHolding=contributors[0]?.holding||state.holdings[0];
-  const sellAmt=Math.min(cutAmt, Math.round((sellHolding?.amount||0)*tradeSignal.sellCap));
+  const sellCap=Math.max(tradeSignal.sellCap,sajuSignal.sellCap);
+  const sellAmt=Math.min(cutAmt, Math.round((sellHolding?.amount||0)*sellCap));
   const buyModel=(aggressive?SOLUTION_BUY_MODELS.aggressive:SOLUTION_BUY_MODELS.stable);
   const buyActions=sellAmt>0?buyModel.map((b,idx)=>{
     const amt=idx===buyModel.length-1
@@ -2175,23 +2475,26 @@ function buildSolutionPlan(analysis,profile){
     sellHolding,
     buyActions,
     proposedPositions:Array.from(proposed.values()).filter(p=>p.amount>0),
-    tradeSignal
+    tradeSignal,
+    sajuSignal
   };
 }
 function renderSolutionActions(plan,analysis){
   const top=analysis.top;
-  const behaviorLine=plan.tradeSignal?.active
-    ? `<br><span style="color:var(--muted);font-size:12.5px">손절·존버 게임: ${escapeHtml(plan.tradeSignal.label)} · ${escapeHtml(plan.tradeSignal.comment)}</span>`
-    : "";
+  const signalShorts=[plan.tradeSignal?.active?plan.tradeSignal.short:"",plan.sajuSignal?.active?plan.sajuSignal.short:""].filter(Boolean);
+  const behaviorLines=[
+    plan.tradeSignal?.active?`손절·존버 게임: ${escapeHtml(plan.tradeSignal.label)} · ${escapeHtml(plan.tradeSignal.comment)}`:"",
+    plan.sajuSignal?.active?`만세력 분석: ${escapeHtml(plan.sajuSignal.label)} · ${escapeHtml(plan.sajuSignal.comment)}`:""
+  ].filter(Boolean).map(line=>`<br><span style="color:var(--muted);font-size:12.5px">${line}</span>`).join("");
   $("#solSummary").innerHTML=plan.sellAmt>0
-    ? `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중을 ${pc(top.weight)}에서 약 ${plan.targetTop}% 수준으로 낮추도록 재배치합니다.${behaviorLine}`
-    : `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중이 목표 범위 안에 있어 신규 매도 없이 분산 상태를 유지합니다.${behaviorLine}`;
+    ? `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중을 ${pc(top.weight)}에서 약 ${plan.targetTop}% 수준으로 낮추도록 재배치합니다.${behaviorLines}`
+    : `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중이 목표 범위 안에 있어 신규 매도 없이 분산 상태를 유지합니다.${behaviorLines}`;
   const actions=[];
   if(plan.sellAmt>0&&plan.sellHolding){
     actions.push({
       side:"sell",
       nm:plan.sellHolding.name,
-      rs:`${top.name} 과집중 완화 · ${plan.tradeSignal?.active?plan.tradeSignal.short+" · ":""}실질 ${pc(top.weight)} → 목표 ${plan.targetTop}%`,
+      rs:`${top.name} 과집중 완화 · ${signalShorts.length?signalShorts.join(" · ")+" · ":""}실질 ${pc(top.weight)} → 목표 ${plan.targetTop}%`,
       w:`-${plan.cutPct.toFixed(0)}%p`,
       amt:plan.sellAmt
     });
@@ -2229,7 +2532,11 @@ function renderBeforeAfter(plan,analysis){
 }
 function renderNewPortfolio(plan,analysis){
   $("#newPortTitle").textContent=plan.aggressive?"성장 균형 제안":"안정 분산 제안";
-  const tradeDesc=plan.tradeSignal?.active?` 손절·존버 결과(${plan.tradeSignal.label})를 반영했습니다.`:"";
+  const signalDesc=[
+    plan.tradeSignal?.active?`손절·존버 결과(${plan.tradeSignal.label})`:"",
+    plan.sajuSignal?.active?`만세력 분석(${plan.sajuSignal.label})`:""
+  ].filter(Boolean);
+  const tradeDesc=signalDesc.length?` ${signalDesc.join(" 및 ")}를 반영했습니다.`:"";
   $("#newPortDesc").textContent=plan.sellAmt>0
     ? "현재 보유 상품을 일부 축소하고, 실제 매수 가능한 ETF로 재배치한 제안 포트폴리오입니다."+tradeDesc
     : "현재 집중도 목표를 충족해 기존 포지션을 유지하는 제안 포트폴리오입니다."+tradeDesc;
