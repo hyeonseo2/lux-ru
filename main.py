@@ -45,18 +45,37 @@ app.include_router(chat.router)
 app.include_router(finlife.router)
 
 # Static files
-STATIC_DIR = Path(__file__).parent / "static"
+BASE_DIR = Path(__file__).parent
+STATIC_DIR = BASE_DIR / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 @app.get("/")
 async def root():
-    """Serve the SPA."""
+    """Serve the service selector."""
+    landing_path = STATIC_DIR / "landing.html"
+    if landing_path.exists():
+        return FileResponse(str(landing_path))
+    return await original_service()
+
+
+@app.get("/original")
+async def original_service():
+    """Serve the original LUX-RU service."""
     index_path = STATIC_DIR / "index.html"
     if index_path.exists():
         return FileResponse(str(index_path))
     return {"message": "LUX-RU API", "docs": "/docs"}
+
+
+@app.get("/demo")
+async def demo_service():
+    """Serve the demo-based LUX-RU wizard."""
+    demo_path = BASE_DIR / "LUX-RU_demo.html"
+    if demo_path.exists():
+        return FileResponse(str(demo_path))
+    return await original_service()
 
 
 @app.get("/health")

@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 import logging
 import time
 
+from .models import InstrumentType
 from .sector_labels import is_unknown_sector, normalize_sector_for_symbol
 from .seed_data import resolve_instrument, ALL_INSTRUMENTS
 from .symbol_normalizer import canonicalize_symbol, normalize_ticker
@@ -68,6 +69,20 @@ def _seed_holdings_for_ticker(ticker: str) -> List[Dict[str, Any]]:
             r["weight"] = r["weight"] / total_weight
 
     return result
+
+
+def _is_seed_direct_instrument(symbol: str) -> bool:
+    """Return True when seed metadata identifies a symbol as non-fund exposure."""
+    try:
+        instrument_id = resolve_instrument(symbol)
+        if not instrument_id:
+            return False
+        instrument = ALL_INSTRUMENTS.get(instrument_id)
+        if not instrument:
+            return False
+        return instrument.instrument_type not in {InstrumentType.ETF, InstrumentType.FUND}
+    except Exception:
+        return False
 
 
 def _krx_holdings_for_ticker(ticker: str) -> List[Dict[str, Any]]:
@@ -215,8 +230,28 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
         _log("DEBUG", "정규화", f"{idx}번: {ticker} / {int(amount):,}원 정규화 완료")
 
         # Determine if it's likely an ETF or stock.
-        # Domestic ETFs use KRX PDF first. US ETFs use yfinance crawler.
-        if is_krx_etf_symbol(ticker):
+        # Prefer bundled seed holdings for known demo/common ETFs so the
+        # user flow does not block on external data providers.
+        seed_holdings = _seed_holdings_for_ticker(ticker)
+        if seed_holdings:
+            holdings = seed_holdings
+            source = "seed"
+            source_metrics["seed"] += 1
+            _log(
+                "INFO",
+                "데이터 수집 (시드)",
+                f"{ticker}: 시드 데이터에서 상위 보유종목 {len(holdings)}개 조회",
+                {
+                    "ticker": ticker,
+                    "source": "seed_data",
+                    "count": len(holdings),
+                    "top": [h.get("holding_symbol") for h in holdings[:5]]
+                }
+            )
+        elif _is_seed_direct_instrument(ticker):
+            holdings = []
+            source = "direct"
+        elif is_krx_etf_symbol(ticker):
             krx_holdings = _krx_holdings_for_ticker(ticker)
             if krx_holdings:
                 holdings = krx_holdings
@@ -258,32 +293,15 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
                 source = ""
 
         if not holdings:
-            seed_holdings = _seed_holdings_for_ticker(ticker)
-            if seed_holdings:
-                holdings = seed_holdings
-                source = "seed"
-                source_metrics["seed"] += 1
-                _log(
-                    "INFO",
-                    "데이터 수집 (시드)",
-                    f"{ticker}: 시드 데이터에서 상위 보유종목 {len(holdings)}개 조회",
-                    {
-                        "ticker": ticker,
-                        "source": "seed_data",
-                        "count": len(holdings),
-                        "top": [h.get("holding_symbol") for h in holdings[:5]]
-                    }
-                )
-            else:
-                holdings = []
-                source = "direct"
-                source_metrics["direct"] += 1
-                _log("INFO", "데이터 수집 (직접종목)", f"{ticker}: 보유종목 미확보로 직접 보유로 처리")
-                _log(
-                    "DEBUG",
-                    "보유 비중 추정",
-                    f"{ticker}: 보유 금액 {int(amount):,}원을 직접 종목으로 100% 노출 반영"
-                )
+            holdings = []
+            source = "direct"
+            source_metrics["direct"] += 1
+            _log("INFO", "데이터 수집 (직접종목)", f"{ticker}: 보유종목 미확보로 직접 보유로 처리")
+            _log(
+                "DEBUG",
+                "보유 비중 추정",
+                f"{ticker}: 보유 금액 {int(amount):,}원을 직접 종목으로 100% 노출 반영"
+            )
 
         if holdings:
             # It's an ETF
