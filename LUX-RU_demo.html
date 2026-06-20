@@ -241,6 +241,7 @@ input,select{font-family:inherit}
 .agent:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
 .agent.pink{background:var(--pink)} .agent.blue{background:var(--c-blue);color:#fff}
 .agent.cyan{background:var(--cyan)} .agent.tan{background:var(--tan);color:#fff}
+.agent.mint{background:#b8f3df}
 .agent .deco{position:absolute;right:-30px;bottom:-30px;width:140px;height:140px;border-radius:50%;
   border:2px solid currentColor;opacity:.28}
 .agent .deco2{position:absolute;right:14px;bottom:14px;width:80px;height:80px;border-radius:50%;
@@ -255,7 +256,7 @@ input,select{font-family:inherit}
 .profile-card{margin-top:18px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .profile-head{background:var(--ink);color:#fff;padding:20px 24px;position:relative;overflow:hidden}
 .profile-head .glow{position:absolute;inset:auto auto -60% 30%;width:50%;height:170%;background:var(--grad);filter:blur(55px);opacity:.4}
-.profile-traits{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.profile-traits{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line)}
 .trait{background:#fff;padding:16px 18px} .trait .l{font-size:11.5px;color:var(--muted)}
 .trait .v{font-weight:700;margin-top:3px} .trait .meter{height:6px;border-radius:999px;background:var(--line-2);margin-top:8px;overflow:hidden}
 .trait .meter i{display:block;height:100%;background:var(--grad)}
@@ -288,6 +289,48 @@ input,select{font-family:inherit}
 .q-result{text-align:center;padding:10px 0}
 .q-result .em{font-size:42px} .q-result .rt{font-size:22px;font-weight:800;margin-top:8px;letter-spacing:-.02em}
 .q-result .rd{color:var(--muted);margin-top:10px;font-size:14px;line-height:1.6}
+
+/* 손절·존버 미니게임 */
+.modal.trade-modal{max-width:760px}
+.trade-intro{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--bg-soft)}
+.trade-rules{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.trade-rule{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px}
+.trade-rule b{display:block;font-size:13px}.trade-rule span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.trade-stock-row{display:flex;gap:8px;margin-top:16px}
+.trade-stock-row .inp{flex:1}
+.trade-quick{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.trade-quick button{border:1px solid var(--line-2);border-radius:999px;padding:6px 11px;font-size:12px;color:var(--ink-2);background:#fff}
+.trade-quick button:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.trade-game-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.trade-game-head .stock{font-size:18px;font-weight:800}.trade-game-head .asset{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:2px}
+.trade-rounds{display:flex;gap:6px;margin:12px 0}.trade-dot{height:5px;flex:1;border-radius:999px;background:var(--line-2)}
+.trade-dot.active{background:var(--warn)}.trade-dot.win{background:var(--good)}.trade-dot.loss{background:var(--bad)}
+.trade-timer-row{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--bg-soft)}
+.trade-timer{position:relative;width:82px;height:82px;flex:none}.trade-timer svg{width:100%;height:100%;transform:rotate(-90deg)}
+.trade-timer .bg{fill:none;stroke:#e4e4e7;stroke-width:8}.trade-timer .fg{fill:none;stroke:var(--good);stroke-width:8;stroke-linecap:round}
+.trade-timer .txt{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:20px;font-weight:800}
+.trade-instruction{font-weight:800}.trade-sub{color:var(--muted);font-size:12.5px;margin-top:3px}
+.trade-price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.trade-price{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;text-align:center}
+.trade-price .l{font-size:11px;color:var(--muted)}.trade-price .v{font-family:var(--mono);font-size:16px;font-weight:800;margin-top:3px}
+.trade-chart-wrap{position:relative;height:230px;border:1px solid var(--line);border-radius:16px;background:#0f172a;margin-top:12px;overflow:hidden}
+.trade-chart-wrap canvas{width:100%;height:100%;display:block}
+.trade-status{position:absolute;left:12px;top:12px;z-index:2;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;padding:5px 10px;font-size:12px;font-weight:700}
+.trade-heart{position:absolute;right:12px;top:12px;z-index:2;border-radius:999px;background:rgba(229,72,77,.16);color:#fecaca;padding:5px 10px;font-size:12px;font-family:var(--mono)}
+.trade-news{display:none;margin-top:10px;border-left:3px solid var(--warn);background:#fff7ed;border-radius:10px;padding:10px 12px;color:#92400e;font-size:12.5px}
+.trade-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.trade-action{border-radius:14px;padding:17px 12px;color:#fff;font-weight:800;font-size:16px;transition:.15s}
+.trade-action:hover:not(:disabled){transform:translateY(-1px)}.trade-action:disabled{opacity:.38;cursor:not-allowed;transform:none}
+.trade-buy{background:linear-gradient(135deg,#2563eb,#4f8dfd)}.trade-sell{background:linear-gradient(135deg,#e5484d,#be123c)}
+.trade-note{min-height:42px;margin-top:10px;border-radius:12px;background:var(--bg-soft);padding:11px 13px;color:var(--ink-2);font-size:12.5px;line-height:1.5}
+.trade-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.trade-stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.trade-stat .l{font-size:11px;color:var(--muted)}.trade-stat .v{font-weight:800;margin-top:4px}
+.trade-traits{display:flex;flex-direction:column;gap:10px;margin-top:16px}.trade-trait .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.trade-trait .track{height:7px;border-radius:999px;background:var(--line-2);overflow:hidden}.trade-trait .track i{display:block;height:100%;background:var(--grad)}
+@media(max-width:640px){
+  .trade-rules,.trade-price-grid,.trade-stat-grid{grid-template-columns:1fr}
+  .trade-game-head{flex-direction:column}.trade-timer-row{grid-template-columns:1fr}.trade-timer{margin:auto}
+}
 
 /* ====== STEP4 솔루션 ====== */
 .sol-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px}
@@ -480,7 +523,7 @@ input,select{font-family:inherit}
   <!-- ============ STEP 3 · 검사 ============ -->
   <section class="step-panel" id="panel-3">
     <div class="kicker">검사 · 투자 성향 진단</div>
-    <h1 class="display"><span class="g">4개의 진단 에이전트</span>가<br>당신을 진단합니다.</h1>
+    <h1 class="display"><span class="g">5개의 진단 에이전트</span>가<br>당신을 진단합니다.</h1>
     <p class="lead">숫자만으로는 보이지 않는 당신의 투자 본능을 검사합니다. 각 블록은 독립된 에이전트예요.
       카드를 눌러 가볍게 답해 보세요. 결과는 마지막 솔루션의 근거가 됩니다.</p>
 
@@ -670,6 +713,7 @@ const won=n=>{ // 원 → 사람이 읽는 한글 단위
   return n.toLocaleString();
 };
 const pc=n=>(Number.isFinite(n)?n:0).toFixed(1)+"%";
+const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const sectorColor=s=>SECTOR_COLORS[s]||"#90a4ae";
 const normalizeTicker=s=>String(s||"").trim().toUpperCase();
 const toNodeId=n=>typeof n==="string"?n:n?.id;
@@ -1338,7 +1382,8 @@ const AGENTS=[
   {key:"master",cls:"pink",ai:"Agent 01",nm:"투자대가와의 상담",ds:"네 명의 거장 중 누구와 가장 통하나요. 대화로 투자 철학을 가늠합니다."},
   {key:"risk",cls:"blue",ai:"Agent 02",nm:"위험 감수 성향 테스트",ds:"손실 앞에서 당신은 어떤 사람인가요. 변동성 내성을 점수화합니다."},
   {key:"balance",cls:"cyan",ai:"Agent 03",nm:"밸런스 게임",ds:"둘 중 하나만. 직감으로 고르는 양자택일로 우선순위를 읽습니다."},
-  {key:"bias",cls:"tan",ai:"Agent 04",nm:"행동재무 편향 진단",ds:"손실회피·확증편향·군중심리. 무의식적 투자 습관을 진단합니다."}
+  {key:"bias",cls:"tan",ai:"Agent 04",nm:"행동재무 편향 진단",ds:"손실회피·확증편향·군중심리. 무의식적 투자 습관을 진단합니다."},
+  {key:"trade",cls:"mint",ai:"Agent 05",nm:"손절·존버 미니게임",ds:"10초 매매 챌린지로 손절, 익절, 관망의 실제 반응을 측정합니다.",game:true}
 ];
 const QUIZZES={
   master:{q:[
@@ -1417,29 +1462,47 @@ function renderAgents(){
         :`<div class="go">시작하기 →</div>`}
     </div>`;
   }).join("");
-  document.querySelectorAll("[data-agent]").forEach(c=>c.onclick=()=>openQuiz(c.dataset.agent));
+  document.querySelectorAll("[data-agent]").forEach(c=>c.onclick=()=>{
+    const key=c.dataset.agent;
+    if(AGENTS.find(a=>a.key===key)?.game)openTradeGame();
+    else openQuiz(key);
+  });
   renderProfile();
 }
 function renderProfile(){
   const done=Object.keys(state.tests).length;
   const card=$("#profileCard");
-  if(done<2){card.style.display="none";return;}
+  if(done<1){card.style.display="none";state.profile=null;return;}
   card.style.display="";
   // 프로필 합성
-  const risk=state.tests.risk, bal=state.tests.balance, bias=state.tests.bias, master=state.tests.master;
+  const risk=state.tests.risk, bal=state.tests.balance, bias=state.tests.bias, master=state.tests.master, trade=state.tests.trade;
   let title=[];
   if(bal)title.push(bal.key==="growth"?"성장추구":"안정지향");
   if(risk)title.push(risk.key==="hi"?"고위험감내":risk.key==="lo"?"손실회피":"위험중립");
   if(bias&&bias.key!=="none")title.push({loss:"손실회피편향",confirm:"확증편향",herd:"군중심리"}[bias.key]);
-  state.profile={title:title.join(" · ")||"균형형 투자자",risk:risk?.key,bal:bal?.key,bias:bias?.key,master:master?.key};
+  if(trade)title.push({timing:"순발매매",discipline:"규칙실행",hold:"존버주의",loss:"손절보강",impulse:"충동주의",avoid:"관망형"}[trade.key]||"매매반응측정");
+  state.profile={
+    title:title.join(" · ")||"균형형 투자자",
+    risk:risk?.key,
+    bal:bal?.key,
+    bias:bias?.key,
+    master:master?.key,
+    trade:trade?.key,
+    tradeTitle:trade?.t,
+    tradeMetrics:trade?.metrics
+  };
   $("#profileTitle").textContent=state.profile.title+" 투자자";
-  $("#profileDesc").textContent="검사 결과를 종합한 당신의 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다.";
+  $("#profileDesc").textContent=trade
+    ?"검사 결과와 손절·존버 미니게임의 실제 의사결정을 함께 반영한 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다."
+    :"검사 결과를 종합한 당신의 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다.";
   const riskScore=risk?(risk.key==="hi"?85:risk.key==="mid"?55:25):50;
   const divNeed=bal?(bal.key==="stable"?80:45):60;
+  const tradeControl=trade?.metrics?.stopDiscipline??50;
   const traits=[
     {l:"위험 감수도",v:risk?risk.t.split(" · ")[0]:"미검사",m:riskScore},
     {l:"분산 선호",v:bal?(bal.key==="stable"?"높음":"낮음"):"미검사",m:divNeed},
-    {l:"행동 편향",v:bias?bias.t.split(" ")[0]:"미검사",m:bias?(bias.key==="none"?20:70):50}
+    {l:"행동 편향",v:bias?bias.t.split(" ")[0]:"미검사",m:bias?(bias.key==="none"?20:70):50},
+    {l:"손절·존버 통제",v:trade?trade.t:"미검사",m:tradeControl}
   ];
   $("#profileTraits").innerHTML=traits.map(t=>`<div class="trait">
     <div class="l">${t.l}</div><div class="v">${t.v}</div>
@@ -1447,6 +1510,8 @@ function renderProfile(){
 }
 let quizState=null;
 function openQuiz(key){
+  stopTradeGame();
+  $("#modal").classList.remove("trade-modal");
   const ag=AGENTS.find(a=>a.key===key), qz=QUIZZES[key];
   delete state.tests[key]; // 재검사 시작 — 이전 결과/배지 초기화
   quizState={key,qz,i:0,answers:[]};
@@ -1498,9 +1563,506 @@ function computeQuizResult(key,answers,qz){
   const res=qz.res[best]||Object.values(qz.res)[0];
   return {...res,key:best};
 }
-function closeQuiz(){$("#modalBg").classList.remove("open");renderAgents();}
+function closeQuiz(){
+  stopTradeGame();
+  $("#modalBg").classList.remove("open");
+  $("#modal").classList.remove("trade-modal");
+  renderAgents();
+}
 function initStep3(){
   $("#modalBg").onclick=e=>{if(e.target===$("#modalBg"))closeQuiz();};
+}
+
+/* 손절·존버 미니게임 */
+const TRADE_TIME_LIMIT=10000;
+const TRADE_TICK_MS=90;
+const TRADE_TIMER_CIRC=276.46;
+const TRADE_NEWS={
+  surge:["외국인 매수세 유입", "호재성 공시 기대", "거래량 급증"],
+  crash:["단기 차익실현 매물", "시장 변동성 확대", "부정적 루머 확산"],
+  volatile:["분봉 변동성 급등", "호가 공백 확대", "단기 수급 충돌"],
+  steady:["박스권 등락 지속", "관망세 유지", "거래량 안정"]
+};
+let tradeGame=null;
+
+function defaultTradeStockName(){
+  return state.analysis?.top?.name||state.holdings[0]?.name||"삼성전자";
+}
+function tradeMoney(n){return "₩"+Math.floor(Number(n)||0).toLocaleString();}
+function tradeRate(n,digits=2){const v=Number(n)||0;return `${v>=0?"+":""}${v.toFixed(digits)}%`;}
+function createTradeGame(stockName=defaultTradeStockName()){
+  return {
+    stockName,
+    initialAsset:10000000,
+    totalAsset:10000000,
+    basePrice:50000,
+    currentPrice:50000,
+    buyPrice:null,
+    buyTime:null,
+    hasBought:false,
+    hasSold:false,
+    round:0,
+    maxRounds:5,
+    roundResults:[],
+    priceHistory:[],
+    timeHistory:[],
+    startTime:null,
+    trend:0,
+    volatility:.012,
+    heartRate:72,
+    running:false,
+    roundEnding:false,
+    tickTimer:null,
+    timerTimer:null,
+    nextTimer:null,
+    newsTimer:null
+  };
+}
+function clearTradeTimers(){
+  if(!tradeGame)return;
+  ["tickTimer","timerTimer","nextTimer","newsTimer"].forEach(k=>{
+    if(tradeGame[k]){clearTimeout(tradeGame[k]);tradeGame[k]=null;}
+  });
+}
+function stopTradeGame(){
+  if(!tradeGame)return;
+  tradeGame.running=false;
+  clearTradeTimers();
+}
+function openTradeGame(){
+  stopTradeGame();
+  renderTradeIntro();
+  $("#modalBg").classList.add("open");
+}
+function renderTradeIntro(){
+  const ag=AGENTS.find(a=>a.key==="trade");
+  const prev=state.tests.trade;
+  const modal=$("#modal");
+  modal.classList.add("trade-modal");
+  modal.innerHTML=`<div class="modal-head"><div>
+      <div class="eyebrow">${ag.nm}</div>
+      <div class="muted small" style="margin-top:4px">매수 1번, 매도 1번으로 손절·존버 반응을 측정합니다.</div></div>
+      <button class="close" id="tradeClose">×</button></div>
+    <div class="modal-body">
+      <div class="trade-intro">
+        <div class="q-result" style="padding:0;text-align:left">
+          <div class="em" style="font-size:34px">⚡</div>
+          <div class="rt" style="font-size:20px">10초 매매 챌린지</div>
+          <div class="rd" style="text-align:left">실시간으로 흔들리는 가격에서 5라운드 동안 진입과 청산을 결정합니다. 결과는 다음 리밸런싱 코멘트에 반영됩니다.</div>
+        </div>
+        <div class="trade-rules">
+          <div class="trade-rule"><b>10초 제한</b><span>라운드마다 제한시간이 있습니다.</span></div>
+          <div class="trade-rule"><b>매수·매도 1회</b><span>매도하지 못하면 자동 청산됩니다.</span></div>
+          <div class="trade-rule"><b>미거래 패널티</b><span>관망만 하면 -5%로 기록합니다.</span></div>
+        </div>
+        <div class="trade-stock-row">
+          <input class="inp" id="tradeStockInput" maxlength="20" value="${escapeHtml(defaultTradeStockName())}" aria-label="미니게임 종목명">
+          <button class="btn btn-dark btn-sm" id="tradeStart">시작</button>
+        </div>
+        <div class="trade-quick">
+          ${["삼성전자","테슬라","NVIDIA","QQQ","비트코인"].map(n=>`<button type="button" data-trade-stock="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("")}
+        </div>
+      </div>
+      ${prev?`<div class="trade-note" style="margin-top:12px"><b>저장된 결과</b><br>${escapeHtml(prev.t)} · 손절·존버 통제 ${Math.round(prev.metrics?.stopDiscipline??0)}/100</div>`:""}
+    </div>`;
+  $("#tradeClose").onclick=closeQuiz;
+  $("#tradeStart").onclick=startTradeGame;
+  modal.querySelectorAll("[data-trade-stock]").forEach(b=>b.onclick=()=>{
+    $("#tradeStockInput").value=b.dataset.tradeStock;
+  });
+}
+function startTradeGame(){
+  const input=$("#tradeStockInput")?.value?.trim();
+  delete state.tests.trade;
+  tradeGame=createTradeGame(input||defaultTradeStockName());
+  renderTradeFrame();
+  startTradeRound();
+}
+function renderTradeFrame(){
+  const modal=$("#modal");
+  modal.classList.add("trade-modal");
+  modal.innerHTML=`<div class="modal-head"><div>
+      <div class="eyebrow">손절·존버 미니게임</div>
+      <div class="muted small" style="margin-top:4px">라운드별 매수·매도 반응을 기록합니다.</div></div>
+      <button class="close" id="tradeClose">×</button></div>
+    <div class="modal-body">
+      <div class="trade-game-head">
+        <div><div class="stock" id="tradeStockName">${escapeHtml(tradeGame.stockName)}</div>
+          <div class="asset">자산 <span id="tradeAsset">${tradeMoney(tradeGame.totalAsset)}</span></div></div>
+        <div class="chip blue" id="tradeRoundLabel">라운드 1/5</div>
+      </div>
+      <div class="trade-rounds" id="tradeRoundDots"></div>
+      <div class="trade-timer-row">
+        <div class="trade-timer">
+          <svg viewBox="0 0 100 100">
+            <circle class="bg" cx="50" cy="50" r="44"></circle>
+            <circle class="fg" id="tradeTimerFg" cx="50" cy="50" r="44" stroke-dasharray="${TRADE_TIMER_CIRC}" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="txt" id="tradeTimerText">10.0</div>
+        </div>
+        <div><div class="trade-instruction" id="tradeInstruction">매수 타이밍을 잡으세요.</div>
+          <div class="trade-sub" id="tradeSub">차트가 움직입니다. 먼저 진입한 뒤 청산을 결정하세요.</div></div>
+      </div>
+      <div class="trade-price-grid">
+        <div class="trade-price"><div class="l">현재가</div><div class="v" id="tradeCurrentPrice">-</div></div>
+        <div class="trade-price"><div class="l">매수가</div><div class="v" id="tradeBuyPrice">-</div></div>
+        <div class="trade-price"><div class="l">손익률</div><div class="v" id="tradeProfitRate">-</div></div>
+      </div>
+      <div class="trade-chart-wrap">
+        <div class="trade-status" id="tradeStatus">대기중</div>
+        <div class="trade-heart"><span id="tradeHeart">72</span> BPM</div>
+        <canvas id="tradeChart" aria-label="미니게임 가격 차트"></canvas>
+      </div>
+      <div class="trade-news" id="tradeNews"></div>
+      <div class="trade-actions">
+        <button class="trade-action trade-buy" id="tradeBuyBtn">매수</button>
+        <button class="trade-action trade-sell" id="tradeSellBtn" disabled>매도</button>
+      </div>
+      <div class="trade-note" id="tradeRoundNote">준비가 끝나면 가격이 바로 움직입니다.</div>
+    </div>`;
+  $("#tradeClose").onclick=closeQuiz;
+  $("#tradeBuyBtn").onclick=executeTradeBuy;
+  $("#tradeSellBtn").onclick=executeTradeSell;
+}
+function startTradeRound(){
+  if(!tradeGame)return;
+  clearTradeTimers();
+  if(tradeGame.round>=tradeGame.maxRounds){finishTradeGame();return;}
+  tradeGame.round++;
+  tradeGame.running=true;
+  tradeGame.roundEnding=false;
+  tradeGame.hasBought=false;
+  tradeGame.hasSold=false;
+  tradeGame.buyPrice=null;
+  tradeGame.buyTime=null;
+  tradeGame.basePrice=40000+Math.random()*20000;
+  tradeGame.currentPrice=tradeGame.basePrice;
+  tradeGame.priceHistory=[tradeGame.basePrice];
+  tradeGame.timeHistory=[0];
+  tradeGame.trend=(Math.random()-.5)*.4;
+  tradeGame.volatility=.008+Math.random()*.015;
+  tradeGame.heartRate=72;
+  tradeGame.startTime=Date.now();
+  $("#tradeNews").style.display="none";
+  $("#tradeRoundNote").textContent="라운드가 시작됐습니다. 매수 후 매도 타이밍을 정하세요.";
+  $("#tradeBuyBtn").disabled=false;
+  $("#tradeSellBtn").disabled=true;
+  $("#tradeBuyPrice").textContent="-";
+  $("#tradeProfitRate").textContent="-";
+  updateTradeRoundDots();
+  updateTradeUi();
+  drawTradeChart();
+  runTradeLoop();
+  runTradeTimer();
+  if(Math.random()<.55){
+    tradeGame.newsTimer=setTimeout(showTradeNews,1200+Math.random()*2800);
+  }
+}
+function updateTradeRoundDots(){
+  const host=$("#tradeRoundDots");
+  if(!host||!tradeGame)return;
+  host.innerHTML="";
+  for(let i=0;i<tradeGame.maxRounds;i++){
+    const dot=document.createElement("div");
+    dot.className="trade-dot";
+    if(i<tradeGame.roundResults.length){
+      dot.classList.add((tradeGame.roundResults[i]?.profitRate||0)>0?"win":"loss");
+    }else if(i===tradeGame.round-1)dot.classList.add("active");
+    host.appendChild(dot);
+  }
+}
+function updateTradeUi(){
+  if(!tradeGame)return;
+  $("#tradeRoundLabel").textContent=`라운드 ${tradeGame.round}/${tradeGame.maxRounds}`;
+  $("#tradeAsset").textContent=tradeMoney(tradeGame.totalAsset);
+  $("#tradeCurrentPrice").textContent=tradeMoney(tradeGame.currentPrice);
+  $("#tradeHeart").textContent=Math.floor(tradeGame.heartRate);
+  if(tradeGame.hasBought){
+    const pl=(tradeGame.currentPrice-tradeGame.buyPrice)/tradeGame.buyPrice*100;
+    $("#tradeProfitRate").textContent=tradeRate(pl);
+    $("#tradeProfitRate").style.color=pl>=0?"var(--good)":"var(--bad)";
+  }
+}
+function runTradeLoop(){
+  if(!tradeGame)return;
+  const tick=()=>{
+    if(!tradeGame?.running)return;
+    const elapsed=Date.now()-tradeGame.startTime;
+    if(elapsed>=TRADE_TIME_LIMIT){endTradeRound("timeout");return;}
+    let change=(Math.random()-.5)*2*tradeGame.volatility;
+    change+=tradeGame.trend*.005;
+    if(Math.random()<.03)change+=(Math.random()-.5)*.04;
+    tradeGame.currentPrice*=1+change;
+    const deviation=(tradeGame.currentPrice-tradeGame.basePrice)/tradeGame.basePrice;
+    if(Math.abs(deviation)>.15)tradeGame.currentPrice-=(tradeGame.currentPrice-tradeGame.basePrice)*.05;
+    tradeGame.priceHistory.push(tradeGame.currentPrice);
+    tradeGame.timeHistory.push(elapsed);
+    if(tradeGame.priceHistory.length>150){tradeGame.priceHistory.shift();tradeGame.timeHistory.shift();}
+    if(tradeGame.hasBought){
+      const pl=(tradeGame.currentPrice-tradeGame.buyPrice)/tradeGame.buyPrice*100;
+      tradeGame.heartRate=clamp(72+Math.abs(pl)*4,72,180);
+    }else{
+      tradeGame.heartRate=clamp(72+Math.abs(deviation)*200,72,180);
+    }
+    updateTradeUi();
+    drawTradeChart();
+    tradeGame.tickTimer=setTimeout(tick,TRADE_TICK_MS);
+  };
+  tick();
+}
+function runTradeTimer(){
+  if(!tradeGame)return;
+  const update=()=>{
+    if(!tradeGame?.running)return;
+    const remaining=Math.max(0,TRADE_TIME_LIMIT-(Date.now()-tradeGame.startTime));
+    const progress=remaining/TRADE_TIME_LIMIT;
+    $("#tradeTimerText").textContent=(remaining/1000).toFixed(1);
+    const fg=$("#tradeTimerFg");
+    fg.style.strokeDashoffset=TRADE_TIMER_CIRC*(1-progress);
+    fg.style.stroke=progress<.3?"var(--bad)":progress<.6?"var(--warn)":"var(--good)";
+    if(remaining>0)tradeGame.timerTimer=setTimeout(update,50);
+  };
+  update();
+}
+function drawTradeChart(){
+  const canvas=$("#tradeChart");
+  if(!canvas||!tradeGame)return;
+  const rect=canvas.getBoundingClientRect();
+  const W=rect.width||680,H=rect.height||230,dpr=window.devicePixelRatio||1;
+  if(canvas.width!==Math.round(W*dpr)||canvas.height!==Math.round(H*dpr)){
+    canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);
+  }
+  const ctx=canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const pad={t:44,r:18,b:24,l:54};
+  const prices=tradeGame.priceHistory;
+  if(prices.length<2)return;
+  const minRange=tradeGame.basePrice*.85,maxRange=tradeGame.basePrice*1.15;
+  let minP=Math.min(...prices,minRange),maxP=Math.max(...prices,maxRange);
+  const padRange=(maxP-minP)*.1;minP-=padRange;maxP+=padRange;
+  const range=maxP-minP||1;
+  const X=i=>pad.l+(W-pad.l-pad.r)*(i/Math.max(prices.length-1,1));
+  const Y=p=>pad.t+(H-pad.t-pad.b)*((maxP-p)/range);
+  ctx.strokeStyle="rgba(255,255,255,.08)";ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(H-pad.t-pad.b)/4*i;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    const price=maxP-range/4*i;
+    ctx.fillStyle="rgba(226,232,240,.72)";ctx.font="11px sans-serif";ctx.textAlign="right";
+    ctx.fillText(tradeMoney(price),pad.l-6,y+4);
+  }
+  const isUp=prices[prices.length-1]>=tradeGame.basePrice;
+  ctx.beginPath();
+  prices.forEach((p,i)=>{if(i===0)ctx.moveTo(X(i),Y(p));else ctx.lineTo(X(i),Y(p));});
+  ctx.lineTo(X(prices.length-1),H-pad.b);ctx.lineTo(pad.l,H-pad.b);ctx.closePath();
+  const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+  grad.addColorStop(0,isUp?"rgba(22,163,74,.32)":"rgba(229,72,77,.32)");
+  grad.addColorStop(1,"rgba(15,23,42,0)");
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();
+  prices.forEach((p,i)=>{if(i===0)ctx.moveTo(X(i),Y(p));else ctx.lineTo(X(i),Y(p));});
+  ctx.strokeStyle=isUp?"#22c55e":"#fb7185";ctx.lineWidth=2.4;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
+  if(tradeGame.hasBought&&tradeGame.buyPrice){
+    const buyY=Y(tradeGame.buyPrice);
+    ctx.strokeStyle="#60a5fa";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(pad.l,buyY);ctx.lineTo(W-pad.r,buyY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#bfdbfe";ctx.font="bold 11px sans-serif";ctx.textAlign="left";
+    ctx.fillText("BUY "+tradeMoney(tradeGame.buyPrice),pad.l+5,buyY-5);
+  }
+  const lx=X(prices.length-1),ly=Y(prices[prices.length-1]);
+  ctx.beginPath();ctx.arc(lx,ly,5,0,Math.PI*2);ctx.fillStyle=isUp?"#22c55e":"#fb7185";ctx.fill();
+  ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();
+}
+function executeTradeBuy(){
+  if(!tradeGame||tradeGame.hasBought||!tradeGame.running)return;
+  tradeGame.hasBought=true;
+  tradeGame.buyPrice=tradeGame.currentPrice;
+  tradeGame.buyTime=Date.now();
+  $("#tradeBuyBtn").disabled=true;
+  $("#tradeSellBtn").disabled=false;
+  $("#tradeBuyPrice").textContent=tradeMoney(tradeGame.buyPrice);
+  $("#tradeBuyPrice").style.color="var(--blue)";
+  $("#tradeStatus").textContent="보유중";
+  $("#tradeInstruction").textContent="매도 타이밍을 잡으세요.";
+  $("#tradeSub").textContent="익절과 손절 사이에서 실제 반응을 기록합니다.";
+  $("#tradeRoundNote").textContent="진입했습니다. 너무 오래 끌지, 너무 빨리 던질지의 패턴을 봅니다.";
+  if(navigator.vibrate)navigator.vibrate(40);
+}
+function executeTradeSell(){
+  if(!tradeGame||!tradeGame.hasBought||tradeGame.hasSold||!tradeGame.running)return;
+  tradeGame.hasSold=true;
+  $("#tradeSellBtn").disabled=true;
+  $("#tradeStatus").textContent="매도 완료";
+  $("#tradeInstruction").textContent="거래 완료";
+  $("#tradeSub").textContent="다음 라운드로 넘어갑니다.";
+  if(navigator.vibrate)navigator.vibrate(70);
+  tradeGame.nextTimer=setTimeout(()=>endTradeRound("manual"),450);
+}
+function endTradeRound(reason="timeout"){
+  if(!tradeGame||tradeGame.roundEnding)return;
+  tradeGame.roundEnding=true;
+  tradeGame.running=false;
+  clearTradeTimers();
+  let profit=0,profitRate=0,holdTime=0;
+  const basis=tradeGame.totalAsset;
+  if(tradeGame.hasBought){
+    profitRate=(tradeGame.currentPrice-tradeGame.buyPrice)/tradeGame.buyPrice*100;
+    profit=basis*profitRate/100;
+    holdTime=(Date.now()-tradeGame.buyTime)/1000;
+  }else{
+    profitRate=-5;
+    profit=-basis*.05;
+  }
+  const result={
+    profitRate,
+    profit,
+    holdTime,
+    bought:tradeGame.hasBought,
+    sold:tradeGame.hasSold,
+    manualSell:reason==="manual",
+    autoSell:tradeGame.hasBought&&!tradeGame.hasSold,
+    noBuy:!tradeGame.hasBought
+  };
+  tradeGame.roundResults.push(result);
+  tradeGame.totalAsset+=profit;
+  updateTradeUi();
+  showTradeRoundNote(result);
+  updateTradeRoundDots();
+  tradeGame.nextTimer=setTimeout(()=>{
+    if(tradeGame.round>=tradeGame.maxRounds)finishTradeGame();
+    else startTradeRound();
+  },1600);
+}
+function showTradeRoundNote(result){
+  const note=$("#tradeRoundNote");
+  let title="거래 완료";
+  if(result.noBuy)title="관망 패널티";
+  else if(result.autoSell)title="시간 초과 자동 청산";
+  else if(result.profitRate>0)title="수익 실현";
+  else title="손실 확정";
+  note.innerHTML=`<b>${title}</b><br><span style="color:${result.profitRate>=0?"var(--good)":"var(--bad)"}">${tradeRate(result.profitRate)}</span> · ${result.holdTime?result.holdTime.toFixed(1)+"초 보유":"매수하지 않음"} · ${tradeMoney(result.profit)}`;
+}
+function showTradeNews(){
+  if(!tradeGame?.running||tradeGame.hasSold)return;
+  const r=Math.random();
+  const category=r<.3?"surge":r<.6?"crash":r<.8?"volatile":"steady";
+  const messages=TRADE_NEWS[category];
+  const msg=messages[Math.floor(Math.random()*messages.length)];
+  const isReal=Math.random()<.7;
+  if(isReal){
+    if(category==="surge")tradeGame.trend+=.28;
+    if(category==="crash")tradeGame.trend-=.28;
+    if(category==="volatile")tradeGame.volatility*=1.45;
+  }
+  const box=$("#tradeNews");
+  box.textContent=`속보: ${msg}${isReal?"":" (확인 필요)"}`;
+  box.style.display="block";
+  tradeGame.newsTimer=setTimeout(()=>{if($("#tradeNews"))$("#tradeNews").style.display="none";},2800);
+}
+function computeTradeSummary(game){
+  const results=game.roundResults;
+  const rates=results.map(r=>Number(r.profitRate)||0);
+  const wins=results.filter(r=>r.profitRate>0).length;
+  const completed=results.filter(r=>r.bought&&r.sold).length;
+  const autoSells=results.filter(r=>r.autoSell).length;
+  const noBuys=results.filter(r=>r.noBuy).length;
+  const bought=results.filter(r=>r.bought).length;
+  const totalHold=results.reduce((s,r)=>s+(Number(r.holdTime)||0),0);
+  const avgHold=totalHold/Math.max(bought,1);
+  const avgAbs=rates.reduce((s,r)=>s+Math.abs(r),0)/Math.max(rates.length,1);
+  const bestRate=rates.length?Math.max(...rates):0;
+  const worstRate=rates.length?Math.min(...rates):0;
+  const totalReturn=(game.totalAsset-game.initialAsset)/game.initialAsset*100;
+  return {stockName:game.stockName,totalReturn,wins,completed,autoSells,noBuys,bought,avgHold,avgAbs,bestRate,worstRate,maxRounds:game.maxRounds,finalAsset:game.totalAsset};
+}
+function classifyTradeResult(summary){
+  const decisiveness=clamp(summary.completed/summary.maxRounds*100,0,100);
+  const timing=clamp(summary.wins/summary.maxRounds*100+summary.totalReturn*1.2+25,15,95);
+  const riskTolerance=clamp(summary.avgAbs*6+summary.completed*4,20,95);
+  const holdBias=clamp(summary.autoSells*24+summary.noBuys*12+Math.max(0,summary.avgHold-6)*12+Math.max(0,-summary.worstRate-5)*3,5,95);
+  const impulse=clamp(100-summary.avgHold*10+summary.completed*4+summary.avgAbs*5,10,95);
+  const stopDiscipline=clamp(82+Math.min(summary.totalReturn,10)*1.5+summary.wins*4-summary.autoSells*16-summary.noBuys*12-Math.max(0,-summary.worstRate-3)*4,15,95);
+  let key="discipline";
+  if(summary.noBuys>=2||decisiveness<45)key="avoid";
+  else if(summary.autoSells>=2||holdBias>62)key="hold";
+  else if(summary.totalReturn<-8||stopDiscipline<45)key="loss";
+  else if(impulse>76&&summary.avgHold<3.2)key="impulse";
+  else if(summary.totalReturn>5&&timing>65)key="timing";
+  const catalog={
+    timing:{em:"⚡",t:"순발 매매형",d:"진입과 청산이 빠르고 결과도 양호했습니다. 다만 좋은 순발력을 장기 포트폴리오에서는 규칙화된 리밸런싱으로 바꾸는 편이 좋습니다."},
+    discipline:{em:"🧭",t:"규칙 실행형",d:"과도한 존버나 충동 청산이 적고, 정해진 시간 안에 결정을 마쳤습니다. 리밸런싱도 한 번에 크게 흔들기보다 계획된 비중 조정이 잘 맞습니다."},
+    hold:{em:"⏳",t:"존버 고착 주의",d:"매도 결정을 늦추거나 자동 청산까지 끌고 가는 경향이 보였습니다. 손실 구간에서는 사전 규칙으로 비중을 낮추는 장치가 필요합니다."},
+    loss:{em:"🛡️",t:"손절 규칙 보강형",d:"손실 구간에서 방어 규칙이 약하게 나타났습니다. 과집중 자산은 목표 비중을 더 낮게 두고, 분할 매도로 감정 개입을 줄이는 쪽이 적합합니다."},
+    impulse:{em:"🔥",t:"충동 매매 주의",d:"반응 속도는 빠르지만 결정이 잦고 짧습니다. 리밸런싱은 매수·매도 횟수를 줄이는 단순한 규칙으로 설계하는 편이 좋습니다."},
+    avoid:{em:"👀",t:"관망 지연형",d:"진입이나 청산 결정을 미루는 패턴이 나타났습니다. 자동화된 목표 비중과 실행 구간을 정해 의사결정 부담을 줄이는 것이 좋습니다."}
+  };
+  return {
+    ...catalog[key],
+    key,
+    metrics:{
+      totalReturn:summary.totalReturn,
+      wins:summary.wins,
+      completed:summary.completed,
+      autoSells:summary.autoSells,
+      noBuys:summary.noBuys,
+      avgHold:summary.avgHold,
+      bestRate:summary.bestRate,
+      worstRate:summary.worstRate,
+      finalAsset:summary.finalAsset,
+      stopDiscipline:Math.round(stopDiscipline),
+      holdBias:Math.round(holdBias),
+      impulse:Math.round(impulse),
+      timing:Math.round(timing),
+      riskTolerance:Math.round(riskTolerance),
+      decisiveness:Math.round(decisiveness)
+    }
+  };
+}
+function finishTradeGame(){
+  if(!tradeGame)return;
+  tradeGame.running=false;
+  clearTradeTimers();
+  const summary=computeTradeSummary(tradeGame);
+  const result=classifyTradeResult(summary);
+  state.tests.trade=result;
+  renderTradeResult(result);
+}
+function renderTradeResult(result){
+  const m=result.metrics||{};
+  const modal=$("#modal");
+  modal.classList.add("trade-modal");
+  const traits=[
+    {name:"손절·존버 통제",score:m.stopDiscipline,color:"var(--blue)"},
+    {name:"결단력",score:m.decisiveness,color:"var(--good)"},
+    {name:"충동성",score:m.impulse,color:"var(--warn)"},
+    {name:"존버 편향",score:m.holdBias,color:"var(--bad)"}
+  ];
+  modal.innerHTML=`<div class="modal-head"><div>
+      <div class="eyebrow">손절·존버 미니게임 결과</div>
+      <div class="muted small" style="margin-top:4px">${escapeHtml(tradeGame.stockName)} · 5라운드 완료</div></div>
+      <button class="close" id="tradeClose">×</button></div>
+    <div class="modal-body">
+      <div class="q-result">
+        <div class="em">${result.em}</div>
+        <div class="rt">${escapeHtml(result.t)}</div>
+        <div class="rd">${escapeHtml(result.d)}</div>
+      </div>
+      <div class="trade-stat-grid">
+        <div class="trade-stat"><div class="l">최종 수익률</div><div class="v" style="color:${m.totalReturn>=0?"var(--good)":"var(--bad)"}">${tradeRate(m.totalReturn)}</div></div>
+        <div class="trade-stat"><div class="l">성공 라운드</div><div class="v">${m.wins}/5</div></div>
+        <div class="trade-stat"><div class="l">평균 보유</div><div class="v">${(m.avgHold||0).toFixed(1)}초</div></div>
+        <div class="trade-stat"><div class="l">최악 손익</div><div class="v" style="color:${m.worstRate>=0?"var(--good)":"var(--bad)"}">${tradeRate(m.worstRate)}</div></div>
+      </div>
+      <div class="trade-traits">
+        ${traits.map(t=>`<div class="trade-trait"><div class="top"><b>${escapeHtml(t.name)}</b><span>${Math.round(t.score)}/100</span></div>
+          <div class="track"><i style="width:${clamp(t.score,0,100)}%;background:${t.color}"></i></div></div>`).join("")}
+      </div>
+      <button class="btn btn-dark" id="tradeDone" style="width:100%;justify-content:center;margin-top:22px">결과 저장하고 닫기</button>
+      <button class="btn btn-ghost btn-sm" id="tradeRetry" style="width:100%;justify-content:center;margin-top:8px">다시 플레이</button>
+    </div>`;
+  $("#tradeClose").onclick=$("#tradeDone").onclick=closeQuiz;
+  $("#tradeRetry").onclick=()=>{stopTradeGame();renderTradeIntro();};
 }
 
 /* ============================================================
@@ -1544,16 +2106,30 @@ function topExposureContributors(analysis){
     return c?{holding:h,amount:h.amount*(Number(c.weight)||0)}:null;
   }).filter(Boolean).sort((x,y)=>y.amount-x.amount);
 }
+function tradeRebalanceSignal(profile){
+  const key=profile?.trade;
+  const signals={
+    timing:{label:"순발 매매형",targetAdj:1,sellCap:.55,defensive:false,short:"순발력은 양호하므로 과도한 방어보다 계획된 비중 조정",comment:"손절·존버 게임에서 순발 매매형으로 나타나 급격한 위험 축소보다 정해진 목표 비중으로 옮기는 방식이 적합합니다."},
+    discipline:{label:"규칙 실행형",targetAdj:2,sellCap:.50,defensive:false,short:"규칙 실행력이 있어 분할 조정",comment:"손절·존버 게임에서 규칙 실행력이 확인되어 한 번에 크게 줄이기보다 계획된 분할 리밸런싱을 우선합니다."},
+    hold:{label:"존버 고착 주의",targetAdj:-4,sellCap:.68,defensive:true,short:"존버 편향 완화를 위한 목표 비중 하향",comment:"손절·존버 게임에서 매도 결정을 늦추는 경향이 보여 과집중 자산의 목표 비중을 더 낮추고 방어 자산을 보강합니다."},
+    loss:{label:"손절 규칙 보강형",targetAdj:-5,sellCap:.70,defensive:true,short:"손실 확대 방지를 위한 선제 축소",comment:"손절·존버 게임에서 손실 방어 규칙이 약하게 나타나 과집중 구간을 더 엄격하게 줄이는 제안을 적용합니다."},
+    impulse:{label:"충동 매매 주의",targetAdj:-3,sellCap:.62,defensive:true,short:"충동 매매를 줄이는 단순한 분산 규칙",comment:"손절·존버 게임에서 빠른 판단이 잦게 나타나 매매 횟수를 늘리기보다 단순한 목표 비중으로 자동화된 조정을 제안합니다."},
+    avoid:{label:"관망 지연형",targetAdj:-2,sellCap:.58,defensive:true,short:"의사결정 지연을 줄이는 사전 규칙",comment:"손절·존버 게임에서 결정을 미루는 패턴이 보여 실행 부담을 줄이는 목표 비중과 방어적 분산을 반영합니다."}
+  };
+  return signals[key]?{active:true,...signals[key]}:{active:false,label:"미측정",targetAdj:0,sellCap:.55,defensive:false,short:"",comment:""};
+}
 function buildSolutionPlan(analysis,profile){
   const p=profile||{title:"균형형 투자자",bal:"stable",risk:"mid"};
-  const aggressive=p.bal==="growth"||p.risk==="hi";
-  const targetTop=aggressive?25:18;
+  const tradeSignal=tradeRebalanceSignal(p);
+  const baseAggressive=p.bal==="growth"||p.risk==="hi";
+  const aggressive=baseAggressive&&!tradeSignal.defensive;
+  const targetTop=clamp((baseAggressive?25:18)+tradeSignal.targetAdj,12,28);
   const top=analysis.top;
   const cutPct=Math.max(0,top.weight-targetTop);
   const cutAmt=Math.round(analysis.total*cutPct/100);
   const contributors=topExposureContributors(analysis);
   const sellHolding=contributors[0]?.holding||state.holdings[0];
-  const sellAmt=Math.min(cutAmt, Math.round((sellHolding?.amount||0)*0.55));
+  const sellAmt=Math.min(cutAmt, Math.round((sellHolding?.amount||0)*tradeSignal.sellCap));
   const buyModel=(aggressive?SOLUTION_BUY_MODELS.aggressive:SOLUTION_BUY_MODELS.stable);
   const buyActions=sellAmt>0?buyModel.map((b,idx)=>{
     const amt=idx===buyModel.length-1
@@ -1598,20 +2174,24 @@ function buildSolutionPlan(analysis,profile){
     sellAmt,
     sellHolding,
     buyActions,
-    proposedPositions:Array.from(proposed.values()).filter(p=>p.amount>0)
+    proposedPositions:Array.from(proposed.values()).filter(p=>p.amount>0),
+    tradeSignal
   };
 }
 function renderSolutionActions(plan,analysis){
   const top=analysis.top;
+  const behaviorLine=plan.tradeSignal?.active
+    ? `<br><span style="color:var(--muted);font-size:12.5px">손절·존버 게임: ${escapeHtml(plan.tradeSignal.label)} · ${escapeHtml(plan.tradeSignal.comment)}</span>`
+    : "";
   $("#solSummary").innerHTML=plan.sellAmt>0
-    ? `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중을 ${pc(top.weight)}에서 약 ${plan.targetTop}% 수준으로 낮추도록 재배치합니다.`
-    : `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중이 목표 범위 안에 있어 신규 매도 없이 분산 상태를 유지합니다.`;
+    ? `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중을 ${pc(top.weight)}에서 약 ${plan.targetTop}% 수준으로 낮추도록 재배치합니다.${behaviorLine}`
+    : `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중이 목표 범위 안에 있어 신규 매도 없이 분산 상태를 유지합니다.${behaviorLine}`;
   const actions=[];
   if(plan.sellAmt>0&&plan.sellHolding){
     actions.push({
       side:"sell",
       nm:plan.sellHolding.name,
-      rs:`${top.name} 과집중 완화 · 실질 ${pc(top.weight)} → 목표 ${plan.targetTop}%`,
+      rs:`${top.name} 과집중 완화 · ${plan.tradeSignal?.active?plan.tradeSignal.short+" · ":""}실질 ${pc(top.weight)} → 목표 ${plan.targetTop}%`,
       w:`-${plan.cutPct.toFixed(0)}%p`,
       amt:plan.sellAmt
     });
@@ -1649,9 +2229,10 @@ function renderBeforeAfter(plan,analysis){
 }
 function renderNewPortfolio(plan,analysis){
   $("#newPortTitle").textContent=plan.aggressive?"성장 균형 제안":"안정 분산 제안";
+  const tradeDesc=plan.tradeSignal?.active?` 손절·존버 결과(${plan.tradeSignal.label})를 반영했습니다.`:"";
   $("#newPortDesc").textContent=plan.sellAmt>0
-    ? "현재 보유 상품을 일부 축소하고, 실제 매수 가능한 ETF로 재배치한 제안 포트폴리오입니다."
-    : "현재 집중도 목표를 충족해 기존 포지션을 유지하는 제안 포트폴리오입니다.";
+    ? "현재 보유 상품을 일부 축소하고, 실제 매수 가능한 ETF로 재배치한 제안 포트폴리오입니다."+tradeDesc
+    : "현재 집중도 목표를 충족해 기존 포지션을 유지하는 제안 포트폴리오입니다."+tradeDesc;
   const rows=plan.proposedPositions
     .map(p=>({name:p.name||p.ticker,amount:p.amount,color:(plan.buyActions.find(b=>b.ticker===p.ticker)?.color)||"#2563eb"}))
     .sort((a,b)=>b.amount-a.amount)
