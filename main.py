@@ -69,9 +69,10 @@ async def original_service():
     return {"message": "LUX-RU API", "docs": "/docs"}
 
 
+@app.get("/diagnosis-solution")
 @app.get("/demo")
-async def demo_service():
-    """Serve the demo-based LUX-RU wizard."""
+async def diagnosis_solution_service():
+    """Serve the LUX-RU diagnosis solution wizard."""
     demo_path = BASE_DIR / "LUX-RU_demo.html"
     if demo_path.exists():
         return FileResponse(str(demo_path))
