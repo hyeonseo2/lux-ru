@@ -7,6 +7,15 @@
 
 LUX-RU는 이런 ETF/펀드 껍데기를 **재귀적으로 분해(Look-through)** 해서, 실제 기초 종목 단위의 노출 금액을 계산하고 네트워크 그래프로 시각화합니다.
 
+현재 서비스는 세 가지 진입점을 제공합니다.
+
+| 경로 | 설명 |
+|---|---|
+| `/` | 서비스 선택 화면 |
+| `/original` | 기존 Look-through 분석 서비스 |
+| `/diagnosis-solution` | 포트폴리오 입력 → 룩스루 분석 → 행동 진단 게임 → 리밸런싱 솔루션 |
+| `/interactive-diagnosis` | 대화형 AI 게임 로그를 위키로 정리하고 종합 리포트를 생성하는 진단 플로우 |
+
 ---
 
 ## ✨ 핵심: Look-through 분석 엔진
@@ -119,6 +128,26 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfi
 - 응답에 면책 문구 항상 포함, 사용자 확인 UX(편집·삭제 가능)
 - API 키 미설정 환경에서도 데모를 보여줄 수 있는 **🧪 샘플 이미지로 테스트** 버튼 제공
 
+### 🎮 행동 진단 게임 + LLM 위키 파이프라인
+`/diagnosis-solution`과 `/interactive-diagnosis`는 포트폴리오 수치만 보지 않고, 사용자가 게임에서 실제로 선택한 행동 로그를 함께 분석합니다.
+
+구조는 **게임 GM → 구조화 로그 → 게임별 위키 → 종합 리포트** 흐름입니다.
+
+1. **게임 GM 에이전트**: 손절·존버, 멘토 면담, 투자 사주팔자, 밸런스형 질문이 사용자의 선택과 반응 시간을 수집합니다.
+2. **공통 로그 스키마**: `game_id`, `turn`, `event_type`, `action`, `reaction_latency_ms`, `signal`을 세션별로 저장합니다.
+3. **게임별 위키**: 각 게임 종료 시 표준 마크다운 위키를 생성합니다. 위키는 요약, 핵심 행동, 6개 성향 지표, 인상적 순간을 포함합니다.
+4. **종합 리포트**: 종합 에이전트는 원시 로그가 아니라 게임별 위키와 포트폴리오 X-Ray 결과를 읽고 리밸런싱 리포트를 만듭니다.
+5. **컴플라이언스 필터**: 게임 위키와 종합 리포트도 `backend/compliance.py`를 거쳐 매수·매도 권유 표현을 차단합니다.
+
+현재 반영된 게임:
+
+| 게임 | 반영 위치 | 특징 |
+|---|---|---|
+| 손절·존버 미니게임 | `/diagnosis-solution`, `/interactive-diagnosis` | 실데이터 기반 종목 선택, 뉴스/AI 자극, 매수·매도·관망 로그 수집 |
+| 멘토 면담 | `/diagnosis-solution` | 미연시형 캐릭터 면담, 답변 버튼 기반 성향 점수, 멘토 이미지 에셋 |
+| 투자 사주팔자 | `/diagnosis-solution` | 생년월일·시간 입력, 만세력 기반 사주 리듬을 투자 성향 위키로 변환 |
+| 대화형 진단 | `/interactive-diagnosis` | 게임 위키를 모아 OpenAI API로 종합 리포트 생성 |
+
 ### CSV 업로드
 미래에셋 · 키움 · 토스 · 삼성 · NH 5개 증권사 컬럼 매핑 + `auto` 모드.
 한국어/영문 헤더 동시 인식, EUC-KR/CP949/UTF-8/UTF-8-BOM 인코딩 자동 감지.
@@ -130,12 +159,12 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfi
 ```
 ┌──────────────────────────────────────────────────────┐
 │  Frontend (Vanilla JS + D3.js v7 Canvas)             │
-│  네트워크 그래프 / 대시보드 / 시뮬레이션 / 챗        │
+│  네트워크 그래프 / 진단 솔루션 / 대화형 게임 / 챗    │
 └────────────────────┬─────────────────────────────────┘
                      │ REST / SSE / multipart
 ┌────────────────────▼─────────────────────────────────┐
 │  FastAPI                                             │
-│  /api/portfolio · /api/upload · /api/chat · /api/finlife │
+│  /api/portfolio · /api/upload · /api/chat · /api/games │
 └────────────────────┬─────────────────────────────────┘
                      │
 ┌────────────────────▼─────────────────────────────────┐
@@ -145,8 +174,8 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfi
                      │
    ┌─────────────────┼─────────────────┬─────────────┐
    ▼                 ▼                 ▼             ▼
- Seed DB         yfinance         OpenAI API     PostgreSQL
- (시드)         (실시간/과거)    (텍스트+비전)  + Neo4j (옵션)
+ Seed DB         yfinance/KRX      OpenAI API     In-memory Session
+ (시드)         (실시간/과거)    (텍스트+비전)  (게임 로그/위키)
 ```
 
 ### 기술 스택
@@ -220,6 +249,12 @@ lux-ru/
 │   ├── csv_parser.py             # 증권사 CSV 파서 (5사 매핑)
 │   ├── screenshot_parser.py      # 📸 OpenAI vision 스크린샷 추출
 │   ├── ai_chat.py                # OpenAI 텍스트 챗
+│   ├── openai_client.py          # OpenAI Responses API 공통 클라이언트
+│   ├── game_agents.py            # 게임별 GM/위키 에이전트 프롬프트와 폴백
+│   ├── game_store.py             # 인메모리 게임 세션/로그 저장소
+│   ├── game_models.py            # 게임 로그/위키 Pydantic 모델
+│   ├── report_agents.py          # 위키 기반 종합 리포트 생성
+│   ├── income_fees.py            # 배당/수수료 룩스루 보조 분석
 │   ├── compliance.py             # 금지 표현 필터 + 면책 부착
 │   ├── seed_data.py              # ETF 구성/주식/예적금 시드
 │   ├── search_universe.py        # 대형 검색 유니버스 + KRX ETF 병합
@@ -228,11 +263,13 @@ lux-ru/
 │   └── worker/crawler.py         # yfinance 기반 미국 ETF 크롤러
 ├── static/
 │   ├── index.html                # 메인 SPA (5천+줄, 인라인 D3/JS)
+│   ├── interactive.html          # 대화형 AI 진단 게임
 │   ├── js/                       # 보조 페이지 스크립트
 │   ├── css/style.css
 │   └── assets/
 │       ├── sample.csv            # 데모용 CSV
-│       └── sample-screenshot.png # 데모용 스크린샷
+│       ├── sample-screenshot.png # 데모용 스크린샷
+│       └── mentors/              # 멘토 면담 캐릭터 이미지
 ├── scripts/
 │   └── make_sample_screenshot.py # 샘플 이미지 생성기
 ├── requirements.txt
@@ -257,6 +294,12 @@ lux-ru/
 | `GET`  | `/api/portfolio/sessions/{sid}` | 세션 정보 조회 |
 | `GET`  | `/api/portfolio/search-instruments?q=` | 종목 자동완성 |
 | `POST` | `/api/chat` | OpenAI 기반 SSE 챗 |
+| `POST` | `/api/games/session` | 게임 로그 세션 생성 |
+| `POST` | `/api/games/{game_id}/start` | 게임 시작 이벤트 기록 |
+| `POST` | `/api/games/{game_id}/events` | 선택/매매/반응 로그 저장 |
+| `POST` | `/api/games/{game_id}/conversation` | 게임 GM 대화 응답 생성 |
+| `POST` | `/api/games/{game_id}/finish` | 게임 로그를 위키로 변환 |
+| `POST` | `/api/reports/synthesis` | 게임 위키와 포트폴리오 분석을 종합 리포트로 변환 |
 | `GET`  | `/api/finlife/deposits` · `/savings` · `/pension` · `/all` | 예적금/연금 상품 |
 | `GET`  | `/health` | 헬스체크 |
 
@@ -296,6 +339,8 @@ lux-ru/
 
 - [x] 실제 과거 가격 데이터 기반 백테스트 (5개 시나리오 yfinance 일봉)
 - [x] 📸 스크린샷 자동 파싱 (OpenAI vision)
+- [x] 행동 진단 게임 로그 → LLM 위키 → 종합 리포트 파이프라인
+- [x] `/diagnosis-solution` 멘토 면담/사주/손절·존버 게임 반영
 - [ ] 증권사 OpenAPI 연동 (현재는 CSV 업로드 / 스크린샷 / 수동 입력)
 - [ ] 분석 결과 영속화 (현재는 in-memory 세션)
 - [ ] 종목 클릭 시 역추적(Back-tracing): 그 종목이 들어있는 모든 ETF/펀드를 그래프에서 하이라이트
@@ -312,4 +357,4 @@ lux-ru/
 
 ---
 
-*문서 최종 업데이트: 2026-05-30*
+*문서 최종 업데이트: 2026-06-27*
