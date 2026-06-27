@@ -1,15 +1,14 @@
-"""AI Chat module using Google Gemini API.
+"""AI Chat module using OpenAI API.
 
 Implements intent classification and portfolio Q&A with compliance guards.
 """
 from __future__ import annotations
 
-import json
 import logging
 from typing import AsyncGenerator
 
 from .compliance import sanitize_response, DISCLAIMER_SHORT
-from .config import GOOGLE_API_KEY, GEMINI_MODEL
+from .openai_client import OpenAIConfigError, generate_text
 
 logger = logging.getLogger(__name__)
 
@@ -46,24 +45,13 @@ async def generate_ai_response(
     question: str,
     analysis_context: dict | None = None,
 ) -> AsyncGenerator[str, None]:
-    """Generate streaming AI response using Gemini."""
-
-    if not GOOGLE_API_KEY:
-        yield "⚠️ AI 기능을 사용하려면 GOOGLE_API_KEY 환경변수를 설정해주세요.\n\n"
-        yield _generate_fallback_response(question, analysis_context)
-        return
+    """Generate AI response using OpenAI API with a rule-based fallback."""
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=GOOGLE_API_KEY)
-        model = genai.GenerativeModel(GEMINI_MODEL)
-
         # Build context from analysis
         context_str = _build_context_string(analysis_context) if analysis_context else "분석 데이터가 없습니다. 먼저 CSV를 업로드하고 분석을 실행해주세요."
 
-        prompt = f"""{ANSWER_SYSTEM}
-
-## 포트폴리오 분석 결과 (tool_result)
+        prompt = f"""## 포트폴리오 분석 결과 (tool_result)
 {context_str}
 
 ## 사용자 질문
@@ -71,18 +59,19 @@ async def generate_ai_response(
 
 위 분석 결과만을 사용하여 질문에 답해주세요."""
 
-        response = model.generate_content(prompt, stream=True)
-
-        full_text = ""
-        for chunk in response:
-            if chunk.text:
-                full_text += chunk.text
-
-        # Always run compliance sanitizer before returning.
+        full_text = generate_text(
+            system=ANSWER_SYSTEM,
+            user=prompt,
+            fast=False,
+            max_output_tokens=1400,
+        )
         yield sanitize_response(full_text)
 
+    except OpenAIConfigError:
+        yield "⚠️ AI 기능을 사용하려면 OPENAI_API_KEY와 OPENAI_MODEL 환경변수를 설정해주세요.\n\n"
+        yield _generate_fallback_response(question, analysis_context)
     except Exception as e:
-        logger.error(f"Gemini API error: {e}")
+        logger.error("OpenAI API error: %s", e)
         yield f"⚠️ AI 응답 생성 중 오류가 발생했습니다.\n\n"
         yield sanitize_response(_generate_fallback_response(question, analysis_context))
 

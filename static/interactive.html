@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUX-RU 대화형 AI 진단 게임</title>
+  <link rel="stylesheet" href="/static/css/interactive.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/"><span class="mark"></span><span>LUX-RU</span></a>
+      <div class="session-strip">
+        <span id="sessionId">세션 준비 중</span>
+        <button id="resetSessionBtn" type="button">새 세션</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="rail" aria-label="게임과 포트폴리오">
+        <section class="panel">
+          <div class="section-head">
+            <span class="eyebrow">Agent Pipeline</span>
+            <h1>게임은 에이전트, 로그는 위키</h1>
+          </div>
+          <p class="muted">사진, 검색 입력, 샘플 데이터로 포트폴리오를 먼저 연결한 뒤 게임 진단을 시작합니다.</p>
+          <div class="portfolio-builder">
+            <button class="upload-zone" id="screenshotDropZone" type="button">
+              <input type="file" id="screenshotFileInput" accept="image/png,image/jpeg,image/jpg,image/webp" hidden>
+              <strong>사진으로 불러오기</strong>
+              <span>클릭 · 드래그 · 붙여넣기</span>
+            </button>
+            <div class="builder-row">
+              <div class="search-wrap">
+                <input id="tickerInput" type="text" placeholder="종목 검색: 삼성전자, QQQ">
+                <div class="suggest-box" id="tickerSuggest"></div>
+              </div>
+              <input id="amountInput" type="number" min="1" step="10000" placeholder="금액">
+            </div>
+            <div class="builder-row">
+              <select id="accountTypeInput">
+                <option value="taxable">주식계좌</option>
+                <option value="pension_saving">연금저축</option>
+                <option value="isa">ISA</option>
+                <option value="irp">IRP</option>
+              </select>
+              <button class="secondary-action" id="addPositionBtn" type="button">추가</button>
+            </div>
+            <div class="builder-row builder-actions">
+              <button class="secondary-action compact-action" id="samplePortfolioBtn" type="button">샘플</button>
+              <button class="primary-action" id="initSessionBtn" type="button">포트폴리오 연결</button>
+            </div>
+            <div class="screenshot-status" id="screenshotStatus"></div>
+            <div class="screenshot-warnings" id="screenshotWarnings"></div>
+            <div class="position-list" id="positionList"></div>
+          </div>
+          <div class="portfolio-summary" id="portfolioSummary">
+            <div class="empty">포트폴리오 X-Ray 연결 대기 중입니다.</div>
+          </div>
+        </section>
+
+        <section class="panel game-list">
+          <div class="section-head compact">
+            <span class="eyebrow">Game Plugins</span>
+            <h2>대화형 게임</h2>
+          </div>
+          <button class="game-tab active" data-game="buy_sell" type="button">
+            <strong>군중 트레이더</strong>
+            <span>바이/셀 자극 반응</span>
+          </button>
+          <button class="game-tab" data-game="balance" type="button">
+            <strong>짓궂은 진행자</strong>
+            <span>밸런스 양자택일</span>
+          </button>
+          <button class="game-tab" data-game="saju" type="button">
+            <strong>투자 사주 도사</strong>
+            <span>자기 인식과 기질</span>
+          </button>
+        </section>
+      </aside>
+
+      <section class="stage" aria-label="대화형 게임">
+        <div class="stage-head">
+          <div>
+            <span class="eyebrow" id="gameEyebrow">Hybrid Agent</span>
+            <h2 id="gameTitle">군중 트레이더</h2>
+          </div>
+          <button class="secondary-action" id="finishGameBtn" type="button">현재 게임 위키 생성</button>
+        </div>
+
+        <section class="agent-scene" id="agentScene">
+          <div class="persona-card">
+            <div class="persona-avatar" id="personaAvatar">群</div>
+            <div>
+              <span id="personaRole">Game Master</span>
+              <strong id="personaName">군중 트레이더</strong>
+            </div>
+          </div>
+          <div class="visual-surface" id="visualSurface"></div>
+        </section>
+
+        <section class="chat-panel" aria-label="게임 대화">
+          <div class="chat-transcript" id="chatTranscript"></div>
+          <div class="quick-choices" id="quickChoices"></div>
+          <form class="chat-form" id="chatForm">
+            <input id="chatInput" type="text" autocomplete="off" placeholder="직접 쓰고 싶을 때만 입력하세요. 아래 버튼으로 진행할 수 있습니다.">
+            <button id="sendChatBtn" type="submit">전송</button>
+          </form>
+        </section>
+      </section>
+
+      <aside class="inspector" aria-label="로그와 리포트">
+        <section class="panel">
+          <div class="section-head compact">
+            <span class="eyebrow">Signals</span>
+            <h2>6개 성향 지표</h2>
+          </div>
+          <div class="trait-grid" id="traitGrid"></div>
+        </section>
+
+        <section class="panel log-panel">
+          <div class="section-head compact">
+            <span class="eyebrow">Logger</span>
+            <h2>공통 이벤트 로그</h2>
+          </div>
+          <div class="event-log" id="eventLog"></div>
+        </section>
+
+        <section class="panel wiki-panel">
+          <div class="section-head compact">
+            <span class="eyebrow">Wiki</span>
+            <h2>게임 위키</h2>
+          </div>
+          <div class="markdown-box" id="wikiBox">게임을 진행한 뒤 위키를 생성할 수 있습니다.</div>
+          <button class="secondary-action wide" id="synthesisBtn" type="button">위키 종합 리포트 생성</button>
+        </section>
+
+        <section class="panel report-panel">
+          <div class="section-head compact">
+            <span class="eyebrow">Report</span>
+            <h2>최종 리밸런싱 리포트</h2>
+          </div>
+          <div class="markdown-box" id="reportBox">각 게임 위키만 읽어 종합 리포트를 만듭니다.</div>
+        </section>
+      </aside>
+    </main>
+  </div>
+  <div class="game-modal-bg" id="tradeModalBg" aria-hidden="true">
+    <div class="game-modal trade-modal" id="tradeModal" role="dialog" aria-modal="true" aria-label="손절·존버 미니게임"></div>
+  </div>
+  <script src="/static/js/interactive.js"></script>
+</body>
+</html>

@@ -231,6 +231,92 @@ input,select{font-family:inherit}
 .analysis-state{padding:32px 20px;text-align:center;color:var(--muted);line-height:1.6}
 .analysis-state b{display:block;color:var(--ink);font-size:18px;margin-bottom:8px}
 
+/* ── STEP2 리스크 진단 ── */
+.risk-spectrum{margin-top:20px}
+.rs-bar{height:9px;border-radius:999px;position:relative;
+  background:linear-gradient(90deg,#16a34a 0%,#84cc16 28%,#f59e0b 60%,#fb7185 82%,#e5484d 100%)}
+.rs-mk{position:absolute;top:-5px;width:4px;height:19px;background:var(--ink);border-radius:2px;
+  box-shadow:0 0 0 2.5px #fff,0 2px 6px rgba(0,0,0,.25);transition:left .9s cubic-bezier(.2,.8,.2,1)}
+.rs-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:9px}
+.risk-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+@media(max-width:640px){.risk-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:460px){.risk-kpis{grid-template-columns:1fr}}
+.rk{display:flex;flex-direction:column;gap:12px;min-height:126px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:0 10px 26px -22px rgba(15,23,42,.42)}
+.rk-top{display:flex;align-items:center;gap:8px;min-width:0}
+.rk-ic{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--bg-softer);color:var(--ink);font-weight:900;font-size:13px}
+.rk-label{font-size:11.5px;color:var(--muted);font-weight:800;line-height:1.25}
+.rk-main{display:grid;grid-template-columns:1fr auto;align-items:end;gap:10px}
+.rk-main b{font-size:25px;font-weight:900;letter-spacing:0;line-height:1;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rk-main em{font-style:normal;justify-self:end;border-radius:999px;background:var(--bg-softer);color:var(--muted);padding:4px 8px;font-size:10.5px;font-weight:900;white-space:nowrap}
+.rk-bar{height:6px;border-radius:999px;background:var(--bg-softer);overflow:hidden;margin-top:auto}
+.rk-bar i{display:block;height:100%;border-radius:999px;background:var(--blue);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.rk-low .rk-ic,.rk-low .rk-main em{background:#e9f7ee;color:#15803d}.rk-low .rk-bar i{background:#16a34a}
+.rk-mid .rk-ic,.rk-mid .rk-main em{background:#eff4ff;color:#2563eb}.rk-mid .rk-bar i{background:#2563eb}
+.rk-high .rk-ic,.rk-high .rk-main em{background:#fff7ed;color:#b45309}.rk-high .rk-bar i{background:#f59e0b}
+.rk-danger .rk-ic,.rk-danger .rk-main em{background:#fef2f2;color:#be123c}.rk-danger .rk-bar i{background:#e5484d}
+.rcmp{margin-top:20px}
+.rcmp-row{display:grid;grid-template-columns:96px 1fr 60px;gap:12px;align-items:center;padding:9px 0;
+  border-bottom:1px solid var(--line)}
+.rcmp-row:last-child{border-bottom:none}
+.rcmp-row .nm{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.rcmp-row .nm.me{color:var(--ink);font-weight:700}
+.rcmp-track{height:8px;border-radius:999px;background:var(--bg-softer);overflow:hidden}
+.rcmp-track i{display:block;height:100%;border-radius:999px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.rcmp-row .val{font-family:var(--mono);font-size:12.5px;font-weight:700;text-align:right}
+.rcmp-row span{font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.rcmp-row b{font-family:var(--mono);font-size:12.5px;text-align:right}
+.asset-split{display:flex;height:13px;border-radius:999px;overflow:hidden;margin-top:8px;background:var(--line-2)}
+.asset-split i{display:block;height:100%}
+.asset-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--ink-2)}
+.asset-legend .li{display:flex;align-items:center;gap:6px}
+.asset-legend .sw{width:9px;height:9px;border-radius:3px;flex:none}
+.asset-legend span{display:flex;align-items:center;gap:6px}
+.asset-legend span i{display:block;width:9px;height:9px;border-radius:3px;flex:none}
+
+/* ── STEP2 예상 배당 스케줄 ── */
+.div-bars{display:flex;align-items:flex-end;gap:5px;height:148px;margin-top:6px;
+  padding:0 2px 2px;border-bottom:1px solid var(--line)}
+.div-bars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  height:100%;gap:5px;min-width:0}
+.div-bars .amt{font-size:9px;font-weight:700;color:var(--ink-2);font-family:var(--mono);
+  white-space:nowrap;opacity:0;transition:opacity .2s}
+.div-bars .col.has .amt{opacity:1}
+.div-bars .bar{width:100%;max-width:26px;border-radius:5px 5px 0 0;background:var(--line-2);
+  min-height:3px;transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.div-bars .col.has .bar{background:#c4cad6}
+.div-bars .col.now .bar{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+.div-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px;min-width:0}
+.div-bar b{font-size:10px;color:var(--muted);font-weight:800}
+.div-bar span{display:flex;align-items:flex-end;width:100%;max-width:27px;height:96px;border-radius:6px 6px 0 0;background:var(--bg-softer);overflow:hidden}
+.div-bar span i{display:block;width:100%;min-height:4px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#fbbf24,#f59e0b);transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.div-bar em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--ink-2);white-space:nowrap}
+.div-months{display:flex;gap:5px;margin-top:6px}
+.div-months span{flex:1;text-align:center;font-size:10px;color:var(--muted);min-width:0}
+.div-months span.now{color:var(--warn);font-weight:700}
+.div-months span.on{color:var(--warn);font-weight:800}
+.div-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.div-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;align-items:center;
+  padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.div-main,.cost-main{min-width:0}
+.div-side,.cost-side{text-align:right;min-width:96px}
+.div-item .nm{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.div-item .di-mo{font-size:10.5px;font-weight:600;color:var(--muted);background:var(--bg-softer);
+  padding:2px 8px;border-radius:999px}
+.div-item .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+.div-item .amt{font-family:var(--mono);font-size:14px;font-weight:700;white-space:nowrap}
+.div-item .amt .y{display:block;font-size:10.5px;color:var(--good);font-weight:600;margin-top:2px}
+
+/* ── STEP2 비용 룩스루 ── */
+.cost-list{display:flex;flex-direction:column;gap:9px}
+.cost-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 14px;align-items:center;
+  padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.cost-item .nm{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.cost-item .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+.cost-item .amt{font-family:var(--mono);font-weight:700;font-size:14px;text-align:right;white-space:nowrap}
+.cost-item .lbl{font-size:10.5px;color:var(--muted);text-align:right;margin-top:2px}
+.cost-bar{grid-column:1 / -1;height:6px;border-radius:999px;background:var(--bg-softer);overflow:hidden}
+.cost-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#f59e0b,#fb7185)}
+
 /* ====== STEP3 검사 ====== */
 .agent-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:30px}
 @media(max-width:780px){.agent-grid{grid-template-columns:1fr}}
@@ -261,6 +347,15 @@ input,select{font-family:inherit}
 .trait{background:#fff;padding:16px 18px} .trait .l{font-size:11.5px;color:var(--muted)}
 .trait .v{font-weight:700;margin-top:3px} .trait .meter{height:6px;border-radius:999px;background:var(--line-2);margin-top:8px;overflow:hidden}
 .trait .meter i{display:block;height:100%;background:var(--grad)}
+.log-analysis-card{background:#fff}
+.profile-log-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.profile-log-metric{border:1px solid var(--line);border-radius:12px;background:var(--bg-soft);padding:11px 12px}
+.profile-log-metric .l{font-size:11px;color:var(--muted);font-weight:700}
+.profile-log-metric .v{font-family:var(--mono);font-weight:900;margin-top:4px}
+.profile-log-detail{margin-top:12px;color:var(--ink-2);font-size:12.5px;line-height:1.65}
+.profile-log-turns{display:grid;gap:7px;margin-top:10px}
+.profile-log-turn{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 10px}
+.profile-log-turn b{display:block;color:var(--ink);font-size:12px;margin-bottom:3px}
 @media(max-width:640px){.profile-traits{grid-template-columns:1fr}}
 
 /* 모달 (퀴즈) */
@@ -326,6 +421,64 @@ input,select{font-family:inherit}
 .saju-sector .guard{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:7px}
 @media(max-width:640px){.saju-form-grid,.saju-pillars,.saju-stat-grid,.saju-report-body,.saju-sector-grid{grid-template-columns:1fr}}
 
+/* 멘토 면담 · 미연시형 시뮬레이션 */
+.modal.interview-modal{max-width:900px;background:#0a0f1f;color:#f8fafc;border:1px solid rgba(255,255,255,.12);box-shadow:0 32px 90px rgba(3,7,18,.58);border-radius:24px;overflow:hidden}
+.modal.interview-modal .modal-body{padding:0}.modal.interview-modal .close{color:rgba(255,255,255,.72)}.modal.interview-modal .close:hover{background:rgba(255,255,255,.1);color:#fff}
+.mentor-sim-shell{position:relative;min-height:620px;padding:24px;overflow:hidden;background:radial-gradient(circle at 20% 0%,rgba(168,85,247,.26),transparent 34%),radial-gradient(circle at 86% 12%,rgba(34,211,238,.16),transparent 34%),linear-gradient(145deg,#09111f,#12172c 48%,#0b1020)}
+.mentor-sim-shell:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 78%);pointer-events:none}.mentor-sim-shell>*{position:relative;z-index:1}
+.mentor-sim-close{position:absolute;right:18px;top:18px;z-index:3;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.14);background:rgba(15,23,42,.48);backdrop-filter:blur(12px)}
+.mentor-intro-head{text-align:center;max-width:640px;margin:10px auto 22px}.mentor-kicker{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}.mentor-intro-head h2{margin:8px 0 7px;font-size:30px;line-height:1.15}.mentor-intro-head p{margin:0;color:#cbd5e1;font-size:13px;line-height:1.65}
+.mentor-character-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.mentor-character-card{position:relative;min-height:226px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(15,23,42,.62);color:#f8fafc;text-align:center;padding:14px 12px;cursor:pointer;overflow:hidden;transition:.18s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.mentor-character-card:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--mentor-color,#a855f7) 22%,transparent),transparent 58%);opacity:.75}.mentor-character-card>*{position:relative;z-index:1}.mentor-character-card:hover,.mentor-character-card.active{transform:translateY(-2px);border-color:color-mix(in srgb,var(--mentor-color,#a855f7) 76%,#fff);box-shadow:0 18px 42px color-mix(in srgb,var(--mentor-color,#a855f7) 25%,transparent)}.mentor-character-card.active{background:rgba(15,23,42,.86)}
+.mentor-portrait{width:104px;height:116px;border-radius:24px;margin:4px auto 12px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 42% 30%,rgba(255,255,255,.26),transparent 32%),linear-gradient(145deg,color-mix(in srgb,var(--mentor-color,#a855f7) 72%,#fff),#111827);border:1px solid rgba(255,255,255,.22);box-shadow:0 18px 38px rgba(0,0,0,.28)}.mentor-portrait span{font-size:54px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.28))}.mentor-portrait img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.mentor-name{font-weight:950;font-size:16px}.mentor-title{margin-top:4px;font-size:12px;color:#cbd5e1;font-weight:800}.mentor-tag-badge{display:inline-flex;margin-top:9px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);font-size:11px;color:#e2e8f0;font-weight:800}
+.mentor-custom{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(15,23,42,.52)}.mentor-custom .inp{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:#fff}.mentor-custom .inp::placeholder{color:#94a3b8}
+.mentor-start-row{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}.mentor-prev-note{margin-top:12px;border:1px solid rgba(125,211,252,.2);border-radius:14px;background:rgba(14,165,233,.1);padding:11px 13px;color:#dbeafe;font-size:12px;line-height:1.55}
+.mentor-game-shell{position:relative;min-height:660px;padding:18px;overflow:hidden;background:#0b1020}.mentor-game-shell:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 2%,color-mix(in srgb,var(--mentor-color,#a855f7) 32%,transparent),transparent 35%),linear-gradient(145deg,#0b1020,#172033 62%,#0a0f1f)}.mentor-bg-buffett:after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(251,191,36,.2),transparent 38%),radial-gradient(circle at 12% 72%,rgba(245,158,11,.18),transparent 32%)}.mentor-bg-lynch:after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(59,130,246,.22),transparent 40%),radial-gradient(circle at 84% 74%,rgba(34,211,238,.16),transparent 28%)}.mentor-bg-wonyoung:after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(236,72,153,.24),transparent 40%),radial-gradient(circle at 82% 68%,rgba(244,114,182,.18),transparent 30%)}.mentor-bg-musk:after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(168,85,247,.25),transparent 42%),radial-gradient(circle at 80% 70%,rgba(34,211,238,.18),transparent 30%)}.mentor-game-shell>*{position:relative;z-index:1}
+.mentor-hud{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(15,23,42,.58);backdrop-filter:blur(14px)}.mentor-hud-title{font-size:12px;font-weight:950;color:#e2e8f0}.mentor-hud-sub{font-size:11px;color:#94a3b8;margin-top:2px}.mentor-hearts{display:flex;gap:2px;font-size:15px;color:#64748b}.mentor-hearts .heart.filled{color:#fb7185;text-shadow:0 0 14px rgba(251,113,133,.62)}.mentor-progress-pill{min-width:104px;text-align:right;font-size:12px;font-weight:900;color:#e2e8f0}.mentor-progress-mini{height:5px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:5px}.mentor-progress-mini i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mentor-color,#a855f7),#22d3ee)}
+.mentor-stage{display:grid;grid-template-columns:250px 1fr;gap:18px;align-items:end;min-height:360px;padding:22px 10px 10px}.mentor-large-portrait{align-self:center;justify-self:center;width:230px;height:300px;border-radius:30px;display:grid;place-items:center;position:relative;overflow:hidden;background:rgba(15,23,42,.28);border:1px solid rgba(255,255,255,.14);box-shadow:0 28px 70px rgba(0,0,0,.38);animation:mentorFloat 4s ease-in-out infinite}.mentor-large-portrait:after{content:"";position:absolute;inset:12px;border-radius:22px;border:1px solid rgba(255,255,255,.12);pointer-events:none}.mentor-large-emoji{font-size:92px;filter:drop-shadow(0 16px 24px rgba(0,0,0,.32))}.mentor-large-img{width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 18px 28px rgba(0,0,0,.28))}
+.mentor-dialogue{align-self:end;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:rgba(7,12,24,.78);box-shadow:0 22px 60px rgba(0,0,0,.38);padding:18px 20px;backdrop-filter:blur(18px)}.mentor-dialogue-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:950;color:#fff}.mentor-qnum{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:24px;border-radius:999px;background:var(--mentor-color,#a855f7);color:#fff;font-family:var(--mono);font-size:12px}.mentor-dialogue-text{margin-top:12px;font-size:16px;line-height:1.75;color:#f8fafc;min-height:84px}
+.mentor-choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}.mentor-choice{position:relative;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(15,23,42,.76);color:#f8fafc;padding:13px 14px 13px 48px;text-align:left;font-weight:850;font-size:13px;line-height:1.45;transition:.16s ease}.mentor-choice:before{content:attr(data-icon);position:absolute;left:14px;top:50%;transform:translateY(-50%);width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.1)}.mentor-choice:hover{border-color:var(--mentor-color,#a855f7);background:color-mix(in srgb,var(--mentor-color,#a855f7) 20%,rgba(15,23,42,.86));transform:translateY(-1px)}
+.mentor-history-strip{display:grid;gap:7px;max-height:140px;overflow:auto;margin-top:4px;padding-right:4px}.mentor-history-line{border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(15,23,42,.44);padding:9px 11px;font-size:11.5px;line-height:1.45;color:#cbd5e1}.mentor-history-line b{color:#fff}.mentor-thinking{margin-top:12px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(15,23,42,.54);padding:11px 12px;color:#c4b5fd;font-size:12px;font-weight:800}.mentor-disclaimer{margin-top:12px;font-size:11px;line-height:1.5;color:#94a3b8}
+.mentor-result-hero{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:rgba(15,23,42,.64);padding:16px}.mentor-result-portrait{width:128px;height:150px;border-radius:26px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,var(--mentor-color,#a855f7),#111827);border:1px solid rgba(255,255,255,.16);font-size:64px}.mentor-result-portrait img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}.mentor-result-title{font-size:24px;font-weight:950}.mentor-result-quote{margin-top:7px;color:#dbeafe;font-size:13px;line-height:1.6}.interview-tabs,.saju-tabs{display:flex;gap:7px;margin:16px 0 12px}.interview-tab,.saju-tab{flex:1;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(15,23,42,.66);color:#cbd5e1;padding:10px 8px;font-size:12px;font-weight:900}.interview-tab.active,.saju-tab.active{background:#fff;color:#111827;border-color:#fff}.interview-panel,.saju-tab-panel{display:none}.interview-panel.active,.saju-tab-panel.active{display:block}.interview-traits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.interview-trait{border:1px solid rgba(255,255,255,.11);border-radius:12px;padding:12px;background:rgba(15,23,42,.58)}.interview-trait .top{display:flex;justify-content:space-between;font-size:12px;font-weight:900;color:#e2e8f0}.interview-trait .track{height:8px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:8px}.interview-trait .track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mentor-color,#a855f7),#22d3ee)}
+@keyframes mentorFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.saju-oracle{border:1px solid #f6d365;border-radius:18px;background:linear-gradient(135deg,#fffbeb,#fff7ed 55%,#fff);padding:18px;position:relative;overflow:hidden}
+.saju-oracle:after{content:"";position:absolute;right:-45px;top:-45px;width:130px;height:130px;border-radius:50%;background:rgba(251,191,36,.18)}
+.saju-birth-grid{display:grid;grid-template-columns:1.2fr .8fr .8fr .8fr .8fr;gap:8px;margin-top:14px}
+.saju-birth-grid .inp{text-align:center}
+.saju-gender{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.saju-gender button{border:1px solid var(--line);border-radius:12px;background:#fff;padding:11px;font-weight:900;color:var(--muted)}.saju-gender button.active{border-color:#f59e0b;background:#fffbeb;color:#92400e}
+.saju-check{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--muted);font-weight:700}
+.saju-v2-hero{border-radius:18px;border:1px solid #f6d365;background:linear-gradient(135deg,#fffbeb,#fff 60%);padding:18px}
+.saju-rec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.saju-rec-card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:13px}.saju-rec-card .t{font-weight:900}.saju-rec-card .s{font-size:12px;color:var(--muted);line-height:1.5;margin-top:5px}
+.saju-wiki-actions{display:flex;gap:8px;justify-content:flex-end;margin-bottom:10px}
+@media(max-width:760px){.mentor-character-grid{grid-template-columns:repeat(2,1fr)}.mentor-stage{grid-template-columns:1fr;min-height:auto;padding-top:18px}.mentor-large-portrait{width:150px;height:180px}.mentor-large-emoji{font-size:68px}.mentor-choice-grid,.interview-traits{grid-template-columns:1fr}.mentor-result-hero{grid-template-columns:1fr;text-align:center}.mentor-result-portrait{margin:0 auto}.mentor-hud{align-items:flex-start;flex-wrap:wrap}}
+@media(max-width:640px){.mentor-character-grid,.mentor-choice-grid,.interview-traits,.saju-rec-grid{grid-template-columns:1fr}.mentor-custom{grid-template-columns:1fr}.saju-birth-grid{grid-template-columns:1fr 1fr}.saju-birth-grid .saju-year{grid-column:1/-1}.mentor-sim-shell,.mentor-game-shell{padding:16px}.mentor-intro-head h2{font-size:24px}.mentor-character-card{min-height:190px}.mentor-dialogue-text{font-size:14px;min-height:72px}}
+
+.modal.saju-modal{max-width:560px;background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow-lg);border-radius:20px}
+.modal.saju-modal::-webkit-scrollbar-thumb{background:#d4d4d8}
+.modal.saju-modal .modal-head{padding:18px 20px 0}.modal.saju-modal .modal-body{padding:14px 18px 20px}
+.modal.saju-modal .eyebrow{color:var(--warn)}.modal.saju-modal .muted,.modal.saju-modal .small{color:var(--muted)}
+.modal.saju-modal .close{color:var(--muted)}.modal.saju-modal .close:hover{background:var(--bg-softer);color:var(--ink)}
+.saju-shell{position:relative;overflow:hidden}.saju-shell:before{content:"";position:absolute;left:8%;top:3%;width:34px;height:34px;border-radius:50%;background:rgba(245,158,11,.08);pointer-events:none}.saju-shell:after{content:"";position:absolute;right:9%;top:14%;width:44px;height:44px;border-radius:50%;border:1px solid rgba(245,158,11,.16);pointer-events:none}
+.saju-header{text-align:center;padding:0 0 10px}.saju-title{font-size:21px;font-weight:900;color:var(--ink)}.saju-subtitle{font-size:11px;color:var(--muted);margin-top:3px}
+.saju-ai-badge{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:4px 11px;border-radius:999px;background:#fffbeb;border:1px solid #fde68a;color:#b45309;font-size:10px;font-weight:800}.saju-ai-badge i{width:6px;height:6px;border-radius:50%;background:#f59e0b;animation:pulse 1.5s ease infinite}
+.saju-oracle{border-color:#fde68a;background:linear-gradient(135deg,#fffbeb,#fff 62%);border-radius:18px;padding:16px}
+.saju-oracle:after{display:block;background:rgba(245,158,11,.12)}.saju-dosa{text-align:center;margin-bottom:14px}.saju-dosa-emoji{font-size:54px;line-height:1;display:inline-block;animation:dosa-float 3s ease-in-out infinite}.saju-dosa-speech{margin-top:10px;border:1px solid #fde68a;background:#fffdf5;border-radius:12px;padding:10px 13px;color:var(--ink-2);font-size:12px;line-height:1.55;text-align:left}.saju-dosa-speech b{color:#b45309}
+@keyframes dosa-float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+.saju-form-section{border:1px solid var(--line);background:var(--bg-soft);border-radius:14px;padding:14px;margin-top:12px}.saju-form-label{display:flex;align-items:center;gap:6px;color:#b45309;font-size:12px;font-weight:800;margin:0 0 8px}.saju-date-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin-bottom:12px}.saju-time-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.modal.saju-modal .saju-input{background:#fff;border:1px solid var(--line-2);border-radius:10px;padding:11px;color:var(--ink);text-align:center;font-size:14px;width:100%;font-variant-numeric:tabular-nums}.modal.saju-modal .saju-input:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.16)}.modal.saju-modal .saju-input::placeholder{color:var(--muted-2)}
+.saju-check{color:var(--muted);font-size:11.5px}.saju-check input{accent-color:#f59e0b}.saju-gender button{background:#fff;border:1px solid var(--line-2);color:var(--muted);border-radius:10px}.saju-gender button.active{background:#fffbeb;border-color:#f59e0b;color:#92400e}
+.saju-primary{width:100%;justify-content:center;margin-top:14px;background:var(--ink);border:0;color:#fff;box-shadow:0 12px 26px rgba(15,23,42,.18)}
+.modal.saju-modal .saju-note{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.saju-v2-hero{border-color:#fde68a;background:linear-gradient(135deg,#fffbeb,#fff 64%);border-radius:18px;color:var(--ink)}.saju-result-dosa{font-size:52px;text-align:center;animation:bounceIn .75s ease}.saju-result-kicker{text-align:center;font-size:12px;color:#b45309;font-weight:800;margin-top:6px}.saju-result-title{text-align:center;font-size:24px;font-weight:900;margin-top:4px}.saju-result-badge{display:block;width:max-content;max-width:100%;margin:8px auto 12px;padding:6px 15px;border-radius:999px;font-size:12px;font-weight:900}.saju-result-quote{border-left:3px solid #f59e0b;background:#fffdf5;border-radius:12px;padding:12px 14px;color:var(--ink-2);font-size:12px;line-height:1.6}
+@keyframes bounceIn{0%{transform:scale(.4);opacity:0}55%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.modal.saju-modal .saju-tabs{gap:5px;margin:10px 0}.modal.saju-modal .saju-tab{background:#fff;border-color:var(--line-2);color:var(--muted);border-radius:10px;font-size:10px;padding:9px 3px}.modal.saju-modal .saju-tab.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.saju-dark-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:9px}.saju-section-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:900;margin-bottom:12px;color:var(--ink)}
+.modal.saju-modal .saju-bar .top{color:var(--ink)}.modal.saju-modal .saju-bar .track{background:var(--line-2);height:10px}.modal.saju-modal .saju-report{background:#fff;border-color:var(--line)}.modal.saju-modal .saju-report-head{background:var(--bg-soft);border-color:var(--line)}.modal.saju-modal .saju-report-head .t,.modal.saju-modal .saju-report-block .h{color:var(--ink)}.modal.saju-modal .saju-report-head .s,.modal.saju-modal .saju-report-block .p{color:var(--muted)}.modal.saju-modal .saju-report-body{background:var(--line)}.modal.saju-modal .saju-report-block{background:#fff}
+.saju-pillar-heads,.modal.saju-modal .saju-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.saju-pillar-heads{margin-bottom:6px}.saju-pillar-heads div{text-align:center;font-size:10px;color:var(--muted)}.modal.saju-modal .saju-pillar{background:linear-gradient(135deg,#fff,#fffbeb);border-color:#fde68a;border-top-width:1px;border-radius:10px;padding:10px 4px}.modal.saju-modal .saju-pillar .l{display:none}.modal.saju-modal .saju-pillar .gan,.modal.saju-modal .saju-pillar .zhi{font-family:serif;font-size:24px;margin:0}.modal.saju-modal .saju-pillar .meta{font-size:10px;color:var(--muted)}
+.modal.saju-modal .saju-tags span{background:var(--bg-soft);border-color:var(--line);color:var(--ink-2)}.modal.saju-modal .saju-sector,.modal.saju-modal .saju-rec-card{background:#fff;border-color:var(--line);color:var(--ink)}.modal.saju-modal .saju-sector .why,.modal.saju-modal .saju-sector .guard,.modal.saju-modal .saju-rec-card .s{color:var(--muted)}.modal.saju-modal .llm-report-body{background:#fff;border:1px solid var(--line);border-radius:14px;color:var(--ink-2)}.modal.saju-modal .markdown-rendered h2,.modal.saju-modal .markdown-rendered h3,.modal.saju-modal .markdown-rendered h4{color:var(--ink)}.modal.saju-modal .md-table-wrap{background:#fff;border-color:var(--line)}.modal.saju-modal .md-table-wrap th{background:var(--bg-soft);color:var(--ink)}.modal.saju-modal .md-table-wrap td{border-color:var(--line)}
+@media(max-width:640px){.saju-date-grid,.saju-time-grid,.saju-pillar-heads,.modal.saju-modal .saju-pillars{grid-template-columns:repeat(2,1fr)}}
+
 /* 손절·존버 미니게임 */
 .modal.trade-modal{max-width:760px}
 .trade-intro{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--bg-soft)}
@@ -349,6 +502,10 @@ input,select{font-family:inherit}
 .trade-price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
 .trade-price{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;text-align:center}
 .trade-price .l{font-size:11px;color:var(--muted)}.trade-price .v{font-family:var(--mono);font-size:16px;font-weight:800;margin-top:3px}
+.trade-ai{display:flex;align-items:center;gap:10px;margin-top:12px;border-left:3px solid #7459d9;border-radius:12px;background:linear-gradient(135deg,rgba(116,89,217,.12),rgba(37,99,235,.07));padding:10px 12px}
+.trade-ai-avatar{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#111827;color:#fff;font-size:12px;font-weight:900;flex:none}
+.trade-ai span{display:block;color:#7459d9;font-size:11px;font-weight:900;margin-bottom:2px}
+.trade-ai b{display:block;font-size:13px;line-height:1.45;color:var(--ink)}
 .trade-chart-wrap{position:relative;height:230px;border:1px solid var(--line);border-radius:16px;background:#0f172a;margin-top:12px;overflow:hidden}
 .trade-chart-wrap canvas{width:100%;height:100%;display:block}
 .trade-status{position:absolute;left:12px;top:12px;z-index:2;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;padding:5px 10px;font-size:12px;font-weight:700}
@@ -361,10 +518,34 @@ input,select{font-family:inherit}
 .trade-note{min-height:42px;margin-top:10px;border-radius:12px;background:var(--bg-soft);padding:11px 13px;color:var(--ink-2);font-size:12.5px;line-height:1.5}
 .trade-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 .trade-stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.trade-stat .l{font-size:11px;color:var(--muted)}.trade-stat .v{font-weight:800;margin-top:4px}
+.trade-turn-summary{display:grid;gap:8px;margin-top:16px}
+.trade-turn-item{border:1px solid var(--line);border-radius:12px;background:#fff;padding:11px 12px}
+.trade-turn-item .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.trade-turn-item b{font-size:12.5px}.trade-turn-item span{font-family:var(--mono);font-size:12px;font-weight:900}
+.trade-turn-item p{margin:6px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
 .trade-traits{display:flex;flex-direction:column;gap:10px;margin-top:16px}.trade-trait .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
 .trade-trait .track{height:7px;border-radius:999px;background:var(--line-2);overflow:hidden}.trade-trait .track i{display:block;height:100%;background:var(--grad)}
+.llm-report-card{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+.llm-report-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 15px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+.llm-report-head .t{font-size:13px;font-weight:900}.llm-report-head .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.llm-report-body{padding:14px 15px;white-space:pre-wrap;font-size:12.5px;line-height:1.65;color:var(--ink-2);max-height:280px;overflow:auto}
+.llm-report-body.empty{border:0;background:#fff;text-align:left;padding:14px 15px}
+.llm-report-body.markdown-rendered{white-space:normal}
+.markdown-rendered h2,.markdown-rendered h3,.markdown-rendered h4,.markdown-rendered h5{margin:14px 0 7px;color:var(--ink);line-height:1.28}
+.markdown-rendered h2:first-child,.markdown-rendered h3:first-child{margin-top:0}
+.markdown-rendered h2{font-size:16px}.markdown-rendered h3{font-size:14px}.markdown-rendered h4,.markdown-rendered h5{font-size:13px}
+.markdown-rendered p{margin:0 0 9px}
+.markdown-rendered ul{margin:0 0 10px;padding-left:18px}
+.markdown-rendered li{margin:4px 0}
+.markdown-rendered code{border-radius:6px;background:#eef2f7;padding:1px 5px;font-size:11.5px}
+.markdown-rendered hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+.md-table-wrap{overflow:auto;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#fff}
+.md-table-wrap table{width:100%;border-collapse:collapse;font-size:12px}
+.md-table-wrap th,.md-table-wrap td{padding:8px 9px;border-bottom:1px solid var(--line-2);text-align:left;vertical-align:top}
+.md-table-wrap th{background:var(--bg-soft);color:var(--ink);font-weight:850}
+.md-table-wrap tr:last-child td{border-bottom:0}
 @media(max-width:640px){
-  .trade-rules,.trade-price-grid,.trade-stat-grid{grid-template-columns:1fr}
+  .trade-rules,.trade-price-grid,.trade-stat-grid,.profile-log-grid{grid-template-columns:1fr}
   .trade-game-head{flex-direction:column}.trade-timer-row{grid-template-columns:1fr}.trade-timer{margin:auto}
 }
 
@@ -392,7 +573,7 @@ input,select{font-family:inherit}
 .bt-legend .li{display:flex;align-items:center;gap:7px} .bt-legend .ln{width:18px;height:3px;border-radius:2px}
 .bt-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
 .bt-stat{background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
-.bt-stat .l{font-size:11.5px;color:var(--muted)} .bt-stat .v{font-size:19px;font-weight:800;margin-top:3px;letter-spacing:-.02em}
+.bt-stat .l,.bt-stat span{font-size:11.5px;color:var(--muted);display:block}.bt-stat .v,.bt-stat b{font-size:19px;font-weight:800;margin-top:3px;letter-spacing:-.02em;display:block}.bt-stat em{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:3px}
 .disclaimer{font-size:11.5px;color:var(--muted-2);text-align:center;margin-top:28px;line-height:1.6}
 
 /* 푸터 네비 */
@@ -403,6 +584,7 @@ input,select{font-family:inherit}
 .foot-restart{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .foot-restart:hover{color:var(--ink)}
 @media(max-width:560px){.foot-restart span{display:none}}
+@media(max-width:560px){.cost-item,.div-item{grid-template-columns:1fr}.cost-side,.div-side{text-align:left;min-width:0}.cost-bar{grid-column:1}}
 
 .empty{text-align:center;color:var(--muted);padding:40px 20px;border:1px dashed var(--line-2);
   border-radius:var(--radius);background:var(--bg-soft)}
@@ -542,10 +724,35 @@ input,select{font-family:inherit}
       </div>
     </div>
 
+    <div class="card pad" style="margin-top:18px" id="riskCard">
+      <div class="row between center-y wrap" style="gap:10px">
+        <div>
+          <div class="eyebrow">리스크 진단</div>
+          <div class="h2" style="margin-top:6px">이 포트폴리오의 위험 성향</div>
+        </div>
+        <div class="chip warn" id="riskStyleChip">분석 대기</div>
+      </div>
+      <div class="risk-spectrum">
+        <div class="rs-bar"><div class="rs-mk" id="riskMk" style="left:0%"></div></div>
+        <div class="rs-scale"><span>수비형</span><span>중립형</span><span>공격형</span></div>
+      </div>
+      <div class="risk-kpis" id="riskKpis"></div>
+      <div style="margin-top:20px">
+        <div class="h3">자산 유형 구성</div>
+        <div class="asset-split" id="assetSplit"></div>
+        <div class="asset-legend" id="assetLegend"></div>
+      </div>
+      <div class="rcmp">
+        <div class="h3" style="margin-bottom:10px">벤치마크 대비 위험 (연 변동성)</div>
+        <div id="riskCompare"></div>
+      </div>
+      <div class="muted small" id="riskNote" style="margin-top:14px;line-height:1.6"></div>
+    </div>
+
     <div class="card pad" style="margin-top:18px">
       <div class="h3">상위 실질 노출 종목</div>
       <table class="tbl"><thead><tr>
-        <th>#</th><th>종목</th><th>섹터</th><th class="r">실질 투자액</th><th class="r">실질 비중</th><th style="width:90px">분포</th>
+        <th>#</th><th>종목</th><th>섹터</th><th class="r">실질 노출액</th><th class="r">실질 비중</th><th style="width:90px">분포</th>
       </tr></thead><tbody id="exposureTbody"></tbody></table>
     </div>
 
@@ -553,6 +760,46 @@ input,select{font-family:inherit}
       <div class="ic">🤖</div>
       <div><div class="h3">포트폴리오 코칭</div>
         <div class="muted" id="coachText" style="margin-top:5px;font-size:13.5px;line-height:1.6"></div></div>
+    </div>
+
+    <div class="card pad" id="costCard" style="margin-top:18px">
+      <div class="row between center-y wrap" style="gap:14px">
+        <div>
+          <div class="eyebrow">비용 룩스루</div>
+          <div class="h2" style="margin-top:6px">내가 매년 내는 보수</div>
+          <div class="muted small" style="margin-top:5px">실제 조회 가능한 expense ratio를 평가액으로 가중해 합산합니다. 직접 보유 주식은 운용보수가 없습니다.</div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted small">연간 예상 비용</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-.02em" id="costAnnual">—</div>
+          <div class="chip warn" id="costTer" style="margin-top:5px"></div>
+        </div>
+      </div>
+      <div class="cost-list" id="costList" style="margin-top:18px"></div>
+      <div class="bt-stats" id="costStats" style="margin-top:16px"></div>
+      <div class="muted small" id="costNote" style="margin-top:12px;line-height:1.55"></div>
+    </div>
+
+    <div class="card pad" id="divCard" style="margin-top:18px">
+      <div class="row between center-y wrap" style="gap:14px">
+        <div>
+          <div class="eyebrow">예상 배당 스케줄</div>
+          <div class="h2" style="margin-top:6px">포트폴리오 기준 연간 예상 배당</div>
+          <div class="muted small" style="margin-top:5px">최근 실제 배당·분배 이력과 현재가로 연 환산합니다. ETF·펀드는 개별 종목 배당이 아닌 상품 분배금 기준입니다.</div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted small">연 예상 배당금</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-.02em" id="divTotal">—</div>
+          <div class="chip good" id="divYield" style="margin-top:5px"></div>
+        </div>
+      </div>
+      <div class="div-bars" id="divBars" style="margin-top:20px"></div>
+      <div class="div-months" id="divMonths"></div>
+      <div style="margin-top:20px">
+        <div class="h3">배당 기여 상품</div>
+        <div class="div-list" id="divList"></div>
+      </div>
+      <div class="muted small" id="divNote" style="margin-top:14px;line-height:1.55"></div>
     </div>
   </section>
 
@@ -573,6 +820,22 @@ input,select{font-family:inherit}
         <div class="small" style="color:#d4d4d8;margin-top:8px;max-width:560px" id="profileDesc"></div>
       </div>
       <div class="profile-traits" id="profileTraits"></div>
+      <div class="card pad log-analysis-card" id="profileLogCard" style="display:none;margin:16px;border-radius:16px">
+        <div class="h3">로그 기반 행동 분석</div>
+        <div class="muted small" style="margin-top:4px">손절·존버 미니게임의 매수, 매도, 관망 로그가 마지막 진단 점수에 반영됩니다.</div>
+        <div class="profile-log-grid" id="profileLogGrid"></div>
+        <div class="profile-log-detail" id="profileLogDetail"></div>
+      </div>
+      <div class="card pad" style="margin:16px;border-radius:16px">
+        <div class="row between center-y wrap">
+          <div>
+            <div class="h3">LLM 로그 분석 리포트</div>
+            <div class="muted small">손절·존버 미니게임 로그를 위키로 정리하고 포트폴리오 X-Ray와 종합합니다.</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="profileReportBtn" type="button">리포트 생성</button>
+        </div>
+        <div class="llm-report-body empty" id="profileLlmReport" style="margin-top:12px">손절·존버 미니게임을 완료하면 생성할 수 있습니다.</div>
+      </div>
     </div>
   </section>
 
@@ -651,6 +914,55 @@ const SECTOR_COLORS={
 const STOCK_PALETTE=["#2563eb","#7dd3fc","#a78bfa","#f472b6","#f59e0b","#10b981",
   "#fb7185","#22d3ee","#f97316","#6366f1","#94a3b8"];
 
+// ---------- 리스크/비용/배당 메타 ----------
+const STOCK_RISK={
+  "005930":{vol:25,beta:1.02},"000660":{vol:39,beta:1.42},"042700":{vol:46,beta:1.55},
+  "058470":{vol:42,beta:1.30},"000990":{vol:40,beta:1.25},"403870":{vol:50,beta:1.45},
+  "357780":{vol:44,beta:1.30},"240810":{vol:48,beta:1.40},"108320":{vol:43,beta:1.20},
+  "207940":{vol:34,beta:0.85},"068270":{vol:40,beta:0.95},"373220":{vol:42,beta:1.30},
+  "006400":{vol:44,beta:1.35},"051910":{vol:38,beta:1.25},"005380":{vol:30,beta:1.10},
+  "000270":{vol:32,beta:1.12},"012330":{vol:31,beta:1.08},"035420":{vol:33,beta:1.15},
+  "035720":{vol:41,beta:1.30},"017670":{vol:22,beta:0.55},"105560":{vol:26,beta:0.95},
+  "055550":{vol:28,beta:1.00},"066570":{vol:30,beta:1.05},
+  "NVDA":{vol:52,beta:1.70},"AAPL":{vol:28,beta:1.15},"MSFT":{vol:27,beta:1.05},
+  "TSLA":{vol:58,beta:1.90},"AMZN":{vol:34,beta:1.25},"GOOGL":{vol:30,beta:1.10},
+  "META":{vol:38,beta:1.25},"AVGO":{vol:42,beta:1.35},"AMD":{vol:55,beta:1.65},
+  "KO":{vol:18,beta:0.55},"VZ":{vol:22,beta:0.45},"PFE":{vol:26,beta:0.65},"HD":{vol:27,beta:0.95}
+};
+const SECTOR_RISK={
+  "반도체":{vol:42,beta:1.40},"IT":{vol:30,beta:1.10},"커뮤니케이션":{vol:33,beta:1.15},
+  "2차전지":{vol:43,beta:1.32},"바이오":{vol:38,beta:0.90},"금융":{vol:27,beta:0.97},
+  "소비재":{vol:31,beta:1.10},"소재":{vol:34,beta:1.10},"산업재":{vol:30,beta:1.05},
+  "에너지":{vol:36,beta:1.10},"채권":{vol:6,beta:0.15},"현금":{vol:0.4,beta:0},"기타":{vol:35,beta:1.00}
+};
+const PRODUCT_META={
+  "069500":{type:"etf",ter:.15,div:{y:1.6,m:[1,4,7,10,12]}},
+  "122630":{type:"etf",ter:.64,lev:2,div:{y:0,m:[]}},
+  "091160":{type:"etf",ter:.45,div:{y:1.0,m:[4]}},
+  "360750":{type:"etf",ter:.07,div:{y:1.2,m:[1,4,7,10]}},
+  "133690":{type:"etf",ter:.07,div:{y:.6,m:[1,4,7,10]}},
+  "305720":{type:"etf",ter:.45,div:{y:.3,m:[4]}},
+  "161510":{type:"etf",ter:.23,div:{y:5.5,m:[1,4,7,10]}},
+  "152380":{type:"etf",ter:.05,div:{y:2.8,m:[1,4,7,10]}},
+  "273130":{type:"etf",ter:.15,div:{y:2.6,m:[1,4,7,10]},sector:"채권"},
+  "SOXL":{type:"etf",ter:.90,lev:3,div:{y:0,m:[]}},
+  "QQQ":{type:"etf",ter:.20,div:{y:.6,m:[3,6,9,12]}},
+  "SCHD":{type:"etf",ter:.06,div:{y:3.5,m:[3,6,9,12]}},
+  "VOO":{type:"etf",ter:.03,div:{y:1.3,m:[3,6,9,12]}},
+  "VIPGRW":{type:"fund",ter:1.50,div:{y:0,m:[]}},
+  "MAEDISC":{type:"fund",ter:1.39,div:{y:0,m:[]}}
+};
+const STOCK_DIV={
+  "005930":{y:2.1,m:[4,5,8,11]},"000660":{y:1.2,m:[4]},"005380":{y:4.6,m:[4,8]},
+  "000270":{y:4.2,m:[4,8]},"012330":{y:2.0,m:[4]},"105560":{y:5.2,m:[4,8,11]},
+  "055550":{y:4.8,m:[4,5,8,11]},"017670":{y:6.3,m:[3,6,9,12]},"066570":{y:1.6,m:[4]},
+  "035420":{y:.6,m:[4]},"051910":{y:1.1,m:[4]},"035720":{y:.2,m:[4]},"006400":{y:.5,m:[4]},
+  "042700":{y:.7,m:[4]},"AAPL":{y:.5,m:[2,5,8,11]},"MSFT":{y:.7,m:[3,6,9,12]},
+  "KO":{y:3.0,m:[4,7,10,12]},"VZ":{y:6.5,m:[2,5,8,11]},"PFE":{y:5.8,m:[3,6,9,12]}
+};
+const DEFENSIVE_SECTORS=new Set(["채권","현금"]);
+const MONTH_KO=["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+
 // ---------- 샘플 포트폴리오 (총 5,500만, 룩스루용 구성종목 포함) ----------
 const SAMPLE_HOLDINGS=[
   {id:"samsung_direct",name:"삼성전자 (직접보유)",type:"stock",amount:10000000,
@@ -728,9 +1040,18 @@ const state={
   holdings:[],
   analysis:null,
   analysisKey:"",
+  analysisSourceMode:"",
+  analysisRefreshId:0,
+  incomeFees:null,
+  incomeFeesKey:"",
   isAnalyzing:false,
   tests:{},
-  profile:null
+  profile:null,
+  gameSessionId:null,
+  gameStarted:{},
+  gameWikis:{},
+  llmReport:null,
+  gameLogPending:[]
 };
 const STEP_META=[
   {ph:"진단",tt:"포트폴리오 입력"},
@@ -742,6 +1063,73 @@ const STEP_META=[
 // ---------- 유틸 ----------
 const $=s=>document.querySelector(s);
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function renderInlineMarkdown(text){
+  let html=escapeHtml(text);
+  html=html.replace(/`([^`]+)`/g,"<code>$1</code>");
+  html=html.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+  html=html.replace(/\*([^*]+)\*/g,"<em>$1</em>");
+  return html;
+}
+function splitMarkdownRow(line){
+  return line.replace(/^\s*\|/,"").replace(/\|\s*$/,"").split("|").map(cell=>cell.trim());
+}
+function isMarkdownTableSeparator(line){
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+function markdownToHtml(markdown){
+  const lines=String(markdown||"").replace(/\r\n/g,"\n").split("\n");
+  const html=[];
+  let listOpen=false,paragraph=[];
+  const closeList=()=>{if(listOpen){html.push("</ul>");listOpen=false;}};
+  const flushParagraph=()=>{if(paragraph.length){html.push(`<p>${renderInlineMarkdown(paragraph.join(" "))}</p>`);paragraph=[];}};
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i].trim();
+    if(!line){flushParagraph();closeList();continue;}
+    if(/^\|/.test(line)&&lines[i+1]&&isMarkdownTableSeparator(lines[i+1].trim())){
+      flushParagraph();closeList();
+      const headers=splitMarkdownRow(line);
+      i+=2;
+      const rows=[];
+      while(i<lines.length&&/^\|/.test(lines[i].trim())){rows.push(splitMarkdownRow(lines[i].trim()));i++;}
+      i--;
+      html.push('<div class="md-table-wrap"><table><thead><tr>');
+      headers.forEach(header=>html.push(`<th>${renderInlineMarkdown(header)}</th>`));
+      html.push("</tr></thead><tbody>");
+      rows.forEach(row=>{
+        html.push("<tr>");
+        headers.forEach((_,idx)=>html.push(`<td>${renderInlineMarkdown(row[idx]||"")}</td>`));
+        html.push("</tr>");
+      });
+      html.push("</tbody></table></div>");
+      continue;
+    }
+    const heading=line.match(/^(#{1,4})\s+(.+)$/);
+    if(heading){
+      flushParagraph();closeList();
+      const level=Math.min(heading[1].length+1,5);
+      html.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+      continue;
+    }
+    if(/^---+$/.test(line)){flushParagraph();closeList();html.push("<hr>");continue;}
+    const listItem=line.match(/^[-*]\s+(.+)$/);
+    if(listItem){
+      flushParagraph();
+      if(!listOpen){html.push("<ul>");listOpen=true;}
+      html.push(`<li>${renderInlineMarkdown(listItem[1])}</li>`);
+      continue;
+    }
+    paragraph.push(line);
+  }
+  flushParagraph();closeList();
+  return html.join("");
+}
+function setMarkdownPreview(host,markdown,emptyText=""){
+  if(!host)return;
+  const value=String(markdown||"").trim();
+  host.classList.toggle("empty",!value);
+  host.classList.add("markdown-rendered");
+  host.innerHTML=value?markdownToHtml(value):`<p>${escapeHtml(emptyText)}</p>`;
+}
 const won=n=>{ // 원 → 사람이 읽는 한글 단위
   n=Number(n)||0;
   if(n>=100000000)return (n/100000000).toFixed(n%100000000?1:0).replace(/\.0$/,"")+"억";
@@ -754,27 +1142,88 @@ const sectorColor=s=>SECTOR_COLORS[s]||"#90a4ae";
 const normalizeTicker=s=>String(s||"").trim().toUpperCase();
 const toNodeId=n=>typeof n==="string"?n:n?.id;
 const positionKey=p=>`${normalizeTicker(p.ticker)}__${p.accountType||"taxable"}`;
+function inferProductMeta(ticker,name="",typeHint="stock"){
+  const symbol=normalizeTicker(ticker);
+  const n=String(name||"").toLowerCase();
+  const base={...(PRODUCT_META[symbol]||{})};
+  if(!base.type)base.type=typeHint||(/etf|kodex|tiger|arirang|qqq|schd|voo|soxl|레버리지|나스닥|s&p|채권/i.test(name)?"etf":"stock");
+  if(n.includes("펀드")||n.includes("fund"))base.type="fund";
+  if(typeof base.lev!=="number"){
+    if(n.includes("3x")||n.includes("3배"))base.lev=3;
+    else if(n.includes("2x")||n.includes("2배")||n.includes("레버리지"))base.lev=2;
+    else base.lev=1;
+  }
+  if(typeof base.ter!=="number"){
+    if(base.type==="stock")base.ter=0;
+    else if(base.type==="fund")base.ter=1.20;
+    else if(base.lev>1)base.ter=.70;
+    else if(n.includes("채권"))base.ter=.15;
+    else base.ter=.35;
+  }
+  if(!base.div){
+    if(base.type==="stock")base.div=null;
+    else if(base.lev>1)base.div={y:0,m:[]};
+    else if(n.includes("고배당")||symbol==="SCHD")base.div={y:3.5,m:[3,6,9,12]};
+    else if(n.includes("채권"))base.div={y:2.6,m:[1,4,7,10]};
+    else base.div={y:1.0,m:[4]};
+  }
+  return base;
+}
+function enrichHoldingMeta(holding,typeHint){
+  const meta=inferProductMeta(holding.ticker,holding.name,typeHint||holding.type);
+  const enriched={...holding};
+  enriched.type=meta.type||holding.type||typeHint||"stock";
+  enriched.lev=typeof holding.lev==="number"?holding.lev:meta.lev;
+  enriched.ter=typeof holding.ter==="number"?holding.ter:meta.ter;
+  if(holding.div)enriched.div=holding.div;
+  else if(meta.div)enriched.div=meta.div;
+  if(meta.sector&&enriched.composition?.length===1)enriched.composition[0].sector=meta.sector;
+  return enriched;
+}
+const riskOf=(ticker,sector)=>STOCK_RISK[normalizeTicker(ticker)]||SECTOR_RISK[sector]||{vol:35,beta:1.0};
+const levOf=h=>(typeof h?.lev==="number"?h.lev:1);
+function holdingDiv(h){
+  if(h?.div)return h.div;
+  if(h?.type==="stock")return STOCK_DIV[normalizeTicker(h.composition?.[0]?.ticker||h.ticker)]||{y:0,m:[]};
+  if(h?.type==="etf")return {y:1.0,m:[4]};
+  return {y:0,m:[]};
+}
+function terOf(h){
+  if(typeof h?.ter==="number")return h.ter;
+  if(h?.type==="fund")return 1.20;
+  if(h?.type==="etf")return levOf(h) > 1 ? .70 : .35;
+  return 0;
+}
 
 // ---------- 룩스루 계산 ----------
 function computeLookThrough(holdings){
   const total=holdings.reduce((a,h)=>a+h.amount,0);
   const byTicker={},bySector={};
+  let gross=0;
   holdings.forEach(h=>{
+    const lev=levOf(h);
     (h.composition||[]).forEach(c=>{
       const weight=Number(c.weight)||0;
-      const amt=h.amount*weight;
+      const capAmt=h.amount*weight;
+      const amt=capAmt*lev;
       if(amt<=0)return;
-      if(!byTicker[c.ticker])byTicker[c.ticker]={ticker:c.ticker,name:c.name,sector:c.sector,amount:0,sources:0};
-      byTicker[c.ticker].amount+=amt;byTicker[c.ticker].sources++;
+      gross+=amt;
+      if(!byTicker[c.ticker])byTicker[c.ticker]={ticker:c.ticker,name:c.name,sector:c.sector,amount:0,capAmount:0,sources:0,levered:false};
+      byTicker[c.ticker].amount+=amt;
+      byTicker[c.ticker].capAmount+=capAmt;
+      byTicker[c.ticker].sources++;
+      if(lev!==1)byTicker[c.ticker].levered=true;
       bySector[c.sector]=(bySector[c.sector]||0)+amt;
     });
   });
-  const stocks=Object.values(byTicker).map(s=>({...s,weight:s.amount/total*100}))
+  const denom=gross||total||1;
+  const stocks=Object.values(byTicker).map(s=>({...s,weight:s.amount/denom*100}))
     .sort((a,b)=>b.amount-a.amount);
-  const sectors=Object.entries(bySector).map(([name,amount])=>({name,amount,weight:amount/total*100}))
+  const sectors=Object.entries(bySector).map(([name,amount])=>({name,amount,weight:amount/denom*100}))
     .sort((a,b)=>b.amount-a.amount);
   const hhi=Math.round(stocks.reduce((a,s)=>a+s.weight*s.weight,0));
-  return {total,stocks,sectors,hhi,unique:stocks.length,top:stocks[0]||null};
+  const leverageRatio=total?gross/total:1;
+  return {total,gross,leverageRatio,stocks,sectors,hhi,unique:stocks.length,top:stocks[0]||null};
 }
 
 /* ============================================================
@@ -879,7 +1328,7 @@ function inferTypeFromSymbolType(symbolType,fallback="stock"){
 function fallbackHoldingFromInput(p,sourceIndex=0){
   const ticker=normalizeTicker(p.ticker);
   const type=p.typeHint||"stock";
-  return {
+  return enrichHoldingMeta({
     id:`input_${ticker}_${sourceIndex}`,
     ticker,
     name:p.name||ticker,
@@ -889,7 +1338,7 @@ function fallbackHoldingFromInput(p,sourceIndex=0){
     accountLabel:p.accountLabel||ACCOUNT_LABEL_MAP[p.accountType]||"주식계좌",
     sourceIndex,
     composition:[{ticker,name:p.name||ticker,sector:"기타",weight:1.0}]
-  };
+  },type);
 }
 function normalizeInputPositions(positions){
   const map=new Map();
@@ -919,6 +1368,11 @@ function normalizeInputPositions(positions){
 function setInputPositions(positions){
   state.inputPositions=normalizeInputPositions(positions);
   state.holdings=state.inputPositions.map((p,i)=>fallbackHoldingFromInput(p,i));
+  state.gameSessionId=null;
+  state.gameStarted={};
+  state.gameWikis={};
+  state.llmReport=null;
+  state.gameLogPending=[];
   invalidateDownstream();
   renderHoldings();
 }
@@ -936,6 +1390,10 @@ function inputSignature(){
 function invalidateDownstream(){ // 입력 변경 시 다운스트림 분석 무효화
   state.analysis=null;
   state.analysisKey="";
+  state.analysisSourceMode="";
+  state.analysisRefreshId++;
+  state.incomeFees=null;
+  state.incomeFeesKey="";
   if(!state.inputPositions.length)state.maxStep=1; // 보유내역이 비면 진행 단계도 1로 되돌림
 }
 
@@ -1221,7 +1679,7 @@ function liveHoldingsFromResponse(data){
           weight:Math.max(0,1-usedWeight)
         });
       }
-      return {
+      return enrichHoldingMeta({
         id:`live_${ticker}`,
         ticker,
         name:productNode.name||p.name||ticker,
@@ -1231,10 +1689,10 @@ function liveHoldingsFromResponse(data){
         accountLabel:p.accountLabel||ACCOUNT_LABEL_MAP[p.accountType]||"주식계좌",
         sourceIndex:idx,
         composition
-      };
+      },p.typeHint||"etf");
     }
     const stockNode=nodeMap.get(`Stock_${ticker}`)||{};
-    return {
+    return enrichHoldingMeta({
       id:`live_${ticker}`,
       ticker,
       name:stockNode.name||p.name||ticker,
@@ -1249,8 +1707,195 @@ function liveHoldingsFromResponse(data){
         sector:stockNode.sector||"기타",
         weight:1
       }]
-    };
+    },p.typeHint==="fund"?"fund":"stock");
   }).filter(h=>h.amount>0);
+}
+function resetStep2DerivedPanels(label="분석 대기"){
+  $("#riskStyleChip").className="chip warn";$("#riskStyleChip").textContent=label;
+  $("#riskMk").style.left="0%";
+  $("#riskKpis").innerHTML="";
+  $("#assetSplit").innerHTML="";
+  $("#assetLegend").innerHTML="";
+  $("#riskCompare").innerHTML="";
+  $("#riskNote").textContent="";
+  $("#costAnnual").textContent="—";
+  $("#costTer").className="chip warn";$("#costTer").textContent=label;
+  $("#costList").innerHTML="";
+  $("#costStats").innerHTML="";
+  $("#costNote").textContent="";
+  $("#divTotal").textContent="—";
+  $("#divYield").className="chip good";$("#divYield").textContent=label;
+  $("#divBars").innerHTML="";
+  $("#divMonths").innerHTML="";
+  $("#divList").innerHTML="";
+  $("#divNote").textContent="";
+}
+function computePortfolioRisk(a){
+  const denom=a.gross||a.total||1;
+  let vol=0,beta=0,defensive=0,levered=0;
+  a.stocks.forEach(s=>{
+    const w=(Number(s.amount)||0)/denom;
+    const r=riskOf(s.ticker,s.sector);
+    vol+=r.vol*w;
+    beta+=r.beta*w;
+    if(DEFENSIVE_SECTORS.has(s.sector))defensive+=w*100;
+    if(s.levered)levered+=w*100;
+  });
+  const top3=a.stocks.slice(0,3).reduce((sum,s)=>sum+s.weight,0);
+  const score=clamp((vol-8)*2.3+Math.max(0,a.hhi-900)/24+Math.max(0,a.leverageRatio-1)*38+top3*.18-defensive*.2,0,100);
+  const style=score>=68?{label:"공격형",chip:"warn",tone:"변동성·집중 노출이 큰 편입니다."}:score>=42?{label:"중립형",chip:"blue",tone:"성장 노출과 방어 노출이 혼재합니다."}:{label:"수비형",chip:"good",tone:"방어 자산 비중이 상대적으로 높습니다."};
+  return {score,vol,beta,defensive,levered,top3,style};
+}
+function renderRisk(a,risk){
+  $("#riskStyleChip").className=`chip ${risk.style.chip}`;
+  $("#riskStyleChip").textContent=`${risk.style.label} · ${Math.round(risk.score)}점`;
+  $("#riskMk").style.left=`${clamp(risk.score,3,97).toFixed(0)}%`;
+  const betaTone=risk.beta>1.3?"danger":risk.beta>1.15?"high":risk.beta>.9?"mid":"low";
+  const kpis=[
+    {l:"예상 연 변동성",v:pc(risk.vol),s:risk.vol>30?"높음":"보통",icon:"σ",tone:risk.vol>38?"danger":risk.vol>30?"high":risk.vol>18?"mid":"low",bar:clamp(risk.vol/45*100,4,100)},
+    {l:"시장 민감도",v:risk.beta.toFixed(2)+"β",s:risk.beta>1.15?"시장보다 큼":"시장 수준",icon:"β",tone:betaTone,bar:clamp(risk.beta/1.7*100,4,100)},
+    {l:"상위 3종목",v:pc(risk.top3),s:"실질 노출 기준",icon:"TOP",tone:risk.top3>70?"danger":risk.top3>55?"high":risk.top3>35?"mid":"low",bar:clamp(risk.top3,4,100)},
+    {l:"레버리지 노출",v:pc(risk.levered),s:a.leverageRatio>1.05?`${a.leverageRatio.toFixed(2)}배 노출`:"미미",icon:"LEV",tone:risk.levered>30?"danger":risk.levered>10?"high":"low",bar:clamp(Math.max(risk.levered,(a.leverageRatio-1)*100),0,100)}
+  ];
+  $("#riskKpis").innerHTML=kpis.map(k=>`<div class="rk rk-${k.tone}">
+    <div class="rk-top"><span class="rk-ic">${escapeHtml(k.icon)}</span><span class="rk-label">${escapeHtml(k.l)}</span></div>
+    <div class="rk-main"><b>${escapeHtml(k.v)}</b><em>${escapeHtml(k.s)}</em></div>
+    <div class="rk-bar"><i style="width:${Number(k.bar).toFixed(0)}%"></i></div>
+  </div>`).join("");
+  const defensiveAmt=a.sectors.filter(s=>DEFENSIVE_SECTORS.has(s.name)).reduce((sum,s)=>sum+s.amount,0);
+  const equityAmt=Math.max(0,(a.gross||0)-defensiveAmt);
+  const assetItems=[
+    {label:"주식·테마",amount:equityAmt,color:"#2563eb"},
+    {label:"채권·현금",amount:defensiveAmt,color:"#64748b"}
+  ].filter(x=>x.amount>0);
+  const denom=a.gross||a.total||1;
+  $("#assetSplit").innerHTML=assetItems.map(x=>`<i style="width:${(x.amount/denom*100).toFixed(1)}%;background:${x.color}"></i>`).join("");
+  $("#assetLegend").innerHTML=assetItems.map(x=>`<span><i style="background:${x.color}"></i>${x.label} ${pc(x.amount/denom*100)}</span>`).join("");
+  const compare=[
+    {name:"내 포트폴리오",value:risk.vol,color:"#2563eb"},
+    {name:"KOSPI 200",value:22,color:"#94a3b8"},
+    {name:"NASDAQ 100",value:28,color:"#94a3b8"},
+    {name:"채권형 ETF",value:6,color:"#94a3b8"}
+  ];
+  const max=Math.max(...compare.map(x=>x.value),1);
+  $("#riskCompare").innerHTML=compare.map(x=>`<div class="rcmp-row">
+    <span>${x.name}</span><div class="rcmp-track"><i style="width:${(x.value/max*100).toFixed(0)}%;background:${x.color}"></i></div><b>${pc(x.value)}</b>
+  </div>`).join("");
+  const levText=a.leverageRatio>1.05?` 레버리지 상품 반영 후 실질 노출액은 ${won(a.gross)}원으로 평가액의 ${a.leverageRatio.toFixed(2)}배입니다.`:"";
+  $("#riskNote").innerHTML=`${risk.style.tone} 집중도 ${a.hhi.toLocaleString()}, 최대 종목 ${pc(a.top.weight)}, 방어 자산 ${pc(risk.defensive)} 기준으로 계산했습니다.${levText}`;
+}
+let incomeFeesRequestId=0;
+function renderIncomeFeesLoading(){
+  $("#costAnnual").textContent="조회 중";
+  $("#costTer").className="chip warn";$("#costTer").textContent="실데이터 조회";
+  $("#costList").innerHTML=`<div class="analysis-state"><b>수수료 조회 중</b> yfinance ETF/펀드 비용 필드를 확인하고 있습니다.</div>`;
+  $("#costStats").innerHTML="";
+  $("#costNote").textContent="";
+  $("#divTotal").textContent="조회 중";
+  $("#divYield").className="chip warn";$("#divYield").textContent="실데이터 조회";
+  $("#divBars").innerHTML=`<div class="analysis-state"><b>배당 조회 중</b> 최근 배당 내역과 분배월을 확인하고 있습니다.</div>`;
+  $("#divMonths").innerHTML="";
+  $("#divList").innerHTML="";
+  $("#divNote").textContent="";
+}
+function renderIncomeFeesError(err){
+  $("#costAnnual").textContent="—";
+  $("#costTer").className="chip warn";$("#costTer").textContent="조회 실패";
+  $("#costList").innerHTML="";
+  $("#costStats").innerHTML="";
+  $("#costNote").textContent=`실제 비용 데이터를 불러오지 못했습니다. ${err?.message||err||""}`;
+  $("#divTotal").textContent="—";
+  $("#divYield").className="chip warn";$("#divYield").textContent="조회 실패";
+  $("#divBars").innerHTML="";
+  $("#divMonths").innerHTML="";
+  $("#divList").innerHTML="";
+  $("#divNote").textContent=`실제 배당 데이터를 불러오지 못했습니다. ${err?.message||err||""}`;
+}
+async function fetchIncomeFees(){
+  const key=inputSignature();
+  if(state.incomeFees&&state.incomeFeesKey===key)return state.incomeFees;
+  const data=await postJson("/api/portfolio/income-fees",{positions:inputPositionsForApi()});
+  state.incomeFees=data;
+  state.incomeFeesKey=key;
+  return data;
+}
+function renderCostPanel(data){
+  const items=Array.isArray(data?.items)?data.items:[];
+  const summary=data?.summary||{};
+  const total=Number(summary.total_amount)||items.reduce((sum,i)=>sum+(Number(i.amount)||0),0)||1;
+  const fee=Number(summary.annual_fee)||0;
+  const ter=Number(summary.weighted_expense_ratio)||0;
+  const coverage=summary.coverage||{};
+  $("#costAnnual").textContent=won(fee)+"원";
+  $("#costTer").className=`chip ${coverage.fee_estimated?"warn":"good"}`;
+  $("#costTer").textContent=`평균 ${pc(ter)} · 실데이터 ${coverage.fee_actual||0}/${items.length}`;
+  const feeRows=items.filter(i=>i.instrument_type!=="stock"||Number(i.annual_fee)>0||i.expense_ratio===null).sort((a,b)=>(Number(b.annual_fee)||0)-(Number(a.annual_fee)||0));
+  $("#costList").innerHTML=feeRows.length?feeRows.map(i=>{
+    const pct=Number(i.amount||0)/total*100;
+    const estimated=i.expense_estimated?` <span class="chip warn" style="padding:2px 7px;font-size:10px">추정</span>`:"";
+    return `<div class="cost-item">
+      <div class="cost-main"><div class="nm">${escapeHtml(i.name||i.ticker)}${estimated}</div>
+        <div class="sub">${escapeHtml(i.ticker)} · ${escapeHtml(i.expense_source||"")}</div></div>
+      <div class="cost-side"><div class="amt">${won(i.annual_fee)}원</div><div class="lbl">TER ${i.expense_ratio===null?"미조회":pc(Number(i.expense_ratio))}</div></div>
+      <div class="cost-bar"><i style="width:${pct.toFixed(1)}%"></i></div>
+    </div>`;
+  }).join(""):`<div class="analysis-state"><b>운용보수 없음</b> 직접 보유 주식만 있거나 조회 가능한 비용 데이터가 없습니다.</div>`;
+  $("#costStats").innerHTML=[
+    {l:"비용 실데이터",v:`${coverage.fee_actual||0}개`,s:"yfinance expense ratio"},
+    {l:"추정/미조회",v:`${(coverage.fee_estimated||0)+(coverage.fee_missing||0)}개`,s:"데이터 공백"},
+    {l:"연 비용률",v:pc(total?fee/total*100:0),s:"평가액 대비"}
+  ].map(k=>`<div class="bt-stat"><span>${k.l}</span><b>${k.v}</b><em>${k.s}</em></div>`).join("");
+  $("#costNote").innerHTML=`ETF·펀드는 yfinance의 expense ratio 계열 필드를 우선 사용합니다. 직접 주식은 운용보수 0%로 처리하고, 데이터가 없는 상품은 화면에 추정 또는 미조회로 표시합니다.`;
+}
+function renderDividendPanel(data){
+  const items=Array.isArray(data?.items)?data.items:[];
+  const summary=data?.summary||{};
+  const total=Number(summary.total_amount)||items.reduce((sum,i)=>sum+(Number(i.amount)||0),0)||1;
+  const annual=Number(summary.annual_dividend)||0;
+  const yld=Number(summary.portfolio_dividend_yield)||0;
+  const coverage=summary.coverage||{};
+  $("#divTotal").textContent=won(annual)+"원";
+  $("#divYield").className=`chip ${coverage.dividend_estimated?"warn":"good"}`;
+  $("#divYield").textContent=`연 ${pc(yld)} · 실데이터 ${coverage.dividend_actual||0}/${items.length}`;
+  const byMonth=new Array(12).fill(0);
+  items.forEach(i=>{
+    const months=Array.isArray(i.dividend_months)?i.dividend_months:[];
+    const amount=Number(i.annual_dividend)||0;
+    if(!amount||!months.length)return;
+    months.forEach(m=>{const idx=Number(m)-1;if(idx>=0&&idx<12)byMonth[idx]+=amount/months.length;});
+  });
+  const max=Math.max(...byMonth,1);
+  $("#divBars").innerHTML=byMonth.map((v,i)=>`<div class="div-bar">
+    <b>${MONTH_KO[i]}</b><span><i style="height:${Math.max(5,v/max*100).toFixed(0)}%"></i></span><em>${v?won(v):"—"}</em>
+  </div>`).join("");
+  $("#divMonths").innerHTML=byMonth.map((v,i)=>`<span class="${v?"on":""}">${MONTH_KO[i]}</span>`).join("");
+  const divRows=items.filter(i=>Number(i.annual_dividend)>0).sort((a,b)=>(Number(b.annual_dividend)||0)-(Number(a.annual_dividend)||0));
+  $("#divList").innerHTML=divRows.length?divRows.map(i=>{
+    const months=Array.isArray(i.dividend_months)&&i.dividend_months.length?i.dividend_months.map(m=>MONTH_KO[Number(m)-1]).join(" · "):"월 정보 없음";
+    const estimated=i.dividend_estimated?` <span class="chip warn" style="padding:2px 7px;font-size:10px">추정</span>`:"";
+    return `<div class="div-item">
+      <div class="div-main"><div class="nm">${escapeHtml(i.name||i.ticker)}${estimated}<span class="di-mo">${months}</span></div>
+        <div class="sub">${escapeHtml(i.ticker)} · ${escapeHtml(i.dividend_source||"")}</div></div>
+      <div class="div-side"><div class="amt">${won(i.annual_dividend)}원<span class="y">연 ${pc(Number(i.dividend_yield)||0)}</span></div></div>
+    </div>`;
+  }).join(""):`<div class="analysis-state"><b>배당 데이터 없음</b> 최근 배당 내역이 없거나 조회 가능한 분배 정보가 없습니다.</div>`;
+  $("#divNote").innerHTML=`최근 12개월 실제 배당 합계와 현재가로 산출한 수익률을 우선 사용합니다. 월별 막대는 최근 배당 지급월이 있는 상품만 배분합니다.`;
+}
+function renderIncomeFees(data){
+  renderCostPanel(data);
+  renderDividendPanel(data);
+}
+async function refreshIncomeFees(){
+  const id=++incomeFeesRequestId;
+  renderIncomeFeesLoading();
+  try{
+    const data=await fetchIncomeFees();
+    if(id!==incomeFeesRequestId||state.step!==2)return;
+    renderIncomeFees(data);
+  }catch(err){
+    if(id!==incomeFeesRequestId||state.step!==2)return;
+    renderIncomeFeesError(err);
+  }
 }
 function renderAnalysisLoading(){
   $("#ltHeadline").innerHTML=`실시간 <span class="g">룩스루 분석</span>을<br>실행하고 있습니다.`;
@@ -1270,6 +1915,7 @@ function renderAnalysisLoading(){
   $("#hhiNote").textContent="";
   $("#exposureTbody").innerHTML="";
   $("#coachText").textContent="";
+  resetStep2DerivedPanels("분석 중");
 }
 function renderAnalysisError(err){
   $("#ltHeadline").innerHTML=`분석을 <span class="g">완료하지 못했습니다.</span>`;
@@ -1284,15 +1930,16 @@ function renderAnalysisError(err){
   $("#hhiNote").textContent="";
   $("#exposureTbody").innerHTML="";
   $("#coachText").textContent="분석을 다시 실행하려면 이전 단계에서 입력값을 확인한 뒤 다음을 눌러 주세요.";
+  resetStep2DerivedPanels("분석 실패");
 }
-async function ensureRealAnalysis(){
-  const key=inputSignature();
-  if(state.analysis&&state.analysisKey===key)return state.analysis;
-  state.isAnalyzing=true;updateNav();
+async function fetchRealAnalysis(sourceMode="seed_fast"){
   const requestPayload={
+    source_mode:sourceMode,
     positions:analysisPositions().map(p=>({
       ticker:p.ticker,
       amount:p.amount,
+      name:p.name||p.ticker,
+      type_hint:p.typeHint||"stock",
       account_type:p.accountType||"taxable",
       account_label:p.accountLabel||ACCOUNT_LABEL_MAP[p.accountType]||"주식계좌"
     }))
@@ -1308,25 +1955,64 @@ async function ensureRealAnalysis(){
   try{data=JSON.parse(raw);}catch(_){throw new Error("분석 API 응답을 해석하지 못했습니다.");}
   const holdings=liveHoldingsFromResponse(data);
   if(!holdings.length)throw new Error("분석 가능한 보유 상품이 없습니다.");
-  state.holdings=holdings;
   const analysis=computeLookThrough(holdings);
   if(!analysis.top)throw new Error("실질 노출 종목을 계산하지 못했습니다.");
   analysis.sourceSummary=data.source_summary||null;
   analysis.durationMs=data.duration_ms||0;
+  analysis.sourceMode=data.source_summary?.source_mode||sourceMode;
+  return {holdings,analysis};
+}
+async function ensureRealAnalysis(sourceMode="seed_fast",force=false){
+  const key=inputSignature();
+  if(!force&&state.analysis&&state.analysisKey===key&&state.analysisSourceMode===sourceMode)return state.analysis;
+  const {holdings,analysis}=await fetchRealAnalysis(sourceMode);
+  state.holdings=holdings;
   state.analysis=analysis;
   state.analysisKey=key;
+  state.analysisSourceMode=sourceMode;
   return analysis;
+}
+function shouldLiveRefresh(analysis){
+  const src=analysis?.sourceSummary||{};
+  return (Number(src.seed_fast)||0)>0 || analysis?.sourceMode==="seed_fast";
+}
+async function refreshLiveAnalysis(requestedKey){
+  const refreshId=++state.analysisRefreshId;
+  try{
+    const a=await ensureRealAnalysis("live",true);
+    if(refreshId!==state.analysisRefreshId||requestedKey!==inputSignature()||state.step!==2)return;
+    paintStep2(a);
+  }catch(err){
+    if(refreshId!==state.analysisRefreshId||requestedKey!==inputSignature()||state.step!==2)return;
+    const note=$("#coachText");
+    if(note)note.innerHTML+=`<br><span class="muted small">실데이터 갱신 실패: ${escapeHtml(err?.message||err||"알 수 없는 오류")}. 현재 화면은 시드 기반 빠른 분석 결과입니다.</span>`;
+  }
+}
+function sourceSummaryText(summary){
+  if(!summary)return "룩스루 분해";
+  const parts=[];
+  if(Number(summary.seed_fast))parts.push(`시드 fast ${summary.seed_fast}`);
+  if(Number(summary.krx))parts.push(`KRX ${summary.krx}`);
+  if(Number(summary.yfinance))parts.push(`실시간 ${summary.yfinance}`);
+  if(Number(summary.seed_fallback))parts.push(`시드 보완 ${summary.seed_fallback}`);
+  if(Number(summary.direct))parts.push(`직접 ${summary.direct}`);
+  return parts.join(" · ")||"룩스루 분해";
 }
 async function renderStep2(){
   if(!state.inputPositions.length){goStep(1);return;} // 보유내역 없으면 입력 단계로 안전 복귀
   const requestedKey=inputSignature();
   renderAnalysisLoading();
   try{
-    const a=await ensureRealAnalysis();
+    state.isAnalyzing=true;updateNav();
+    const cachedLive=state.analysis&&state.analysisKey===requestedKey&&state.analysisSourceMode==="live";
+    const a=cachedLive?state.analysis:await ensureRealAnalysis("seed_fast");
     if(requestedKey!==inputSignature())return;
     paintStep2(a);
+    state.isAnalyzing=false;updateNav();
+    if(!cachedLive&&shouldLiveRefresh(a))refreshLiveAnalysis(requestedKey);
   }catch(err){
     state.analysis=null;state.analysisKey="";
+    state.analysisSourceMode="";
     renderAnalysisError(err);
   }finally{
     state.isAnalyzing=false;updateNav();
@@ -1339,11 +2025,12 @@ function paintStep2(a){
   const directTop=state.holdings.filter(h=>h.type==="stock"&&h.composition[0]?.ticker===a.top.ticker)
     .reduce((s,h)=>s+h.amount,0);
   const directPc=directTop/a.total*100;
+  const leverageText=a.leverageRatio>1.05?`실질 노출 ${won(a.gross)}원 · ${a.leverageRatio.toFixed(2)}배`:`${state.holdings.length}개 상품`;
   $("#kpiRow").innerHTML=[
-    {l:"총 평가액",v:won(a.total)+"원",s:`${state.holdings.length}개 상품`,c:"var(--muted)"},
+    {l:"총 평가액",v:won(a.total)+"원",s:leverageText,c:a.leverageRatio>1.05?"var(--warn)":"var(--muted)"},
     {l:"실질 최대 비중",v:pc(a.top.weight),s:a.top.name,c:a.top.weight>25?"var(--bad)":"var(--good)"},
     {l:"집중도 (HHI)",v:a.hhi.toLocaleString(),s:a.hhi>1500?"⚠ 과집중":"양호",c:a.hhi>1500?"var(--bad)":"var(--good)"},
-    {l:"실질 보유 종목",v:a.unique+"개",s:a.sourceSummary?`KRX ${a.sourceSummary.krx||0} · 실시간 ${a.sourceSummary.yfinance||0} · 직접 ${a.sourceSummary.direct||0}`:"룩스루 분해",c:"var(--muted)"}
+    {l:"실질 보유 종목",v:a.unique+"개",s:sourceSummaryText(a.sourceSummary),c:"var(--muted)"}
   ].map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div>
     <div class="s" style="color:${k.c}">${k.s}</div></div>`).join("");
   // 룩스루 막대 — 최대 종목의 출처 분해
@@ -1351,13 +2038,13 @@ function paintStep2(a){
   const top=a.top;
   const contribs=state.holdings.map(h=>{
     const c=h.composition.find(x=>x.ticker===top.ticker);
-    return c?{name:h.name,amt:h.amount*c.weight}:null;
+    return c?{name:h.name,amt:h.amount*levOf(h)*c.weight,lev:levOf(h)}:null;
   }).filter(Boolean).sort((x,y)=>y.amt-x.amt);
   const maxAmt=contribs[0].amt;
   $("#ltBars").innerHTML=`<div style="font-size:13.5px;color:#d4d4d8;margin-bottom:4px">
     <b style="color:#fff">${top.name}</b> — ${contribs.length}개 상품에 분산되어 합산 ${won(top.amount)}원 (실질 ${pc(top.weight)})</div>`+
     contribs.map((c,i)=>`<div class="lt-bar"><div class="top">
-      <b>${c.name}</b><span class="pc">${won(c.amt)}원</span></div>
+      <b>${c.name}${c.lev>1?` <span class="chip warn" style="padding:2px 7px;font-size:10px">${c.lev}x</span>`:""}</b><span class="pc">${won(c.amt)}원</span></div>
       <div class="lt-track"><i style="width:${(c.amt/maxAmt*100).toFixed(0)}%;
       background:${i===0?'linear-gradient(90deg,#a5b4fc,#7dd3fc)':'rgba(255,255,255,.5)'}"></i></div></div>`).join("");
   // 도넛
@@ -1370,11 +2057,12 @@ function paintStep2(a){
   const lvl=a.hhi>1800?{t:"과집중",c:"warn"}:a.hhi>1000?{t:"다소 집중",c:"warn"}:{t:"분산 양호",c:"good"};
   $("#hhiChip").className="chip "+lvl.c;$("#hhiChip").textContent=lvl.t;
   $("#hhiNote").innerHTML=`일반 분산 ETF 평균(약 800) 대비 <b>${(a.hhi/800).toFixed(1)}배</b> 집중되어 있습니다.
-    상위 1종목 비중이 ${pc(a.top.weight)}로, 단일 종목 충격에 취약할 수 있습니다.`;
+    상위 1종목 비중이 ${pc(a.top.weight)}로, 단일 종목 충격에 취약할 수 있습니다.
+    ${a.leverageRatio>1.05?`레버리지 반영 실질 노출은 평가액의 <b>${a.leverageRatio.toFixed(2)}배</b>입니다.`:""}`;
   // 테이블
   $("#exposureTbody").innerHTML=a.stocks.slice(0,10).map((s,i)=>`<tr>
     <td class="muted">${i+1}</td>
-    <td><b>${s.name}</b>${s.sources>1?` <span class="chip blue" style="padding:2px 7px;font-size:10px">${s.sources}개 상품</span>`:""}</td>
+    <td><b>${s.name}</b>${s.sources>1?` <span class="chip blue" style="padding:2px 7px;font-size:10px">${s.sources}개 상품</span>`:""}${s.levered?` <span class="chip warn" style="padding:2px 7px;font-size:10px">레버리지</span>`:""}</td>
     <td><span class="chip" style="background:${sectorColor(s.sector)}1a;color:${sectorColor(s.sector)}">${s.sector}</span></td>
     <td class="r">${won(s.amount)}원</td>
     <td class="r"><b>${pc(s.weight)}</b></td>
@@ -1384,21 +2072,25 @@ function paintStep2(a){
   $("#coachText").innerHTML=`현재 포트폴리오는 <b>${a.top.name}</b>에 실질 ${pc(a.top.weight)} 집중되어 있고,
     섹터로는 <b>${a.sectors[0]?.name||"기타"}</b>(${pc(a.sectors[0]?.weight||0)})에 쏠려 있습니다.
     겉으로는 ${state.holdings.length}개로 분산된 듯 보이지만, ETF·펀드 속 중복 보유 탓에 실제 집중도는 높습니다.
-    다음 단계에서 당신의 투자 성향을 검사한 뒤, 이 쏠림을 어떻게 덜어낼지 제안하겠습니다.`;
+    다음 단계에서 당신의 투자 성향을 검사한 뒤, 이 쏠림을 어떻게 덜어낼지 제안하겠습니다.
+    ${shouldLiveRefresh(a)?`<br><span class="muted small">현재는 시드 기반 빠른 분석 결과이며, 실데이터 조회가 완료되면 자동으로 갱신됩니다.</span>`:""}`;
+  renderRisk(a,computePortfolioRisk(a));
+  refreshIncomeFees();
 }
 function drawDonut(){
   const a=state.analysis;if(!a)return;
+  const denom=a.gross||a.total||1;
   let items;
   if(donutMode==="stock"){
     const top=a.stocks.slice(0,7);
     const etc=a.stocks.slice(7).reduce((s,x)=>s+x.amount,0);
     items=top.map((s,i)=>({label:s.name,value:s.amount,color:STOCK_PALETTE[i%STOCK_PALETTE.length],sub:pc(s.weight)}));
-    if(etc>0)items.push({label:"기타",value:etc,color:"#d4d4d8",sub:pc(etc/a.total*100)});
+    if(etc>0)items.push({label:"기타",value:etc,color:"#d4d4d8",sub:pc(etc/denom*100)});
   }else{
     items=a.sectors.map(s=>({label:s.name,value:s.amount,color:sectorColor(s.name),sub:pc(s.weight)}));
   }
   const host=$("#donutHost");host.innerHTML="";
-  host.appendChild(donut(items,158,32,won(a.total),"실질 평가액"));
+  host.appendChild(donut(items,158,32,won(denom),"실질 노출"));
   $("#donutLegend").innerHTML=items.map(it=>`<div class="li">
     <span class="sw" style="background:${it.color}"></span>
     <span class="nm">${it.label}</span><span class="pc">${it.sub}</span></div>`).join("");
@@ -1415,12 +2107,12 @@ function initStep2(){
    STEP 3 — 투자 성향 검사 (6 에이전트)
    ============================================================ */
 const AGENTS=[
-  {key:"master",cls:"pink",ai:"Agent 01",nm:"투자대가와의 상담",ds:"네 명의 거장 중 누구와 가장 통하나요. 대화로 투자 철학을 가늠합니다."},
+  {key:"master",cls:"pink",ai:"Agent 01",nm:"멘토 면담",ds:"버핏·피터 린치·장원영 중 한 명과 10문답으로 투자 철학과 실제 성향을 읽습니다.",interview:true},
   {key:"risk",cls:"blue",ai:"Agent 02",nm:"위험 감수 성향 테스트",ds:"손실 앞에서 당신은 어떤 사람인가요. 변동성 내성을 점수화합니다."},
   {key:"balance",cls:"cyan",ai:"Agent 03",nm:"밸런스 게임",ds:"둘 중 하나만. 직감으로 고르는 양자택일로 우선순위를 읽습니다."},
   {key:"bias",cls:"tan",ai:"Agent 04",nm:"행동재무 편향 진단",ds:"손실회피·확증편향·군중심리. 무의식적 투자 습관을 진단합니다."},
   {key:"trade",cls:"mint",ai:"Agent 05",nm:"손절·존버 미니게임",ds:"10초 매매 챌린지로 손절, 익절, 관망의 실제 반응을 측정합니다.",game:true},
-  {key:"saju",cls:"lavender",ai:"Agent 06",nm:"만세력 투자 리듬 분석",ds:"생년월일과 출생시간으로 오행·십성 리듬을 투자 습관 언어로 해석합니다.",saju:true}
+  {key:"saju",cls:"lavender",ai:"Agent 06",nm:"투자 사주팔자",ds:"생년월일시와 만세력 기반 오행·십성 리듬을 투자 습관과 위키로 정리합니다.",saju:true}
 ];
 const QUIZZES={
   master:{q:[
@@ -1501,8 +2193,10 @@ function renderAgents(){
   }).join("");
   document.querySelectorAll("[data-agent]").forEach(c=>c.onclick=()=>{
     const key=c.dataset.agent;
-    if(AGENTS.find(a=>a.key===key)?.game)openTradeGame();
-    else if(AGENTS.find(a=>a.key===key)?.saju)openSajuAnalysis();
+    const agent=AGENTS.find(a=>a.key===key);
+    if(agent?.interview)openMentorInterview();
+    else if(agent?.game)openTradeGame();
+    else if(agent?.saju)openSajuAnalysis();
     else openQuiz(key);
   });
   renderProfile();
@@ -1518,6 +2212,7 @@ function renderProfile(){
   if(bal)title.push(bal.key==="growth"?"성장추구":"안정지향");
   if(risk)title.push(risk.key==="hi"?"고위험감내":risk.key==="lo"?"손실회피":"위험중립");
   if(bias&&bias.key!=="none")title.push({loss:"손실회피편향",confirm:"확증편향",herd:"군중심리"}[bias.key]);
+  if(master)title.push(master.t?.replace(/^[^\w가-힣]+/,"").split(" ")[0]||"멘토면담");
   if(trade)title.push({timing:"순발매매",discipline:"규칙실행",hold:"존버주의",loss:"손절보강",impulse:"충동주의",avoid:"관망형"}[trade.key]||"매매반응측정");
   if(saju)title.push({growth:"성장확신",fire:"변동성추격",earth:"안정축적",metal:"원칙방어",water:"정보탐색",balanced:"균형조율"}[saju.key]||"만세력리듬");
   state.profile={
@@ -1526,6 +2221,9 @@ function renderProfile(){
     bal:bal?.key,
     bias:bias?.key,
     master:master?.key,
+    masterTitle:master?.t,
+    masterMetrics:master?.metrics,
+    masterTraits:master?.traits,
     trade:trade?.key,
     tradeTitle:trade?.t,
     tradeMetrics:trade?.metrics,
@@ -1534,28 +2232,72 @@ function renderProfile(){
     sajuMetrics:saju?.metrics
   };
   $("#profileTitle").textContent=state.profile.title+" 투자자";
-  $("#profileDesc").textContent=(trade||saju)
-    ?"검사 결과와 행동형 에이전트의 실제 반응, 만세력 기반 투자 리듬을 함께 반영한 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다."
+  $("#profileDesc").textContent=(master||trade||saju)
+    ?"검사 결과와 면담형 에이전트의 문답 로그, 행동형 게임 반응, 만세력 기반 투자 리듬을 함께 반영한 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다."
     :"검사 결과를 종합한 당신의 투자 성향입니다. 이 프로필이 다음 솔루션의 리밸런싱 강도와 자산 배분을 결정합니다.";
   const riskScore=risk?(risk.key==="hi"?85:risk.key==="mid"?55:25):50;
   const divNeed=bal?(bal.key==="stable"?80:45):60;
   const tradeControl=trade?.metrics?.stopDiscipline??50;
   const sajuBalance=saju?.metrics?.balanceScore??50;
+  const mentorScore=master?Math.round(((master.traits?.["감정통제"]??50)+(master.traits?.["독립성"]??50)+(master.traits?.["장기성향"]??50))/3):50;
   const traits=[
     {l:"위험 감수도",v:risk?risk.t.split(" · ")[0]:"미검사",m:riskScore},
     {l:"분산 선호",v:bal?(bal.key==="stable"?"높음":"낮음"):"미검사",m:divNeed},
     {l:"행동 편향",v:bias?bias.t.split(" ")[0]:"미검사",m:bias?(bias.key==="none"?20:70):50},
+    {l:"멘토 면담",v:master?master.t:"미검사",m:mentorScore},
     {l:"손절·존버 통제",v:trade?trade.t:"미검사",m:tradeControl},
     {l:"만세력 리듬",v:saju?saju.t:"미검사",m:sajuBalance}
   ];
   $("#profileTraits").innerHTML=traits.map(t=>`<div class="trait">
     <div class="l">${t.l}</div><div class="v">${t.v}</div>
     <div class="meter"><i style="width:${t.m}%"></i></div></div>`).join("");
+  renderProfileLogAnalysis(trade);
+  const reportBtn=$("#profileReportBtn");
+  if(reportBtn)reportBtn.onclick=generateTradeLlmReport;
+  const reportHost=$("#profileLlmReport");
+  if(reportHost&&state.llmReport){
+    setMarkdownPreview(reportHost,state.llmReport);
+  }else if(reportHost){
+    setMarkdownPreview(reportHost,"",trade
+      ?"손절·존버 미니게임 로그를 기반으로 LLM 리포트를 생성할 수 있습니다."
+      :"손절·존버 미니게임을 완료하면 생성할 수 있습니다.");
+  }
+}
+
+function tradeRoundInsight(round){
+  if(!round)return"";
+  const label=TRADE_TURN_LABELS[round.intent]||`턴 ${round.round||""}`;
+  if(round.noBuy)return `${label}: 매수하지 않고 관망했습니다. 의사결정 지연 또는 정보 확인 욕구가 강하게 기록됐습니다.`;
+  if(round.autoSell)return `${label}: 매수 후 제한시간까지 청산을 미뤘습니다. 존버 편향과 자동 규칙 필요성이 드러났습니다.`;
+  if(round.profitRate>=0)return `${label}: ${round.holdTime.toFixed(1)}초 보유 후 수익을 실현했습니다. 익절 타이밍 반응이 기록됐습니다.`;
+  return `${label}: ${round.holdTime.toFixed(1)}초 보유 후 손실을 확정했습니다. 손절 기준과 감정 반응을 함께 봐야 합니다.`;
+}
+
+function renderProfileLogAnalysis(trade){
+  const card=$("#profileLogCard"),grid=$("#profileLogGrid"),detail=$("#profileLogDetail");
+  if(!card||!grid||!detail)return;
+  if(!trade?.metrics){
+    card.style.display="none";
+    return;
+  }
+  const m=trade.metrics;
+  card.style.display="";
+  const rows=[
+    {l:"평균 보유",v:`${(m.avgHold||0).toFixed(1)}초`},
+    {l:"자동청산",v:`${m.autoSells||0}회`},
+    {l:"관망",v:`${m.noBuys||0}회`},
+    {l:"최종 수익률",v:tradeRate(m.totalReturn||0)}
+  ];
+  grid.innerHTML=rows.map(row=>`<div class="profile-log-metric"><div class="l">${row.l}</div><div class="v">${row.v}</div></div>`).join("");
+  const turns=(tradeGame?.roundResults||[]).map(r=>`<div class="profile-log-turn"><b>턴 ${r.round||"-"} · ${escapeHtml(TRADE_TURN_LABELS[r.intent]||"행동 로그")}</b>${escapeHtml(tradeRoundInsight(r))}</div>`).join("");
+  detail.innerHTML=`게임 로그 기준으로 <b>${escapeHtml(trade.t)}</b> 성향이 산출됐습니다.
+    손절·존버 통제 ${Math.round(m.stopDiscipline||0)}/100, 존버 편향 ${Math.round(m.holdBias||0)}/100, 충동성 ${Math.round(m.impulse||0)}/100이 마지막 솔루션의 리밸런싱 강도에 반영됩니다.
+    ${turns?`<div class="profile-log-turns">${turns}</div>`:""}`;
 }
 let quizState=null;
 function openQuiz(key){
   stopTradeGame();
-  $("#modal").classList.remove("trade-modal","saju-modal");
+  $("#modal").classList.remove("trade-modal","saju-modal","interview-modal");
   const ag=AGENTS.find(a=>a.key===key), qz=QUIZZES[key];
   delete state.tests[key]; // 재검사 시작 — 이전 결과/배지 초기화
   quizState={key,qz,i:0,answers:[]};
@@ -1610,11 +2352,600 @@ function computeQuizResult(key,answers,qz){
 function closeQuiz(){
   stopTradeGame();
   $("#modalBg").classList.remove("open");
-  $("#modal").classList.remove("trade-modal","saju-modal");
+  $("#modal").classList.remove("trade-modal","saju-modal","interview-modal");
   renderAgents();
 }
 function initStep3(){
   $("#modalBg").onclick=e=>{if(e.target===$("#modalBg"))closeQuiz();};
+}
+
+/* 멘토 면담 에이전트 */
+const MENTOR_TRAIT_KEYS=["위험감수도","장기성향","독립성","분석성향","감정통제","결단력"];
+const MENTOR_INTERVIEW_PROFILES={
+  buffett:{
+    name:"워런 버핏",emoji:"🧓",portrait:"/static/assets/mentors/buffett.png",title:"가치투자의 현인",tag:"따뜻한 할아버지",color:"#ffb800",bgClass:"mentor-bg-buffett",
+    persona:"워런 버핏 컨셉의 가상 멘토. 느긋하고 따뜻한 말투로 장기 가치투자, 기업의 본질, 인내, 안전마진을 묻는다.",
+    greeting:"허허, 자네가 왔구먼. 오마하에서 기다리고 있었네. 콜라 한 잔 하면서 천천히 이야기해볼까?",
+    fallback:[
+      "반갑네. 자네는 주식을 '기업의 일부'라고 생각하나, 아니면 '오르내리는 숫자'라고 생각하나?",
+      "10년 동안 시장이 닫혀서 팔 수 없다면, 그래도 사고 싶은 회사가 있나?",
+      "주가가 반토막 났을 때 자네의 첫 감정은 무엇이었나? 공포였나, 기회였나?",
+      "자네는 자신이 잘 아는 분야에 투자하나, 아니면 남들이 좋다는 곳에 따라가나?",
+      "빚을 내서 투자해 본 적이 있나? 그때 잠은 잘 잤나?",
+      "1달러를 벌기 위해 1달러의 위험을 감수하겠나, 아니면 50센트만 감수하겠나?",
+      "자네가 산 주식이 1년간 제자리걸음이면 어떤 마음이 드나?",
+      "남들이 모두 팔 때 자네는 무엇을 하나?",
+      "투자에서 가장 중요한 규칙은 무엇이라 생각하나?",
+      "마지막일세. 자네는 부자가 되려 투자하나, 자유로워지려 투자하나?"
+    ],
+    fallbackChoices:[
+      [{icon:"🏢",text:"기업의 일부라고 생각해요. 사장이 된 기분이죠.",score:{장기성향:20,분석성향:15}},{icon:"📊",text:"솔직히 숫자에 더 신경 쓰입니다.",score:{분석성향:10,감정통제:-5}},{icon:"🤔",text:"둘 다 맞는 말 같아요.",score:{결단력:-5}}],
+      [{icon:"💎",text:"있죠. 평생 들고 갈 회사라면 가능합니다.",score:{장기성향:25,위험감수도:-5}},{icon:"😅",text:"솔직히 1년 들고 있기도 힘들어요.",score:{장기성향:-20,결단력:-5}},{icon:"🔍",text:"찾고 있는 중이에요. 신중하게요.",score:{분석성향:15,결단력:-10}}],
+      [{icon:"🔥",text:"기회죠. 더 사야겠다는 생각부터 듭니다.",score:{위험감수도:20,감정통제:15}},{icon:"😰",text:"공포가 먼저 와요. 잠도 안 옵니다.",score:{감정통제:-15,위험감수도:-10}},{icon:"🧘",text:"일단 멈춰서 다시 분석합니다.",score:{분석성향:15,감정통제:10}}],
+      [{icon:"📚",text:"제가 아는 분야에만 투자합니다.",score:{독립성:20,분석성향:15}},{icon:"📱",text:"유튜브나 뉴스 추천을 자주 따라가요.",score:{독립성:-20,감정통제:-5}},{icon:"⚖️",text:"둘을 적절히 섞어서 합니다.",score:{분석성향:5}}],
+      [{icon:"💸",text:"빌려서까지 했었죠. 잠은 못 잤습니다.",score:{위험감수도:25,감정통제:-15}},{icon:"🛡️",text:"절대 안 합니다. 위험해요.",score:{위험감수도:-15,감정통제:15}},{icon:"🤏",text:"아주 조금만, 안전 범위에서요.",score:{위험감수도:5,감정통제:5}}],
+      [{icon:"⚡",text:"1달러 위험을 감수해서 1달러 벌겠습니다.",score:{위험감수도:20,결단력:15}},{icon:"🛡️",text:"50센트만 감수하겠어요. 안전제일.",score:{위험감수도:-15,결단력:5}},{icon:"🎲",text:"상황에 따라 다르겠죠.",score:{결단력:-5}}],
+      [{icon:"😴",text:"괜찮습니다. 기다리는 게 투자죠.",score:{장기성향:20,감정통제:15}},{icon:"😡",text:"답답해서 갈아타고 싶어집니다.",score:{장기성향:-20,감정통제:-10}},{icon:"🔄",text:"왜 안 오르는지 다시 분석합니다.",score:{분석성향:15,장기성향:5}}],
+      [{icon:"🛒",text:"저는 더 삽니다. 세일 기간이니까요.",score:{위험감수도:20,독립성:20}},{icon:"🏃",text:"저도 같이 팔고 도망갑니다.",score:{독립성:-20,감정통제:-10}},{icon:"👀",text:"일단 지켜봅니다. 신중하게요.",score:{결단력:-10,감정통제:5}}],
+      [{icon:"🥇",text:"돈을 잃지 않는 것입니다.",score:{분석성향:15,감정통제:15}},{icon:"📈",text:"복리의 마법을 활용하는 것입니다.",score:{장기성향:20,분석성향:10}},{icon:"🎯",text:"자기 자신을 아는 것입니다.",score:{독립성:20,감정통제:10}}],
+      [{icon:"💰",text:"부자가 되려고요. 풍요로운 삶이 목표죠.",score:{위험감수도:10,결단력:10}},{icon:"🕊️",text:"자유로워지려고요. 시간의 자유가 최고죠.",score:{장기성향:15,감정통제:10}},{icon:"🌱",text:"둘 다요. 그리고 가족을 위해서요.",score:{장기성향:10,감정통제:10}}]
+    ]
+  },
+  lynch:{
+    name:"피터 린치",emoji:"📈",portrait:"/static/assets/mentors/lynch.png",title:"생활 속 발굴왕",tag:"활기찬 선배 멘토",color:"#4a90ff",bgClass:"mentor-bg-lynch",
+    persona:"피터 린치 컨셉의 가상 멘토. 활기차고 실용적인 말투로 생활 속 발견, 직접 조사, 텐배거 가능성을 묻는다.",
+    greeting:"안녕하세요! 만나서 정말 반가워요. 당신의 투자 이야기, 생활 속에서 찾은 힌트부터 들어볼게요!",
+    fallback:[
+      "안녕하세요! 최근에 '이 제품이나 서비스 진짜 좋다'며 주변에 추천한 게 있나요?",
+      "그 회사 주식, 사기 전에 직접 매장에 가보거나 써본 적 있나요?",
+      "당신은 한 종목을 사기 전에 얼마나 조사하나요? 5분? 5시간?",
+      "주가가 두 배 오르면 바로 파나요, 아니면 더 갈 근거를 다시 확인하나요?",
+      "지루하지만 꾸준히 돈 버는 회사와 화제의 성장주 중 어느 쪽에 더 끌리나요?",
+      "손실 난 종목을 언젠가 오르겠지 하고 계속 들고 있던 적 있나요?",
+      "당신의 포트폴리오엔 몇 개의 종목이 있나요? 다 설명할 수 있나요?",
+      "한 종목에 몰빵해본 적 있나요? 결과는요?",
+      "시장이 폭락하면 당신은 더 사나요, 도망가나요?",
+      "마지막 질문! 투자에서 당신만의 엣지는 뭐라고 보나요?"
+    ],
+    fallbackChoices:[
+      [{icon:"☕",text:"네. 요즘 푹 빠진 카페 체인이 있어요.",score:{독립성:15,분석성향:10}},{icon:"📱",text:"제가 매일 쓰는 앱이 하나 있어요.",score:{독립성:15,분석성향:10}},{icon:"🤷",text:"딱히 추천한 건 없는데요.",score:{독립성:-10,분석성향:-5}}],
+      [{icon:"🏪",text:"직접 가서 써봤죠. 그게 기본 아닌가요?",score:{독립성:25,분석성향:20}},{icon:"📊",text:"재무제표만 보고 샀어요. 숫자가 중요하니까요.",score:{분석성향:15,독립성:5}},{icon:"🔥",text:"핫하다길래 그냥 샀어요.",score:{독립성:-20,분석성향:-15}}],
+      [{icon:"🔬",text:"며칠은 조사해요. 사업보고서까지 봅니다.",score:{분석성향:25,결단력:-5}},{icon:"⚡",text:"5분이면 충분하죠. 감이 중요해요.",score:{분석성향:-20,결단력:20}},{icon:"⏰",text:"한두 시간 정도 핵심만 봅니다.",score:{분석성향:10,결단력:10}}],
+      [{icon:"💎",text:"들고 갑니다. 텐배거가 될 수도 있잖아요.",score:{장기성향:25,위험감수도:15}},{icon:"💰",text:"바로 팔아요. 수익 실현이 최고죠.",score:{장기성향:-20,결단력:15}},{icon:"✂️",text:"절반 팔고 절반은 둡니다.",score:{결단력:15,감정통제:10}}],
+      [{icon:"🐢",text:"지루한 우량주가 좋아요. 꾸준한 게 최고죠.",score:{장기성향:20,위험감수도:-10}},{icon:"🚀",text:"화제의 성장주죠. 큰 한 방을 노립니다.",score:{위험감수도:25,장기성향:-5}},{icon:"🎯",text:"균형 있게 둘 다 가져갑니다.",score:{분석성향:10}}],
+      [{icon:"😢",text:"네. 손절 못하고 계속 들고 있었죠.",score:{결단력:-20,감정통제:-10}},{icon:"✂️",text:"아니요, 손절은 빠르게 합니다.",score:{결단력:20,감정통제:15}},{icon:"🔄",text:"재분석해서 가치 있으면 들고, 아니면 정리해요.",score:{분석성향:15,결단력:10}}],
+      [{icon:"🎯",text:"5~10개. 다 자신 있게 설명할 수 있어요.",score:{분석성향:20,독립성:15}},{icon:"📦",text:"30개 넘어요. 솔직히 다는 모르겠어요.",score:{분석성향:-10,결단력:-10}},{icon:"💎",text:"3개 이하. 집중 투자합니다.",score:{위험감수도:20,결단력:15}}],
+      [{icon:"🎰",text:"네, 한 종목 올인했어요. 결과는 비밀입니다.",score:{위험감수도:25,감정통제:-10}},{icon:"🛡️",text:"절대 안 합니다. 분산 투자가 원칙이에요.",score:{위험감수도:-15,감정통제:15}},{icon:"⚖️",text:"비중을 좀 더 둔 종목은 있어요.",score:{위험감수도:5,분석성향:10}}],
+      [{icon:"🛒",text:"더 삽니다. 폭락은 세일 기간이죠.",score:{위험감수도:25,독립성:15}},{icon:"🏃",text:"도망갑니다. 손실 확정하기 전에요.",score:{감정통제:-20,위험감수도:-15}},{icon:"👀",text:"관망합니다. 바닥 확인 후 들어가요.",score:{감정통제:10,결단력:-5}}],
+      [{icon:"👀",text:"일상에서 좋은 회사를 빨리 발견하는 거예요.",score:{독립성:20,분석성향:10}},{icon:"🧠",text:"감정에 휘둘리지 않는 것이요.",score:{감정통제:25,결단력:10}},{icon:"⏳",text:"오래 들고 갈 수 있는 인내심이죠.",score:{장기성향:25}}]
+    ]
+  },
+  wonyoung:{
+    name:"장원영",emoji:"🌟",portrait:"/static/assets/mentors/wonyoung.png",title:"럭키 긍정 마인드",tag:"긍정 루틴 멘토",color:"#ff6bb5",bgClass:"mentor-bg-wonyoung",
+    persona:"긍정 루틴 멘토 컨셉. 밝은 말투로 꾸준함, 자기관리, 멘탈 관리, 충동 통제 관점에서 투자 습관을 묻는다.",
+    greeting:"안녕. 오늘 우리 같이 이야기하는 거 완전 럭키한 기회잖아요. 편하게 골라줘요.",
+    fallback:[
+      "안녕하세요! 투자할 때 손해 봐도 '괜찮아, 배웠으니 럭키!' 하는 편인가요?",
+      "매일이나 매주 꾸준히 저축 또는 적립식 투자를 하는 루틴이 있나요?",
+      "주가가 떨어지면 하루 종일 그 생각만 나나요, 아니면 일상을 유지하나요?",
+      "투자 정보는 친구나 유튜브에서 얻나요, 직접 공부해서 찾나요?",
+      "큰돈 한 방과 작아도 꾸준한 성장 중 어느 쪽이 더 내 스타일인가요?",
+      "내 기준 없이 남들 따라 산 적이 있나요? 그때 기분은 어땠나요?",
+      "스트레스 받으면 충동적으로 사고팔게 되나요?",
+      "목표 금액과 기간을 정해두고 투자하나요, 흐름대로 하나요?",
+      "투자가 잘 안 풀릴 때 멘탈 관리는 어떻게 하나요?",
+      "마지막입니다. 10년 뒤의 나에게 투자로 어떤 선물을 해주고 싶나요?"
+    ],
+    fallbackChoices:[
+      [{icon:"🍀",text:"손해도 배움이잖아요. 괜찮게 정리합니다.",score:{감정통제:25,장기성향:10}},{icon:"😭",text:"며칠 동안 우울해져요.",score:{감정통제:-20}},{icon:"💪",text:"괜찮은 척하지만 속은 쓰려요.",score:{결단력:-5}}],
+      [{icon:"💖",text:"매달 자동이체로 꾸준히 해요.",score:{장기성향:25,감정통제:15}},{icon:"🌊",text:"기분 내킬 때만 해요.",score:{장기성향:-15,결단력:-10}},{icon:"✨",text:"월급날에는 하는 편이에요.",score:{장기성향:10}}],
+      [{icon:"🌈",text:"금방 일상으로 돌아옵니다.",score:{감정통제:25}},{icon:"😰",text:"하루 종일 차트만 봐요.",score:{감정통제:-20,위험감수도:-5}},{icon:"🧘",text:"신경 쓰이긴 해도 할 일은 합니다.",score:{감정통제:10}}],
+      [{icon:"📚",text:"직접 공부해요. 책도 읽고요.",score:{독립성:25,분석성향:20}},{icon:"📱",text:"유튜브에서 정보를 얻어요.",score:{독립성:-15}},{icon:"👯",text:"친구 의견도 듣고 종합해요.",score:{독립성:-5,분석성향:5}}],
+      [{icon:"🌱",text:"작아도 꾸준히가 제 스타일이에요.",score:{장기성향:25,위험감수도:-10}},{icon:"🎰",text:"큰돈 한 방. 인생은 한 번이니까요.",score:{위험감수도:25,결단력:15}},{icon:"⚖️",text:"둘 다 적당히 섞어서요.",score:{감정통제:10}}],
+      [{icon:"😅",text:"있어요. 그러고 후회도 했어요.",score:{독립성:-15,감정통제:-10}},{icon:"💖",text:"아뇨. 제 기준 없으면 안 사요.",score:{독립성:25,결단력:15}},{icon:"🤔",text:"한 번쯤은 있었던 것 같아요.",score:{}}],
+      [{icon:"🛑",text:"아뇨. 그럴 땐 잠깐 멈춥니다.",score:{감정통제:25,결단력:10}},{icon:"😵",text:"네. 충동적으로 행동해요.",score:{감정통제:-25,결단력:-10}},{icon:"💭",text:"가끔은 그러는데 후회해요.",score:{감정통제:-5}}],
+      [{icon:"🎯",text:"목표 금액을 정하고 차근차근 갑니다.",score:{분석성향:20,결단력:15}},{icon:"🌊",text:"흐름대로 자연스럽게 가요.",score:{분석성향:-10,결단력:-5}},{icon:"✨",text:"느슨한 목표 정도는 있어요.",score:{분석성향:5}}],
+      [{icon:"☕",text:"맛있는 거 먹고, 운동하고, 잘 자요.",score:{감정통제:25}},{icon:"😢",text:"솔직히 멘탈 관리가 어려워요.",score:{감정통제:-15}},{icon:"📖",text:"책 읽고 다시 공부하면서 회복해요.",score:{감정통제:15,분석성향:10}}],
+      [{icon:"🏠",text:"내 집 마련. 안정된 집이 최고예요.",score:{장기성향:20,위험감수도:-5}},{icon:"🌍",text:"세계여행. 자유로운 삶이요.",score:{위험감수도:15,장기성향:5}},{icon:"💝",text:"경제적 자유. 좋아하는 일만 하기.",score:{장기성향:15,감정통제:10}}]
+    ]
+  },
+  musk:{
+    name:"일론 머스크",emoji:"🚀",portrait:"/static/assets/mentors/musk.png",title:"미래를 사는 혁신가",tag:"직설적인 혁신 멘토",color:"#a855f7",bgClass:"mentor-bg-musk",
+    persona:"일론 머스크 컨셉의 가상 멘토. 직설적이고 도발적인 말투로 1차 원리, 리스크 감수, 혁신, AI, 전기차, 우주를 묻는다.",
+    greeting:"흥미롭군. 시간이 별로 없으니까 본론으로 들어가지. 너는 미래를 사는 사람이야, 과거를 지키는 사람이야?",
+    fallback:[
+      "흥미롭네. 너는 안전한 길과 화성으로 가는 미친 길, 어느 쪽이야?",
+      "1차 원리로 생각해봐. 주식이 뭐라고 생각해? 왜 사는 거야?",
+      "현재 가치보다 10년 뒤 가능성에 더 베팅할 수 있어?",
+      "솔직히, 모두가 미쳤다는 회사에 투자해본 적 있어?",
+      "너는 군중을 따라가는 타입이야, 아니면 군중과 반대로 가는 타입이야?",
+      "리스크를 감수해야 의미 있는 일을 할 수 있어. 너는 어디까지 감수해?",
+      "AI, 우주, 전기차. 미래의 큰 흐름 중 뭐가 가장 확실하다고 봐?",
+      "실패한 투자에서 배운 교훈을 한 줄로 말해봐.",
+      "재미없는 안정과 미친 듯이 일해서 세상을 바꾸기. 뭐 고를래?",
+      "마지막. 100년 뒤 인류에게 너의 투자가 어떤 영향을 줬으면 좋겠어?"
+    ],
+    fallbackChoices:[
+      [{icon:"🚀",text:"당연히 미친 길. 화성행 1등석!",score:{위험감수도:25,결단력:20}},{icon:"🏠",text:"안전한 길이지. 가족이 있잖아.",score:{위험감수도:-20,감정통제:10}},{icon:"⚡",text:"상황 봐서 결정해. 둘 다 매력적이야.",score:{결단력:-10}}],
+      [{icon:"🏢",text:"회사의 미래 가치에 베팅하는 거지.",score:{장기성향:20,분석성향:15}},{icon:"💵",text:"돈 벌려고 사는 거 아니야?",score:{위험감수도:10,장기성향:-10}},{icon:"🎲",text:"솔직히 게임 같기도 해.",score:{위험감수도:15,감정통제:-10}}],
+      [{icon:"🔮",text:"당연하지. 미래가 곧 가치야.",score:{위험감수도:20,장기성향:25}},{icon:"📊",text:"아니, 지금 보이는 숫자가 더 중요해.",score:{분석성향:15,위험감수도:-10}},{icon:"⚖️",text:"둘 다 봐야지. 균형이 중요해.",score:{분석성향:10}}],
+      [{icon:"🔥",text:"응. 다들 비웃던 회사에 들어간 적 있어.",score:{위험감수도:25,독립성:25}},{icon:"😅",text:"아니. 그런 모험은 못해.",score:{위험감수도:-20,독립성:-10}},{icon:"🤔",text:"관심은 있었지만 실행 못 했어.",score:{결단력:-15}}],
+      [{icon:"🌊",text:"반대로 간다. 군중은 보통 늦어.",score:{독립성:25,결단력:15}},{icon:"👥",text:"군중과 함께 가. 안전하니까.",score:{독립성:-20}},{icon:"🎯",text:"분석해서 옳다 싶으면 가.",score:{분석성향:20,독립성:10}}],
+      [{icon:"💀",text:"죽지 않을 만큼은 다 감수해.",score:{위험감수도:25,결단력:20}},{icon:"🛡️",text:"잃어도 되는 만큼만.",score:{위험감수도:-10,감정통제:15}},{icon:"🧮",text:"계산해서 결정해. 무모하진 않아.",score:{분석성향:20}}],
+      [{icon:"🤖",text:"AI. 모든 걸 바꿀 거야.",score:{위험감수도:15,장기성향:15}},{icon:"🚀",text:"우주. 인류의 미래야.",score:{장기성향:25,위험감수도:10}},{icon:"⚡",text:"전기차. 이미 현실이 되고 있어.",score:{분석성향:15,장기성향:10}}],
+      [{icon:"📚",text:"리스크 관리가 진짜 중요하다.",score:{분석성향:20,감정통제:15}},{icon:"😤",text:"내 판단이 항상 옳진 않다는 것.",score:{독립성:5,감정통제:10}},{icon:"⏳",text:"인내가 부족했다는 거.",score:{장기성향:20,결단력:-5}}],
+      [{icon:"🌍",text:"세상 바꾸기. 인생은 한 번이야.",score:{위험감수도:20,장기성향:15}},{icon:"☕",text:"안정된 일상이 좋아.",score:{위험감수도:-15,감정통제:15}},{icon:"🎯",text:"둘 다. 균형 있게 가야지.",score:{분석성향:10}}],
+      [{icon:"🚀",text:"인류를 다행성 종족으로 만들고 싶어.",score:{장기성향:25,위험감수도:20}},{icon:"🌱",text:"지속가능한 미래에 기여하고 싶어.",score:{장기성향:20,감정통제:10}},{icon:"💝",text:"내 가족이 풍요로웠으면 좋겠어.",score:{장기성향:15}}]
+    ]
+  }
+};
+let mentorInterview=null;
+
+function openMentorInterview(){
+  stopTradeGame();
+  const modal=$("#modal");
+  modal.classList.remove("trade-modal","saju-modal");
+  modal.classList.add("interview-modal");
+  mentorInterview={selectedKey:null,customName:"",history:[],maxQ:10,busy:false,affinity:0};
+  renderMentorIntro();
+  $("#modalBg").classList.add("open");
+}
+function renderMentorIntro(){
+  const prev=state.tests.master;
+  const modal=$("#modal");
+  modal.innerHTML=`<div class="modal-body">
+    <div class="mentor-sim-shell">
+      <button class="close mentor-sim-close" id="mentorClose">×</button>
+      <div class="mentor-intro-head">
+        <div class="mentor-kicker">Agent 01 · Mentor Interview</div>
+        <h2>멘토 면담: 운명의 만남</h2>
+        <p>투자 멘토와의 10문답 시뮬레이션입니다. 답변 버튼과 반응 시간은 로그로 남고, 마지막에는 LLM 위키와 종합 리포트에 반영됩니다.</p>
+      </div>
+      <div class="mentor-character-grid">
+        ${Object.entries(MENTOR_INTERVIEW_PROFILES).map(([key,m])=>`<button class="mentor-character-card" data-mentor="${key}" type="button" style="--mentor-color:${m.color}">
+          <div class="mentor-portrait">${m.portrait?`<img src="${escapeHtml(m.portrait)}" alt="${escapeHtml(m.name)}">`:`<span>${m.emoji}</span>`}</div>
+          <div class="mentor-name">${escapeHtml(m.name)}</div>
+          <div class="mentor-title">${escapeHtml(m.title||m.tag)}</div>
+          <div class="mentor-tag-badge">${escapeHtml(m.tag||"가상 멘토")}</div>
+        </button>`).join("")}
+      </div>
+      <div class="mentor-custom">
+        <input class="inp" id="mentorCustomName" placeholder="직접 멘토 입력 (예: 찰리 멍거, 나만의 투자 코치)">
+        <button class="btn btn-ghost btn-sm" id="mentorCustomPick" type="button">선택</button>
+      </div>
+      <div class="mentor-start-row">
+        <button class="btn btn-dark" id="mentorStart" type="button" style="width:100%;justify-content:center" disabled>면담 시작</button>
+      </div>
+      ${prev?`<div class="mentor-prev-note"><b>저장된 면담 결과</b><br>${escapeHtml(prev.mentor?.name||"멘토")} · ${escapeHtml(prev.t)}</div>`:""}
+    </div>
+  </div>`;
+  $("#mentorClose").onclick=closeQuiz;
+  modal.querySelectorAll("[data-mentor]").forEach(btn=>btn.onclick=()=>{
+    mentorInterview.selectedKey=btn.dataset.mentor;
+    mentorInterview.customName="";
+    $("#mentorCustomName").value="";
+    modal.querySelectorAll("[data-mentor]").forEach(x=>x.classList.toggle("active",x===btn));
+    $("#mentorStart").disabled=false;
+  });
+  $("#mentorCustomPick").onclick=()=>{
+    const name=$("#mentorCustomName").value.trim();
+    if(!name)return;
+    mentorInterview.selectedKey="custom";
+    mentorInterview.customName=name;
+    modal.querySelectorAll("[data-mentor]").forEach(x=>x.classList.remove("active"));
+    $("#mentorStart").disabled=false;
+  };
+  $("#mentorCustomName").oninput=e=>{
+    if(e.target.value.trim())$("#mentorStart").disabled=false;
+    else if(mentorInterview.selectedKey==="custom")$("#mentorStart").disabled=true;
+  };
+  $("#mentorStart").onclick=startMentorInterview;
+}
+function currentMentorProfile(){
+  if(mentorInterview?.selectedKey==="custom"){
+    const name=mentorInterview.customName||$("#mentorCustomName")?.value.trim()||"나만의 멘토";
+    return {
+      key:"custom",
+      name,
+      emoji:"🧑‍🏫",
+      title:"사용자 지정 멘토",
+      tag:"맞춤 투자 코치",
+      color:"#22d3ee",
+      bgClass:"mentor-bg-lynch",
+      greeting:`${name}의 관점으로 당신의 투자 습관을 차근차근 묻겠습니다.`,
+      persona:`${name}의 투자 철학을 참고한 가상 멘토`,
+      fallback:[
+        "반갑습니다. 당신에게 투자란 한 마디로 무엇인가요?",
+        "주가가 급락하면 가장 먼저 드는 생각은 무엇인가요?",
+        "종목을 고를 때 직접 분석하나요, 추천을 따르나요?",
+        "수익이 났을 때 빨리 파나요, 더 기다리나요?",
+        "한 종목에 집중하나요, 여러 곳에 나누나요?",
+        "손실을 인정하고 정리하는 편인가요, 버티는 편인가요?",
+        "투자 결정을 감정적으로 하나요, 데이터로 하나요?",
+        "단기 수익과 장기 자산 중 무엇을 더 중시하나요?",
+        "남들이 패닉할 때 당신은 어떻게 행동하나요?",
+        "마지막으로, 당신의 투자 목표는 무엇인가요?"
+      ],
+      fallbackChoices:[
+        [{icon:"🏢",text:"기업과 자산을 오래 소유하는 일입니다.",score:{장기성향:18,분석성향:10}},{icon:"📊",text:"좋은 타이밍을 잡아 수익을 내는 일입니다.",score:{위험감수도:10,장기성향:-8}},{icon:"🧭",text:"나의 자유를 만드는 과정입니다.",score:{장기성향:12,감정통제:8}}],
+        [{icon:"🔥",text:"좋은 자산이면 더 살 기회로 봅니다.",score:{위험감수도:18,독립성:10}},{icon:"🛡️",text:"먼저 현금과 손실 한도를 확인합니다.",score:{위험감수도:-10,감정통제:14}},{icon:"👀",text:"바로 움직이지 않고 원인을 봅니다.",score:{분석성향:15,결단력:-6}}],
+        [{icon:"🔬",text:"직접 분석하고 근거를 남깁니다.",score:{독립성:18,분석성향:18}},{icon:"👥",text:"추천을 참고하되 다시 확인합니다.",score:{분석성향:8}},{icon:"📱",text:"유행과 분위기에 영향을 받습니다.",score:{독립성:-16,감정통제:-8}}],
+        [{icon:"💎",text:"근거가 유지되면 더 기다립니다.",score:{장기성향:18,감정통제:10}},{icon:"✂️",text:"목표 수익이면 일부 실현합니다.",score:{결단력:14,감정통제:8}},{icon:"⚡",text:"빨리 팔고 다음 기회를 찾습니다.",score:{장기성향:-14,결단력:12}}],
+        [{icon:"⚖️",text:"여러 자산으로 나눕니다.",score:{감정통제:10,위험감수도:-6}},{icon:"🎯",text:"확신 있는 소수에 집중합니다.",score:{위험감수도:16,결단력:12}},{icon:"🌊",text:"상황에 따라 유연하게 바꿉니다.",score:{분석성향:6}}],
+        [{icon:"✂️",text:"기준에 닿으면 인정하고 정리합니다.",score:{결단력:18,감정통제:12}},{icon:"⏳",text:"회복을 기다리는 편입니다.",score:{장기성향:10,결단력:-8}},{icon:"😰",text:"결정이 늦어져 손실이 커질 때가 있습니다.",score:{결단력:-16,감정통제:-8}}],
+        [{icon:"📐",text:"데이터와 규칙을 먼저 봅니다.",score:{분석성향:20,감정통제:10}},{icon:"💭",text:"직감도 꽤 중요하게 봅니다.",score:{분석성향:-8,위험감수도:8}},{icon:"🧘",text:"감정이 올라오면 하루 쉬고 봅니다.",score:{감정통제:18}}],
+        [{icon:"🌱",text:"장기 자산 형성을 더 중시합니다.",score:{장기성향:22}},{icon:"⚡",text:"단기 기회도 적극적으로 잡고 싶습니다.",score:{장기성향:-14,위험감수도:12}},{icon:"⚖️",text:"코어는 장기, 일부는 단기로 둡니다.",score:{분석성향:10}}],
+        [{icon:"🛒",text:"내 기준에 맞으면 추가 매수합니다.",score:{위험감수도:16,독립성:14}},{icon:"🧊",text:"아무것도 하지 않고 계획을 확인합니다.",score:{감정통제:18}},{icon:"🏃",text:"불안해서 줄이고 싶어집니다.",score:{위험감수도:-12,감정통제:-12}}],
+        [{icon:"🕊️",text:"경제적 자유와 마음의 여유입니다.",score:{장기성향:16,감정통제:10}},{icon:"📈",text:"자산을 크게 키우는 것입니다.",score:{위험감수도:12,결단력:10}},{icon:"🏠",text:"가족과 생활 안정입니다.",score:{위험감수도:-8,감정통제:12}}]
+      ]
+    };
+  }
+  const key=mentorInterview?.selectedKey||"buffett";
+  return {key,...MENTOR_INTERVIEW_PROFILES[key]};
+}
+function startMentorInterview(){
+  const customValue=$("#mentorCustomName")?.value.trim();
+  if(customValue&&mentorInterview.selectedKey!=="custom"&&!mentorInterview.customName){
+    mentorInterview.selectedKey="custom";
+    mentorInterview.customName=customValue;
+  }
+  const profile=currentMentorProfile();
+  mentorInterview={...mentorInterview,...profile,history:[],maxQ:10,busy:false,affinity:0};
+  delete state.tests.master;
+  ensureGameStarted("master").catch(err=>console.warn("[mentor-start] failed",err));
+  mentorAskQuestion(profile.fallback[0]);
+}
+function mentorAskQuestion(question,choices=null){
+  const index=mentorInterview.history.length;
+  mentorInterview.history.push({q:question,a:null,askedAt:Date.now(),elapsedMs:null,choiceScore:null,choices:mentorNormalizeChoices(choices||mentorAnswerChoices(question,index))});
+  mentorInterview.busy=false;
+  renderMentorChat();
+}
+function mentorHearts(){
+  return Array.from({length:5},(_,i)=>`<span class="heart ${i<(mentorInterview.affinity||0)?"filled":""}">${i<(mentorInterview.affinity||0)?"♥":"♡"}</span>`).join("");
+}
+function renderMentorChat(){
+  const modal=$("#modal");
+  const total=mentorInterview.maxQ;
+  const answered=mentorInterview.history.filter(h=>h.a).length;
+  const current=mentorInterview.history[mentorInterview.history.length-1];
+  const currentIndex=Math.min(answered+1,total);
+  const displayIndex=current?.a?Math.min(answered,total):currentIndex;
+  const progress=answered/total*100;
+  const recent=mentorInterview.history.filter(h=>h.a).slice(-3);
+  modal.classList.remove("trade-modal","saju-modal");
+  modal.classList.add("interview-modal");
+  modal.innerHTML=`<div class="modal-body">
+    <div class="mentor-game-shell ${mentorInterview.bgClass||"mentor-bg-lynch"}" style="--mentor-color:${mentorInterview.color||"#a855f7"}">
+      <button class="close mentor-sim-close" id="mentorClose">×</button>
+      <div class="mentor-hud">
+        <div>
+          <div class="mentor-hud-title">멘토 면담 시뮬레이션</div>
+          <div class="mentor-hud-sub">${escapeHtml(mentorInterview.name)} · ${escapeHtml(mentorInterview.title||mentorInterview.tag||"가상 멘토")}</div>
+        </div>
+        <div class="mentor-hearts" aria-label="호감도">${mentorHearts()}</div>
+        <div class="mentor-progress-pill">
+          ${currentIndex} / ${total}
+          <div class="mentor-progress-mini"><i style="width:${progress}%"></i></div>
+        </div>
+      </div>
+      <div class="mentor-stage">
+        <div class="mentor-large-portrait">${mentorInterview.portrait?`<img class="mentor-large-img" src="${escapeHtml(mentorInterview.portrait)}" alt="${escapeHtml(mentorInterview.name)}">`:`<div class="mentor-large-emoji">${mentorInterview.emoji}</div>`}</div>
+        <div>
+          <div class="mentor-dialogue">
+            <div class="mentor-dialogue-name"><span class="mentor-qnum">Q${displayIndex}</span>${escapeHtml(mentorInterview.name)}</div>
+            <div class="mentor-dialogue-text">${escapeHtml(current?.q||mentorInterview.greeting||"투자 습관을 묻겠습니다.")}</div>
+          </div>
+          ${recent.length?`<div class="mentor-history-strip">
+            ${recent.map((h,i)=>`<div class="mentor-history-line"><b>${escapeHtml(mentorInterview.name)}</b> ${escapeHtml(h.q)}<br><b>You</b> ${escapeHtml(h.a||"")}</div>`).join("")}
+          </div>`:""}
+          ${mentorInterview.busy?`<div class="mentor-thinking">답변 로그를 읽고 다음 질문을 고르는 중입니다...</div>`:""}
+        </div>
+      </div>
+      ${current&&!current.a&&!mentorInterview.busy?`<div class="mentor-choice-grid">
+        ${(current.choices||[]).map((choice,idx)=>`<button class="mentor-choice" type="button" data-choice-index="${idx}" data-icon="${escapeHtml(choice.icon||"💭")}">${escapeHtml(choice.text)}</button>`).join("")}
+      </div>`:""}
+      <div class="mentor-disclaimer">멘토 발언은 공개 철학을 바탕으로 한 가상 연출입니다. 특정 종목 매수·매도 조언이 아니라 투자 습관 진단용 질문입니다.</div>
+    </div>
+  </div>`;
+  $("#mentorClose").onclick=closeQuiz;
+  modal.querySelectorAll("[data-choice-index]").forEach(btn=>btn.onclick=()=>{
+    const choice=(current.choices||[])[Number(btn.dataset.choiceIndex)];
+    if(choice)answerMentorInterview(choice.text,choice.score||{});
+  });
+}
+function mentorNormalizeChoices(choices){
+  const list=(Array.isArray(choices)?choices:[]).map(choice=>typeof choice==="string"?{icon:"💭",text:choice,score:mentorScoreFromText(choice)}:{icon:choice.icon||"💭",text:choice.text||"",score:choice.score||mentorScoreFromText(choice.text)});
+  return list.filter(choice=>choice.text).slice(0,4);
+}
+function mentorAnswerChoices(question,index=0){
+  const profile=currentMentorProfile();
+  const exact=(profile.fallback||[]).findIndex(q=>q===question);
+  if(exact>=0&&profile.fallbackChoices?.[exact])return profile.fallbackChoices[exact];
+  const q=String(question||"").toLowerCase();
+  if(/반토막|급락|폭락|패닉|손실|실패/.test(q))return [
+    {icon:"🛒",text:"근거가 유지되면 추가 매수합니다.",score:{위험감수도:18,독립성:12,감정통제:8}},
+    {icon:"🧊",text:"일단 멈추고 원인부터 다시 봅니다.",score:{분석성향:16,감정통제:14,결단력:-5}},
+    {icon:"✂️",text:"정한 손실 기준이면 정리합니다.",score:{결단력:18,감정통제:10}},
+    {icon:"🏃",text:"불안하면 현금 비중을 늘립니다.",score:{위험감수도:-14,감정통제:-8}}
+  ];
+  if(/10년|장기|오래|제자리|미래|100년/.test(q))return [
+    {icon:"🌱",text:"장기 근거가 있으면 오래 보유합니다.",score:{장기성향:22,감정통제:10}},
+    {icon:"🔄",text:"분기마다 근거를 다시 점검합니다.",score:{분석성향:15,장기성향:8}},
+    {icon:"💰",text:"목표 수익이면 일부 실현합니다.",score:{결단력:14,장기성향:-8}},
+    {icon:"🚪",text:"확신이 없으면 후보에서 제외합니다.",score:{결단력:10,위험감수도:-8}}
+  ];
+  if(/빚|레버리지|위험|리스크|감수/.test(q))return [
+    {icon:"🛡️",text:"절대 무리하지 않습니다.",score:{위험감수도:-18,감정통제:12}},
+    {icon:"🤏",text:"잃어도 되는 만큼만 씁니다.",score:{위험감수도:-6,감정통제:15}},
+    {icon:"⚡",text:"확실한 기회면 과감하게 씁니다.",score:{위험감수도:22,결단력:16}},
+    {icon:"🧮",text:"손실 한도까지 계산한 뒤 결정합니다.",score:{분석성향:20,감정통제:10}}
+  ];
+  if(/남들|추천|유튜브|친구|군중|따라|반대/.test(q))return [
+    {icon:"🧭",text:"내 기준으로 다시 검증합니다.",score:{독립성:20,분석성향:12}},
+    {icon:"👥",text:"일부 참고하지만 그대로 따르진 않습니다.",score:{분석성향:8}},
+    {icon:"🌊",text:"분위기에 흔들릴 때가 있습니다.",score:{독립성:-16,감정통제:-10}},
+    {icon:"🔥",text:"오히려 군중과 반대로 갈 때가 많습니다.",score:{독립성:22,위험감수도:12}}
+  ];
+  if(/조사|분석|설명|엣지|제품|서비스|원리|가치/.test(q))return [
+    {icon:"🔬",text:"직접 써보고 데이터까지 확인합니다.",score:{분석성향:22,독립성:14}},
+    {icon:"📊",text:"재무와 지표를 먼저 봅니다.",score:{분석성향:18}},
+    {icon:"👀",text:"주변 반응과 시장 흐름을 봅니다.",score:{분석성향:8}},
+    {icon:"⚡",text:"감이 오면 빠르게 들어갑니다.",score:{분석성향:-10,결단력:18,위험감수도:12}}
+  ];
+  if(/목표|자유|부자|선물|영향|가족/.test(q))return [
+    {icon:"🕊️",text:"경제적 자유가 가장 중요합니다.",score:{장기성향:16,감정통제:10}},
+    {icon:"💵",text:"꾸준한 현금흐름을 만들고 싶습니다.",score:{장기성향:12,위험감수도:-6}},
+    {icon:"🚀",text:"큰 성장 기회를 잡고 싶습니다.",score:{위험감수도:18,결단력:12}},
+    {icon:"🏠",text:"마음 편한 안정이 먼저입니다.",score:{위험감수도:-12,감정통제:15}}
+  ];
+  return profile.fallbackChoices?.[index]||[
+    {icon:"🛡️",text:"안정이 먼저입니다.",score:{위험감수도:-12,감정통제:12}},
+    {icon:"🚀",text:"성장 기회가 먼저입니다.",score:{위험감수도:16,결단력:10}},
+    {icon:"⚖️",text:"균형과 분산이 먼저입니다.",score:{감정통제:10,분석성향:8}},
+    {icon:"🧭",text:"내 기준을 더 확인합니다.",score:{독립성:14,분석성향:10}}
+  ];
+}
+function mentorScoreFromText(text){
+  const has=re=>re.test(String(text||""));
+  return {
+    위험감수도:(has(/추가|성장|기회|빠르게|레버리지|과감|올인|미친/) ? 14 : 0) + (has(/절대|안정|현금|정리|제외|무리/) ? -10 : 0),
+    장기성향:(has(/10년|꾸준|장기|보유|자유|평생|오래/) ? 14 : 0) + (has(/빠르게|단기|수익 실현|갈아/) ? -10 : 0),
+    독립성:(has(/검증|기준|직접|반대로|스스로/) ? 12 : 0) + (has(/추천|유튜브|분위기|군중/) ? -12 : 0),
+    분석성향:(has(/분석|데이터|재무|확인|검증|계산/) ? 14 : 0) + (has(/감이|느낌|그냥/) ? -10 : 0),
+    감정통제:(has(/안정|멈추|기다|침착|한도|마음 편/) ? 12 : 0) + (has(/불안|흔들|패닉|충동/) ? -12 : 0),
+    결단력:(has(/정리|빠르게|결정|과감|기회/) ? 12 : 0) + (has(/지켜|기다|상황|모르/) ? -6 : 0)
+  };
+}
+function mentorTraitSignal(text,score=null){
+  if(score&&Object.keys(score).length){
+    return {
+      risk_tolerance:clamp(Math.round((score["위험감수도"]||0)/6),-5,5),
+      diversification:clamp(Math.round(((score["분석성향"]||0)-(score["위험감수도"]||0))/10),-5,5),
+      behavior_bias:clamp(Math.round((-(score["독립성"]||0)-(score["감정통제"]||0))/8),-5,5),
+      time_horizon:clamp(Math.round(-(score["장기성향"]||0)/6),-5,5),
+      stability_growth:clamp(Math.round((score["위험감수도"]||0)/6),-5,5),
+      sector_tags:[]
+    };
+  }
+  const has=re=>re.test(String(text||""));
+  return {
+    risk_tolerance:clamp((has(/추가|성장|기회|빠르게|레버리지|이미/) ? 3 : 0) + (has(/절대|안정|현금|정리|제외/) ? -2 : 0),-5,5),
+    diversification:clamp(has(/분산|현금|일부|여러/) ? -3 : has(/큰 성장|감이|빠르게|추가/) ? 2 : 0,-5,5),
+    behavior_bias:clamp(has(/흔들|추천|분위기|감이/) ? 3 : has(/검증|기준|데이터/) ? -2 : 0,-5,5),
+    time_horizon:clamp(has(/빠르게|손절|일부 실현/) ? 3 : has(/10년|꾸준|장기|보유/) ? -4 : 0,-5,5),
+    stability_growth:clamp(has(/성장|기회|추가/) ? 3 : has(/안정|현금|경제적 자유|꾸준/) ? -2 : 0,-5,5),
+    sector_tags:[]
+  };
+}
+function mentorBackendQuestionIsUseful(text){
+  const value=String(text||"").trim();
+  if(!value||value.length<8)return false;
+  if(value.includes("행동을 기록했습니다"))return false;
+  return /[?？]|인가요|하나요|겠습니까|고르세요|어떻게/.test(value);
+}
+async function answerMentorInterview(answer,score=null){
+  if(mentorInterview.busy)return;
+  const current=mentorInterview.history[mentorInterview.history.length-1];
+  if(!current||current.a)return;
+  const choiceScore=score&&Object.keys(score).length?score:mentorScoreFromText(answer);
+  current.a=answer;
+  current.choiceScore=choiceScore;
+  current.elapsedMs=Date.now()-(current.askedAt||Date.now());
+  const answeredAfter=mentorInterview.history.filter(h=>h.a).length;
+  mentorInterview.affinity=Math.min(5,Math.floor(answeredAfter/2));
+  mentorInterview.busy=true;
+  renderMentorChat();
+  let nextQuestion=null;
+  try{
+    const sid=await ensureGameStarted("master");
+    const data=await postJson("/api/games/master/conversation",{
+      session_id:sid,
+      turn:mentorInterview.history.length,
+      message:answer,
+      context:{
+        source:"diagnosis_solution_mentor_interview",
+        mentor_name:mentorInterview.name,
+        persona:mentorInterview.persona,
+        history:mentorInterview.history.map(({q,a,elapsedMs,choiceScore})=>({q,a,elapsed_ms:elapsedMs,choice_score:choiceScore})),
+        elapsed_ms:current.elapsedMs,
+        signal:mentorTraitSignal(answer,choiceScore)
+      }
+    });
+    if(mentorBackendQuestionIsUseful(data.message))nextQuestion=data.message.trim();
+  }catch(err){
+    console.warn("[mentor-conversation] failed",err);
+  }
+  if(mentorInterview.history.filter(h=>h.a).length>=mentorInterview.maxQ){
+    finishMentorInterview();
+    return;
+  }
+  if(!nextQuestion){
+    const pool=mentorInterview.fallback||currentMentorProfile().fallback;
+    nextQuestion=pool[Math.min(mentorInterview.history.length,pool.length-1)];
+  }
+  const previousQuestions=new Set(mentorInterview.history.map(h=>h.q));
+  if(previousQuestions.has(nextQuestion)){
+    const pool=mentorInterview.fallback||currentMentorProfile().fallback;
+    nextQuestion=pool.find(q=>!previousQuestions.has(q))||"좋습니다. 이번에는 실제 포트폴리오에서 가장 먼저 줄이고 싶은 위험이 무엇인지 골라보세요.";
+  }
+  mentorAskQuestion(nextQuestion);
+}
+function finishMentorInterview(){
+  const diag=computeMentorDiagnosis();
+  const wiki=buildMentorInterviewWiki(diag);
+  state.tests.master={
+    em:mentorInterview.emoji,
+    t:diag.type,
+    d:diag.summary,
+    key:diag.key,
+    mentor:{name:mentorInterview.name,emoji:mentorInterview.emoji,portrait:mentorInterview.portrait,tag:mentorInterview.tag,title:mentorInterview.title,affinity:mentorInterview.affinity},
+    traits:diag.traits,
+    metrics:{behaviorAlignment:Math.round(((diag.traits["장기성향"]||50)+(diag.traits["감정통제"]||50)+(diag.traits["독립성"]||50))/3)},
+    history:mentorInterview.history,
+    wikiMarkdown:wiki
+  };
+  state.gameWikis.master={title:"[멘토 면담: 미연시] 성향 위키",markdown:wiki};
+  renderMentorResult(diag,wiki);
+  (async()=>{
+    try{
+      const sid=await ensureGameStarted("master");
+      const data=await postJson("/api/games/master/finish",{session_id:sid});
+      if(data?.wiki)state.gameWikis.master=data.wiki;
+    }catch(err){console.warn("[mentor-finish] failed",err);}
+  })();
+}
+function computeMentorDiagnosis(){
+  const answers=mentorInterview.history.map(h=>h.a||"").join(" ");
+  const has=re=>re.test(answers);
+  const score=Object.fromEntries(MENTOR_TRAIT_KEYS.map(k=>[k,50]));
+  const hasChoiceScore=mentorInterview.history.some(h=>h.choiceScore&&Object.keys(h.choiceScore).length);
+  if(hasChoiceScore){
+    mentorInterview.history.forEach(h=>{
+      Object.entries(h.choiceScore||{}).forEach(([k,v])=>{
+        if(k in score)score[k]=clamp(score[k]+Number(v||0),15,95);
+      });
+    });
+  }else{
+    Object.assign(score,{
+      "위험감수도":clamp(50+(has(/추가|공격|레버리지|큰 성장|기회|빠르게/) ? 25 : 0)-(has(/안전|보수|현금|정리|제외|절대/) ? 20 : 0),15,95),
+      "장기성향":clamp(50+(has(/장기|10년|꾸준|보유|경제적 자유/) ? 25 : 0)-(has(/빠르게|단기|일부 실현|손절/) ? 18 : 0),15,95),
+      "독립성":clamp(50+(has(/직접|내 기준|검증|데이터|분석|재무/) ? 25 : 0)-(has(/추천|유튜브|분위기|흔들|따른다/) ? 25 : 0),15,95),
+      "분석성향":clamp(50+(has(/분석|데이터|재무|확인|검증|써보고/) ? 28 : 0)-(has(/감이|느낌|빠르게 산다/) ? 15 : 0),15,95),
+      "감정통제":clamp(50+(has(/안정|일단 보유|분기마다|마음 편한|꾸준/) ? 20 : 0)-(has(/흔들|패닉|분위기|충동|빠르게/) ? 20 : 0),15,95),
+      "결단력":clamp(50+(has(/손절 기준|정리|빠르게|기회면|추가/) ? 22 : 0)-(has(/일단|분기마다|더 본다|참고/) ? 12 : 0),15,95)
+    });
+  }
+  const top=Object.entries(score).sort((a,b)=>b[1]-a[1])[0]?.[0]||"분석성향";
+  const typeMap={
+    "위험감수도":"🔥 공격적 도전형",
+    "장기성향":"🌱 뚝심 장기형",
+    "독립성":"🧭 독립 사색형",
+    "분석성향":"🔬 분석 탐구형",
+    "감정통제":"🧘 평정심 안정형",
+    "결단력":"⚡ 과감 결단형"
+  };
+  const keyMap={"위험감수도":"risk","장기성향":"long","독립성":"independent","분석성향":"analysis","감정통제":"calm","결단력":"decisive"};
+  const quoteMap={
+    buffett:`자네의 답변에서 '${top}'의 결이 가장 또렷하게 보이는구먼. 오래 살아남는 투자자가 되게.`,
+    lynch:`당신 답변에서 '${top}'이 정말 인상적이었어요. 그 강점을 실제 종목 설명으로 연결해보죠.`,
+    wonyoung:`${top}이 가장 반짝였어요. 이 루틴을 지키면 투자 멘탈도 훨씬 단단해질 거예요.`,
+    musk:`흥미롭네. 너의 '${top}'은 평균 이상이야. 단, 실행 규칙 없이는 그냥 소음이야.`
+  };
+  return {
+    key:keyMap[top]||"mentor",
+    type:typeMap[top]||"🎯 균형 투자형",
+    quote:quoteMap[mentorInterview.key]||`${mentorInterview.name}: 답변에서 '${top}'의 결이 가장 또렷하게 보입니다.`,
+    summary:`${mentorInterview.name} 면담 로그 기준으로 ${top}이 가장 강하게 나타났습니다. 질문별 선택 버튼, 선택지 성향 점수, 반응 시간을 함께 보니 위험을 받아들이는 방식, 남의 의견을 걸러내는 기준, 손실 구간에서의 행동 규칙이 드러납니다. 이 결과는 마지막 리밸런싱에서 단순 수익 선호가 아니라 실제 실행 습관을 보정하는 근거로 사용됩니다.`,
+    traits:score
+  };
+}
+function buildMentorInterviewWiki(diag){
+  const t=k=>Math.round(diag.traits?.[k]??50);
+  const traitRows=MENTOR_TRAIT_KEYS.map(k=>{
+    const deltas=mentorInterview.history.map(h=>h.choiceScore?.[k]||0).filter(Boolean);
+    const sum=deltas.reduce((a,b)=>a+b,0);
+    const basis=sum?`선택지 누적 ${sum>0?"+":""}${sum}`:"면담 답변과 반응 시간 근거";
+    return `| ${k} | ${t(k)} | ${basis} |`;
+  }).join("\n");
+  const qa=mentorInterview.history.map((h,i)=>{
+    const score=Object.entries(h.choiceScore||{}).filter(([,v])=>v).map(([k,v])=>`${k} ${v>0?"+":""}${v}`).join(", ");
+    return `- **Q${i+1}**: ${h.q}\n  - A: ${h.a||"(미응답)"}${h.elapsedMs?` · 반응 ${Math.round(h.elapsedMs/100)/10}초`:""}${score?`\n  - 선택지 신호: ${score}`:""}`;
+  }).join("\n");
+  return `## [멘토 면담: 미연시] 성향 위키
+### 면담 요약
+- 멘토: ${mentorInterview.name} (${mentorInterview.title||mentorInterview.tag||"가상 멘토"})
+- 문답 수: ${mentorInterview.history.length} / ${mentorInterview.maxQ}
+- 호감도: ${mentorInterview.affinity||0} / 5 ♥
+- 진단 유형: ${diag.type}
+
+### 관찰된 핵심 행동
+- 답변 버튼을 사용해 선택 방향, 반응 시간, 선택지별 성향 점수를 구조화했습니다.
+- 반복 선택에서 가장 강한 축은 ${Object.entries(diag.traits).sort((a,b)=>b[1]-a[1])[0]?.[0]||"균형"}입니다.
+
+### 성향 지표
+| 지표 | 점수(0-100) | 근거 |
+|------|-----------:|------|
+${traitRows}
+
+### 멘토 총평
+${diag.summary}
+
+### 면담 문답 기록
+${qa}
+
+### 리밸런싱 시사점
+- 위험감수도 ${t("위험감수도")} / 장기성향 ${t("장기성향")} 기준, ${t("위험감수도")>=60?"성장 자산을 일부 허용하되 목표 비중과 손절 규칙을 같이 두는":"코어 인덱스·배당 중심으로 변동성을 낮추는"} 방식이 어울립니다.
+- 독립성 ${t("독립성")} / 감정통제 ${t("감정통제")} 기준, ${t("독립성")<50||t("감정통제")<50?"추천·분위기에 흔들리지 않도록 자동 리밸런싱 규칙이 필요합니다.":"본인 기준에 따른 재량 판단을 유지하되 기록 기반 검증이 잘 맞습니다."}
+
+> ※ 멘토 발언은 공개 철학 기반의 가상 연출이며 실제 발언이나 투자자문이 아닙니다.`;
+}
+function renderMentorResult(diag,wiki){
+  const modal=$("#modal");
+  modal.classList.add("interview-modal");
+  modal.innerHTML=`<div class="modal-body">
+    <div class="mentor-sim-shell" style="--mentor-color:${mentorInterview.color||"#a855f7"}">
+      <button class="close mentor-sim-close" id="mentorClose">×</button>
+      <div class="mentor-result-hero">
+        <div class="mentor-result-portrait">${mentorInterview.portrait?`<img src="${escapeHtml(mentorInterview.portrait)}" alt="${escapeHtml(mentorInterview.name)}">`:mentorInterview.emoji}</div>
+        <div>
+          <div class="mentor-kicker">Mentor Report · ${escapeHtml(mentorInterview.name)}</div>
+          <div class="mentor-result-title">${escapeHtml(diag.type)}</div>
+          <div class="mentor-result-quote">${escapeHtml(diag.quote)}</div>
+          <div class="mentor-hearts" style="margin-top:10px">${mentorHearts()}</div>
+        </div>
+      </div>
+      <div class="interview-tabs">
+        <button class="interview-tab active" data-mentor-tab="result" type="button">진단</button>
+        <button class="interview-tab" data-mentor-tab="log" type="button">대화록</button>
+        <button class="interview-tab" data-mentor-tab="wiki" type="button">위키</button>
+      </div>
+      <div class="interview-panel active" id="mentorPanel-result">
+        <div style="border:1px solid rgba(255,255,255,.11);border-radius:14px;background:rgba(15,23,42,.58);padding:14px;color:#dbeafe;line-height:1.65;font-size:13px">${escapeHtml(diag.summary)}</div>
+        <div class="interview-traits">
+          ${MENTOR_TRAIT_KEYS.map(k=>`<div class="interview-trait"><div class="top"><span>${k}</span><span>${Math.round(diag.traits[k]||50)}/100</span></div><div class="track"><i style="width:${Math.round(diag.traits[k]||50)}%"></i></div></div>`).join("")}
+        </div>
+      </div>
+      <div class="interview-panel" id="mentorPanel-log">
+        ${mentorInterview.history.map((h,i)=>`<div class="mentor-history-line" style="margin-bottom:8px"><b>Q${i+1}. ${escapeHtml(h.q)}</b><br>You · ${escapeHtml(h.a||"(미응답)")} ${h.elapsedMs?`· ${Math.round(h.elapsedMs/100)/10}초`:""}</div>`).join("")}
+      </div>
+      <div class="interview-panel" id="mentorPanel-wiki">
+        <div class="saju-wiki-actions"><button class="btn btn-ghost btn-sm" id="mentorCopyWiki" type="button">위키 복사</button></div>
+        <div class="llm-report-body" id="mentorWikiPreview"></div>
+      </div>
+      <button class="btn btn-dark" id="mentorDone" style="width:100%;justify-content:center;margin-top:18px">결과 저장하고 닫기</button>
+      <button class="btn btn-ghost btn-sm" id="mentorRetry" style="width:100%;justify-content:center;margin-top:8px">다시 면담</button>
+    </div>
+  </div>`;
+  $("#mentorClose").onclick=$("#mentorDone").onclick=closeQuiz;
+  $("#mentorRetry").onclick=openMentorInterview;
+  $("#mentorCopyWiki").onclick=()=>navigator.clipboard?.writeText(wiki);
+  modal.querySelectorAll("[data-mentor-tab]").forEach(btn=>btn.onclick=()=>switchMentorTab(btn.dataset.mentorTab));
+  setMarkdownPreview($("#mentorWikiPreview"),wiki);
+}
+function switchMentorTab(tab){
+  document.querySelectorAll("[data-mentor-tab]").forEach(btn=>btn.classList.toggle("active",btn.dataset.mentorTab===tab));
+  ["result","log","wiki"].forEach(key=>$("#mentorPanel-"+key)?.classList.toggle("active",key===tab));
 }
 
 /* 만세력 투자 리듬 분석 */
@@ -1874,46 +3205,143 @@ function computeSajuAnalysis({date,time,calendar}){
   result.reportBlocks=buildSajuDetailedReport(result);
   return result;
 }
+let sajuV2Gender="M";
+function sajuBirthLabel(info={}){
+  if(!info.year)return "생년월일시 미기록";
+  const time=info.timeUnknown?"시간 미상":`${String(info.hour??0).padStart(2,"0")}시 ${String(info.minute??0).padStart(2,"0")}분`;
+  return `${info.year}년 ${info.month}월 ${info.day}일 · ${time} · ${info.gender==="F"?"여성":"남성"}`;
+}
+function sajuElementIcon(element){
+  return {목:"🌱",화:"🔥",토:"⛰️",금:"⚙️",수:"🌊"}[element]||"🌀";
+}
+function sajuElementFullName(element){
+  return {목:"목(木)",화:"화(火)",토:"토(土)",금:"금(金)",수:"수(水)"}[element]||element||"-";
+}
+function sajuV2Wiki(result){
+  const info=result.birthInfo||{};
+  const m=result.metrics||{};
+  const pillars=[result.pillars.year,result.pillars.month,result.pillars.day,result.pillars.hour];
+  const pillarText=pillars.map(p=>p?`${p.label}:${p.stem.h}${p.branch.h}`:`시주:미상`).join(" / ");
+  const elementRows=(result.elementRows||[]).map(row=>`| ${row.key}(${row.label}) | ${row.pct.toFixed(1)}% | ${row.key===m.dominantElement?"주도 오행":"-"} |`).join("\n");
+  const tenRows=(result.tenRows||[]).slice(0,5).map(row=>`| ${row.key} | ${row.value.toFixed(1)} |`).join("\n");
+  const sectors=(result.sectorMatches||sajuSectorMatches(result)).slice(0,5);
+  const sectorLines=sectors.map(s=>`- **${s.sector}** (${s.element}, 적합도 ${Math.round(s.fit)}%): ${s.why} / 주의: ${s.guard}`).join("\n");
+  const reportLines=(result.reportBlocks||buildSajuDetailedReport(result)).map(block=>`### ${block.h}\n${block.p}`).join("\n\n");
+  return `## [투자 사주팔자] 성향 위키
+### 명식 요약
+- 생년월일시: ${sajuBirthLabel(info)}
+- 사주팔자: ${pillarText}
+- 일간: ${result.pillars.day?.stem.k || "-"}${result.pillars.day?.stem.h || ""} (${result.pillars.day?.stem.element || "-"})
+- 진단 유형: ${result.t}
+
+### 오행 분포
+| 오행 | 비중 | 상태 |
+|------|------:|------|
+${elementRows}
+
+### 십성 흐름
+| 십성 | 강도 |
+|------|------:|
+${tenRows}
+
+### 성향 지표
+| 지표 | 점수(0-100) | 근거 |
+|------|-----------:|------|
+| 균형 점수 | ${m.balanceScore} | 오행 분포 편차 |
+| 집중 리스크 | ${m.concentrationRisk} | 주도 오행 ${m.dominantElement} 비중과 십성 흐름 |
+| 원칙 친화도 | ${m.ruleAffinity} | 금/관성 흐름과 균형 점수 |
+| 실행 지연 | ${m.decisionDelay} | 수/인성 흐름과 일간 강약 |
+| 성장 드라이브 | ${m.growthDrive} | 목·화 및 식상/재성 흐름 |
+
+### 오행 기반 섹터 궁합
+${sectorLines}
+
+${reportLines}
+
+### 리밸런싱 시사점
+- ${sajuRebalanceSignal({saju:result.key}).comment}
+- 본 분석은 엔터테인먼트 성향 진단이며, 특정 종목 매수·매도 권유나 수익 예측이 아닙니다.`;
+}
 function openSajuAnalysis(){
   stopTradeGame();
   const ag=AGENTS.find(a=>a.key==="saju");
   const prev=state.tests.saju;
   const modal=$("#modal");
-  modal.classList.remove("trade-modal");
+  modal.classList.remove("trade-modal","interview-modal");
   modal.classList.add("saju-modal");
-  modal.innerHTML=`<div class="modal-head"><div>
-      <div class="eyebrow">${ag.nm}</div>
-      <div class="muted small" style="margin-top:4px">만세력을 투자 예측이 아니라 의사결정 습관과 리스크 관리 언어로 해석합니다.</div></div>
-      <button class="close" id="sajuClose">×</button></div>
-    <div class="modal-body">
-      <div class="saju-form">
-        <div class="q-result" style="padding:0;text-align:left">
-          <div class="em" style="font-size:34px">🧭</div>
-          <div class="rt" style="font-size:20px">생년월일 기반 투자 리듬</div>
-          <div class="rd" style="text-align:left">연주·월주·일주·시주, 오행 분포, 십성 흐름을 계산해 현재 포트폴리오의 리밸런싱 코멘트에 반영합니다.</div>
+  modal.innerHTML=`<div class="saju-shell">
+      <div class="modal-head"><div>
+        <div class="eyebrow">${ag.nm}</div>
+        <div class="muted small" style="margin-top:4px">오행의 기운으로 보는 투자 운명</div></div>
+        <button class="close" id="sajuClose">×</button></div>
+      <div class="modal-body">
+        <div class="saju-header">
+          <div class="saju-title">🎴 투자 사주팔자</div>
+          <div class="saju-subtitle">오행의 기운으로 보는 투자 운명</div>
+          <div class="saju-ai-badge"><i></i><span>OpenAI 백엔드 연결</span></div>
         </div>
-        <div class="saju-form-grid">
-          <div class="saju-field"><label for="sajuDate">생년월일</label><input class="inp" id="sajuDate" type="date"></div>
-          <div class="saju-field"><label for="sajuTime">출생시간</label><input class="inp" id="sajuTime" type="time"></div>
-          <div class="saju-field"><label for="sajuCalendar">날짜 기준</label><select class="inp" id="sajuCalendar"><option value="solar">양력</option><option value="lunar">음력/윤달은 양력 환산 후 입력 권장</option></select></div>
-          <div class="saju-field"><label>&nbsp;</label><button class="btn btn-dark btn-sm" id="sajuRun" style="width:100%;justify-content:center">만세력 분석</button></div>
+        <div class="saju-oracle">
+          <div class="saju-dosa">
+            <div class="saju-dosa-emoji">🧙‍♂️</div>
+            <div class="saju-dosa-speech">어흠... 임자, 자네의 사주를 들여다보면 <b>투자 습관의 기운</b>을 읽어낼 수 있네. 생년월일시를 알려주게나.</div>
+          </div>
+          <div class="saju-form-section">
+            <div class="saju-form-label">📅 생년월일 (양력 기준)</div>
+            <div class="saju-date-grid">
+              <input class="saju-input" id="sajuBirthYear" type="number" placeholder="년(1995)" min="1900" max="2030">
+              <input class="saju-input" id="sajuBirthMonth" type="number" placeholder="월" min="1" max="12">
+              <input class="saju-input" id="sajuBirthDay" type="number" placeholder="일" min="1" max="31">
+            </div>
+            <div class="saju-form-label">⏰ 출생시간 (24시간)</div>
+            <div class="saju-time-grid">
+              <input class="saju-input" id="sajuBirthHour" type="number" placeholder="시(0-23)" min="0" max="23">
+              <input class="saju-input" id="sajuBirthMin" type="number" placeholder="분(0-59)" min="0" max="59">
+            </div>
+            <label class="saju-check"><input type="checkbox" id="sajuTimeUnknown"> 출생시간을 모릅니다 (정오 12시로 추정)</label>
+            <div class="saju-form-label" style="margin-top:10px">👤 성별</div>
+            <div class="saju-gender">
+              <button class="active" data-saju-gender="M" type="button">🙋‍♂️ 남성</button>
+              <button data-saju-gender="F" type="button">🙋‍♀️ 여성</button>
+            </div>
+          </div>
+          <button class="btn saju-primary" id="sajuRun" type="button">🔮 사주 풀어보기</button>
+          <div class="disclaimer-sm" style="color:#a89cb5;margin-top:10px;text-align:center">재미·참고용 콘텐츠이며 투자자문이 아닙니다.</div>
         </div>
-        <label class="small muted" style="display:flex;align-items:center;gap:7px;margin-top:12px">
-          <input type="checkbox" id="sajuTimeUnknown" style="width:15px;height:15px"> 출생시간 모름
-        </label>
-        <div class="saju-note">입력값은 브라우저 메모리에서만 분석하고 저장하지 않습니다. 본 분석은 투자 판단 습관을 돌아보기 위한 보조 해석이며 수익률이나 종목 상승을 예측하지 않습니다.</div>
+        <div class="saju-note">입력값은 이 화면의 세션 분석에만 사용합니다. 음력·윤달은 양력 환산 후 입력하는 것을 권장합니다.</div>
+        ${prev?`<div class="trade-note" style="margin-top:12px;background:#1a1228;border:1px solid rgba(255,255,255,.08);color:#d8c9e6"><b>저장된 결과</b><br>${escapeHtml(prev.t)} · ${escapeHtml(sajuBirthLabel(prev.birthInfo))}</div>`:""}
       </div>
-      ${prev?`<div class="trade-note" style="margin-top:12px"><b>저장된 결과</b><br>${escapeHtml(prev.t)} · 균형 점수 ${Math.round(prev.metrics?.balanceScore??0)}/100</div>`:""}
     </div>`;
   $("#sajuClose").onclick=closeQuiz;
-  $("#sajuTimeUnknown").onchange=e=>{$("#sajuTime").disabled=e.target.checked;};
+  modal.querySelectorAll("[data-saju-gender]").forEach(btn=>btn.onclick=()=>{
+    sajuV2Gender=btn.dataset.sajuGender;
+    modal.querySelectorAll("[data-saju-gender]").forEach(x=>x.classList.toggle("active",x===btn));
+  });
+  $("#sajuTimeUnknown").onchange=e=>{
+    $("#sajuBirthHour").disabled=e.target.checked;
+    $("#sajuBirthMin").disabled=e.target.checked;
+    if(e.target.checked){$("#sajuBirthHour").value="";$("#sajuBirthMin").value="";}
+  };
   $("#sajuRun").onclick=()=>{
     try{
-      const date=$("#sajuDate").value;
-      const time=$("#sajuTimeUnknown").checked?null:($("#sajuTime").value||null);
-      const calendar=$("#sajuCalendar").value;
-      const result=computeSajuAnalysis({date,time,calendar});
+      const year=Number($("#sajuBirthYear").value);
+      const month=Number($("#sajuBirthMonth").value);
+      const day=Number($("#sajuBirthDay").value);
+      const timeUnknown=$("#sajuTimeUnknown").checked;
+      const hour=timeUnknown?null:Number($("#sajuBirthHour").value);
+      const minute=timeUnknown?0:Number($("#sajuBirthMin").value||0);
+      if(!year||year<1900||year>2030||!month||month<1||month>12||!day||day<1||day>31)throw new Error("생년월일을 정확히 입력해 주세요.");
+      if(!timeUnknown&&(Number.isNaN(hour)||hour<0||hour>23))throw new Error("출생 시간을 입력하거나 시간 미상을 선택해 주세요.");
+      if(!timeUnknown&&(Number.isNaN(minute)||minute<0||minute>59))throw new Error("출생 분은 0~59 사이로 입력해 주세요.");
+      const date=`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+      const parsed=new Date(year,month-1,day);
+      if(parsed.getFullYear()!==year||parsed.getMonth()!==month-1||parsed.getDate()!==day)throw new Error("존재하는 날짜를 입력해 주세요.");
+      const time=timeUnknown?null:`${String(hour).padStart(2,"0")}:${String(minute).padStart(2,"0")}`;
+      const result=computeSajuAnalysis({date,time,calendar:"solar"});
+      result.birthInfo={year,month,day,hour:timeUnknown?null:hour,minute,timeUnknown,gender:sajuV2Gender};
+      result.wikiMarkdown=sajuV2Wiki(result);
       state.tests.saju=result;
+      state.gameWikis.saju={title:"[투자 사주팔자] 성향 위키",markdown:result.wikiMarkdown};
+      recordSajuAnalysisEvent(result).catch(err=>console.warn("[saju-log] failed",err));
       renderSajuResult(result);
     }catch(err){
       const note=$(".saju-note");
@@ -1922,70 +3350,123 @@ function openSajuAnalysis(){
   };
   $("#modalBg").classList.add("open");
 }
+async function recordSajuAnalysisEvent(result){
+  const sid=await ensureGameStarted("saju");
+  await postJson("/api/games/saju/events",{
+    session_id:sid,
+    turn:1,
+    event_type:"user_choice",
+    action:"SAJU_ANALYSIS",
+    context:`${result.t} · ${sajuBirthLabel(result.birthInfo)}`,
+    reaction_latency_ms:null,
+    signal:{
+      risk_tolerance:result.key==="fire"||result.key==="growth"?2:result.key==="earth"||result.key==="metal"?-1:0,
+      diversification:result.metrics?.concentrationRisk>=70?2:result.metrics?.balanceScore>=75?-2:0,
+      behavior_bias:result.metrics?.decisionDelay>=70?2:0,
+      time_horizon:result.key==="fire"?2:result.key==="earth"||result.key==="metal"?-2:0,
+      stability_growth:result.key==="growth"||result.key==="fire"?3:-1,
+      sector_tags:(result.sectorMatches||[]).slice(0,3).map(s=>s.sector)
+    },
+    payload:{source:"diagnosis_solution_saju_v2",birth_info:result.birthInfo,metrics:result.metrics,key:result.key}
+  });
+}
 function renderSajuResult(result){
   const modal=$("#modal"), m=result.metrics||{};
   const pillars=[result.pillars.year,result.pillars.month,result.pillars.day,result.pillars.hour];
+  const pillarDisplay=[result.pillars.hour,result.pillars.day,result.pillars.month,result.pillars.year];
   const dominantColor=elementColor(m.dominantElement);
   const reportBlocks=result.reportBlocks||buildSajuDetailedReport(result);
   const sectorMatches=result.sectorMatches||sajuSectorMatches(result);
-  modal.classList.remove("trade-modal");
+  const weakest=result.elementRows?.[result.elementRows.length-1]?.key;
+  const complement=(SAJU_ELEMENT_SECTORS[weakest]||[]).slice(0,3).map((s,idx)=>({...s,element:weakest,fit:76-idx*6,color:elementColor(weakest)}));
+  modal.classList.remove("trade-modal","interview-modal");
   modal.classList.add("saju-modal");
-  modal.innerHTML=`<div class="modal-head"><div>
-      <div class="eyebrow">만세력 투자 리듬 결과</div>
-      <div class="muted small" style="margin-top:4px">절기 월 기준 간편 만세력 · ${m.calendar==="lunar"?"음력 입력은 양력 환산 권장":"양력 입력"}</div></div>
+  modal.innerHTML=`<div class="saju-shell">
+    <div class="modal-head"><div>
+      <div class="eyebrow">투자 사주팔자 결과</div>
+      <div class="muted small" style="margin-top:4px">${escapeHtml(sajuBirthLabel(result.birthInfo))}</div></div>
       <button class="close" id="sajuClose">×</button></div>
     <div class="modal-body">
-      <div class="q-result" style="border-radius:16px;background:${dominantColor}14;border:1px solid ${dominantColor}33;padding:16px 14px">
-        <div class="em">${result.em}</div><div class="rt">${escapeHtml(result.t)}</div>
-        <div class="rd">${escapeHtml(result.d)}</div>
+      <div class="saju-header">
+        <div class="saju-title">🎴 투자 사주팔자</div>
+        <div class="saju-subtitle">오행의 기운으로 보는 투자 운명</div>
+        <div class="saju-ai-badge"><i></i><span>위키 생성 완료</span></div>
       </div>
-      <div class="saju-pillars">
-        ${pillars.map((p,i)=>p?`<div class="saju-pillar" style="border-top-color:${elementColor(p.stem.element)}"><div class="l">${p.label}</div>
-          <div class="gan" style="color:${elementColor(p.stem.element)}">${p.stem.h} <span style="font-size:13px">${p.stem.k}</span></div>
-          <div class="zhi" style="color:${elementColor(p.branch.element)}">${p.branch.h} <span style="font-size:13px">${p.branch.k}</span></div>
-          <div class="meta">${p.stem.element} / ${p.branch.element} · ${p.branch.animal}</div></div>`
-          :`<div class="saju-pillar"><div class="l">${["연주","월주","일주","시주"][i]}</div><div class="gan">?</div><div class="zhi">미상</div><div class="meta">출생시간 미입력</div></div>`).join("")}
+      <div class="saju-v2-hero">
+        <div class="saju-result-dosa">🧙‍♂️</div>
+        <div class="saju-result-kicker">⚡ 당신의 주된 기운</div>
+        <div class="saju-result-title" style="color:${dominantColor}">${sajuElementFullName(m.dominantElement)} ${escapeHtml(result.t)}</div>
+        <div class="saju-result-badge" style="background:${dominantColor}22;color:${dominantColor};border:1px solid ${dominantColor}">${escapeHtml(m.dominantLabel||result.t)}</div>
+        <div class="saju-result-quote">🧙‍♂️ <em>"${escapeHtml(result.d)}"</em></div>
       </div>
-      <div class="saju-bars">
-        ${result.elementRows.map(row=>`<div class="saju-bar"><div class="top"><b>${row.key} · ${row.label}</b><span>${row.pct.toFixed(0)}%</span></div>
-          <div class="track"><i style="width:${Math.max(4,row.pct)}%;background:${row.color}"></i></div></div>`).join("")}
+      <div class="saju-tabs">
+        <button class="saju-tab active" data-saju-tab="result" type="button">🔮 결과</button>
+        <button class="saju-tab" data-saju-tab="pillars" type="button">📜 사주</button>
+        <button class="saju-tab" data-saju-tab="rec" type="button">💎 종목</button>
+        <button class="saju-tab" data-saju-tab="wiki" type="button">📑 위키</button>
       </div>
-      <div class="saju-tags">${result.elementRows.map(row=>`<span style="border-color:${row.color}55;background:${row.color}12;color:${row.color}"><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${row.color};margin-right:5px"></i>${row.key} ${row.pct.toFixed(0)}%</span>`).join("")}</div>
-      <div class="saju-tags">${result.tenRows.slice(0,5).map(t=>`<span>${t.key} ${t.value.toFixed(1)}</span>`).join("")}</div>
-      <div class="saju-stat-grid">
-        <div class="saju-stat"><div class="l">주도 오행</div><div class="v">${m.dominantElement} · ${m.dominantLabel}</div></div>
-        <div class="saju-stat"><div class="l">일간 강약</div><div class="v">${m.dayStrengthLabel}</div></div>
-        <div class="saju-stat"><div class="l">집중 리스크</div><div class="v">${m.concentrationRisk}/100</div></div>
-        <div class="saju-stat"><div class="l">실행 지연</div><div class="v">${m.decisionDelay}/100</div></div>
-      </div>
-      <div class="saju-report">
-        <div class="saju-report-head"><div class="t">상세 분석 리포트</div>
-          <div class="s">오행·십성·투자 습관을 현재 포트폴리오 리밸런싱 언어로 변환한 해석입니다.</div></div>
-        <div class="saju-report-body">
-          ${reportBlocks.map(block=>`<div class="saju-report-block"><div class="h">${escapeHtml(block.h)}</div>
-            <div class="p">${escapeHtml(block.p)}</div></div>`).join("")}
+      <div class="saju-tab-panel active" id="sajuPanel-result">
+        <div class="saju-dark-card">
+          <div class="saju-section-title">🌀 오행 분포 분석</div>
+          <div class="saju-bars">
+            ${result.elementRows.map(row=>`<div class="saju-bar"><div class="top"><b>${sajuElementIcon(row.key)} ${sajuElementFullName(row.key)} · ${row.label}</b><span>${row.pct.toFixed(1)}%</span></div>
+              <div class="track"><i style="width:${Math.max(4,row.pct)}%;background:${row.color}"></i></div></div>`).join("")}
+          </div>
+        </div>
+        <div class="saju-report">
+          <div class="saju-report-head"><div class="t">📖 사주가 말하는 투자 성향</div><div class="s">오행·십성·투자 습관을 리밸런싱 언어로 변환했습니다.</div></div>
+          <div class="saju-report-body">${reportBlocks.map(block=>`<div class="saju-report-block"><div class="h">${escapeHtml(block.h)}</div><div class="p">${escapeHtml(block.p)}</div></div>`).join("")}</div>
         </div>
       </div>
-      <div class="saju-report" style="border:none;background:transparent;margin-top:16px">
-        <div class="saju-report-head" style="border:1px solid var(--line);border-radius:16px;background:var(--bg-soft)">
-          <div class="t">오행 기반 섹터 궁합</div>
-          <div class="s">궁합 섹터는 관심 영역을 좁히기 위한 보조 정보이며, 실제 매수 추천이나 수익 예측이 아닙니다.</div>
+      <div class="saju-tab-panel" id="sajuPanel-pillars">
+        <div class="saju-dark-card">
+        <div class="saju-section-title">📜 당신의 사주팔자</div>
+        <div class="saju-pillar-heads"><div>시주</div><div>일주</div><div>월주</div><div>년주</div></div>
+        <div class="saju-pillars">
+          ${pillarDisplay.map((p,i)=>p?`<div class="saju-pillar" style="border-color:${elementColor(p.stem.element)}55"><div class="l">${p.label}</div>
+            <div class="gan" style="color:${elementColor(p.stem.element)}">${p.stem.h} <span style="font-size:13px">${p.stem.k}</span></div>
+            <div class="zhi" style="color:${elementColor(p.branch.element)}">${p.branch.h} <span style="font-size:13px">${p.branch.k}</span></div>
+            <div class="meta">${p.stem.element} / ${p.branch.element} · ${p.branch.animal}</div></div>`
+            :`<div class="saju-pillar"><div class="l">${["시주","일주","월주","년주"][i]}</div><div class="gan">?</div><div class="zhi">미상</div><div class="meta">출생시간 미입력</div></div>`).join("")}
+        </div>
+        <div class="saju-tags">${result.tenRows.slice(0,5).map(t=>`<span>${t.key} ${t.value.toFixed(1)}</span>`).join("")}</div>
+        </div>
+        <div class="saju-note">절기 월 기준 간편 계산입니다. 균시차·경도 보정과 전문 만세력 세부 계산은 반영하지 않습니다.</div>
+      </div>
+      <div class="saju-tab-panel" id="sajuPanel-rec">
+        <div class="saju-report-head" style="margin-bottom:12px">
+          <div class="t">💎 사주가 추천하는 포트폴리오</div>
+          <div class="s">관심 영역을 좁히기 위한 보조 정보이며, 실제 매수 추천이나 수익 예측이 아닙니다.</div>
         </div>
         <div class="saju-sector-grid">
           ${sectorMatches.map(s=>`<div class="saju-sector" style="border-top-color:${s.color}">
             <div class="top"><div class="nm">${escapeHtml(s.sector)}</div><div class="fit" style="color:${s.color}">${Math.round(s.fit)}%</div></div>
             <div class="saju-element-chip" style="background:${s.color}12;color:${s.color}"><i style="background:${s.color}"></i>${escapeHtml(s.element)} 오행</div>
-            <div class="why">${escapeHtml(s.why)}</div>
-            <div class="guard">${escapeHtml(s.guard)}</div>
+            <div class="why">${escapeHtml(s.why)}</div><div class="guard">${escapeHtml(s.guard)}</div>
           </div>`).join("")}
         </div>
+        <div class="saju-rec-grid" style="margin-top:12px">
+          ${complement.map(s=>`<div class="saju-rec-card"><div class="t">보완 · ${escapeHtml(s.sector)}</div><div class="s">${escapeHtml(s.why)} ${escapeHtml(s.guard)}</div></div>`).join("")}
+        </div>
+      </div>
+      <div class="saju-tab-panel" id="sajuPanel-wiki">
+        <div class="saju-wiki-actions"><button class="btn btn-ghost btn-sm" id="sajuCopyWiki" type="button">위키 복사</button></div>
+        <div class="llm-report-body" id="sajuWikiPreview"></div>
       </div>
       <div class="saju-note">리밸런싱 반영: ${escapeHtml(sajuRebalanceSignal({saju:result.key}).comment)}</div>
       <button class="btn btn-dark" id="sajuDone" style="width:100%;justify-content:center;margin-top:22px">결과 저장하고 닫기</button>
       <button class="btn btn-ghost btn-sm" id="sajuRetry" style="width:100%;justify-content:center;margin-top:8px">다시 분석</button>
-    </div>`;
+    </div>
+  </div>`;
   $("#sajuClose").onclick=$("#sajuDone").onclick=closeQuiz;
   $("#sajuRetry").onclick=openSajuAnalysis;
+  $("#sajuCopyWiki").onclick=()=>navigator.clipboard?.writeText(result.wikiMarkdown||sajuV2Wiki(result));
+  modal.querySelectorAll("[data-saju-tab]").forEach(btn=>btn.onclick=()=>switchSajuTab(btn.dataset.sajuTab));
+  setMarkdownPreview($("#sajuWikiPreview"),result.wikiMarkdown||sajuV2Wiki(result));
+}
+function switchSajuTab(tab){
+  document.querySelectorAll("[data-saju-tab]").forEach(btn=>btn.classList.toggle("active",btn.dataset.sajuTab===tab));
+  ["result","pillars","rec","wiki"].forEach(key=>$("#sajuPanel-"+key)?.classList.toggle("active",key===tab));
 }
 
 /* 손절·존버 미니게임 */
@@ -1997,6 +3478,24 @@ const TRADE_NEWS={
   crash:["단기 차익실현 매물", "시장 변동성 확대", "부정적 루머 확산"],
   volatile:["분봉 변동성 급등", "호가 공백 확대", "단기 수급 충돌"],
   steady:["박스권 등락 지속", "관망세 유지", "거래량 안정"]
+};
+const TRADE_SCENARIOS={
+  1:{key:"news_sensitivity",label:"뉴스 민감도",trend:()=> (Math.random()-.5)*.2,volatility:()=>.012+Math.random()*.012,newsCount:3,fakeNewsRatio:.5},
+  2:{key:"downtrend_response",label:"하락 대응",trend:()=>-.45-Math.random()*.25,volatility:()=>.010+Math.random()*.008,newsCount:1,fakeNewsRatio:.2},
+  3:{key:"uptrend_response",label:"상승 대응",trend:()=>.45+Math.random()*.25,volatility:()=>.010+Math.random()*.008,newsCount:1,fakeNewsRatio:.2}
+};
+const TRADE_TAUNTS={
+  1:{start:"속보 뜬다 속보. 믿어도 되나?",rising:"다들 달려든다. 너도 탈래?",falling:"악재 떴어. 던지는 사람 많아."},
+  2:{start:"분위기 안 좋은데 들어갈 거야?",rising:"잠깐 반등일 수도 있어. 속지 마.",falling:"계속 빠진다. 손절 안 해?"},
+  3:{start:"오늘 느낌 좋다. 가볼까?",rising:"더 간다 더 가. 벌써 팔게?",falling:"어, 꺾이나? 고점일 수도."},
+  holdingProfit:["벌써 플러스네. 더 먹을래?","익절각인데 욕심부리다 뱉는다?","여기서 만족할 거야, 더 볼 거야?"],
+  holdingLoss:["물렸네. 존버할 거야?","지금 끊는 게 약일 수도.","심장 쫄깃하지? 어쩔 거야."]
+};
+const TRADE_NEUTRAL_SUBS=["직감을 믿되, 로그는 냉정하게 남습니다.","타이밍을 잡으세요.","침착하게 대응하세요."];
+const TRADE_TURN_LABELS={
+  news_sensitivity:"뉴스 민감도",
+  downtrend_response:"하락 대응",
+  uptrend_response:"상승 대응"
 };
 let tradeGame=null;
 
@@ -2017,7 +3516,7 @@ function createTradeGame(stockName=defaultTradeStockName()){
     hasBought:false,
     hasSold:false,
     round:0,
-    maxRounds:5,
+    maxRounds:3,
     roundResults:[],
     priceHistory:[],
     timeHistory:[],
@@ -2027,10 +3526,15 @@ function createTradeGame(stockName=defaultTradeStockName()){
     heartRate:72,
     running:false,
     roundEnding:false,
+    scenario:null,
+    eventLog:[],
+    newsFiredCount:0,
+    lastNewsTime:null,
     tickTimer:null,
     timerTimer:null,
     nextTimer:null,
-    newsTimer:null
+    newsTimer:null,
+    tauntTimers:[]
   };
 }
 function clearTradeTimers(){
@@ -2038,6 +3542,8 @@ function clearTradeTimers(){
   ["tickTimer","timerTimer","nextTimer","newsTimer"].forEach(k=>{
     if(tradeGame[k]){clearTimeout(tradeGame[k]);tradeGame[k]=null;}
   });
+  (tradeGame.tauntTimers||[]).forEach(id=>clearTimeout(id));
+  tradeGame.tauntTimers=[];
 }
 function stopTradeGame(){
   if(!tradeGame)return;
@@ -2053,21 +3559,21 @@ function renderTradeIntro(){
   const ag=AGENTS.find(a=>a.key==="trade");
   const prev=state.tests.trade;
   const modal=$("#modal");
-  modal.classList.remove("saju-modal");
+  modal.classList.remove("saju-modal","interview-modal");
   modal.classList.add("trade-modal");
   modal.innerHTML=`<div class="modal-head"><div>
       <div class="eyebrow">${ag.nm}</div>
-      <div class="muted small" style="margin-top:4px">매수 1번, 매도 1번으로 손절·존버 반응을 측정합니다.</div></div>
+      <div class="muted small" style="margin-top:4px">3턴 동안 매수·매도·관망 반응을 측정합니다.</div></div>
       <button class="close" id="tradeClose">×</button></div>
     <div class="modal-body">
       <div class="trade-intro">
         <div class="q-result" style="padding:0;text-align:left">
           <div class="em" style="font-size:34px">⚡</div>
           <div class="rt" style="font-size:20px">10초 매매 챌린지</div>
-          <div class="rd" style="text-align:left">실시간으로 흔들리는 가격에서 5라운드 동안 진입과 청산을 결정합니다. 결과는 다음 리밸런싱 코멘트에 반영됩니다.</div>
+          <div class="rd" style="text-align:left">실시간으로 흔들리는 가격에서 3턴 동안 진입과 청산을 결정합니다. 모든 행동은 공통 로그로 수집되고 LLM 위키/리포트의 입력이 됩니다.</div>
         </div>
         <div class="trade-rules">
-          <div class="trade-rule"><b>10초 제한</b><span>라운드마다 제한시간이 있습니다.</span></div>
+          <div class="trade-rule"><b>10초 제한</b><span>턴마다 제한시간이 있습니다.</span></div>
           <div class="trade-rule"><b>매수·매도 1회</b><span>매도하지 못하면 자동 청산됩니다.</span></div>
           <div class="trade-rule"><b>미거래 패널티</b><span>관망만 하면 -5%로 기록합니다.</span></div>
         </div>
@@ -2087,15 +3593,23 @@ function renderTradeIntro(){
     $("#tradeStockInput").value=b.dataset.tradeStock;
   });
 }
-function startTradeGame(){
+async function startTradeGame(){
   const input=$("#tradeStockInput")?.value?.trim();
+  if(state.gameLogPending.length)await Promise.allSettled([...state.gameLogPending]);
   delete state.tests.trade;
+  state.gameSessionId=null;
+  state.gameStarted={};
+  state.gameWikis={};
+  state.llmReport=null;
+  state.gameLogPending=[];
   tradeGame=createTradeGame(input||defaultTradeStockName());
+  try{await ensureGameStarted("buy_sell");}catch(err){console.warn("[diagnosis-game-start] failed",err);}
   renderTradeFrame();
   startTradeRound();
 }
 function renderTradeFrame(){
   const modal=$("#modal");
+  modal.classList.remove("saju-modal","interview-modal");
   modal.classList.add("trade-modal");
   modal.innerHTML=`<div class="modal-head"><div>
       <div class="eyebrow">손절·존버 미니게임</div>
@@ -2105,7 +3619,7 @@ function renderTradeFrame(){
       <div class="trade-game-head">
         <div><div class="stock" id="tradeStockName">${escapeHtml(tradeGame.stockName)}</div>
           <div class="asset">자산 <span id="tradeAsset">${tradeMoney(tradeGame.totalAsset)}</span></div></div>
-        <div class="chip blue" id="tradeRoundLabel">라운드 1/5</div>
+        <div class="chip blue" id="tradeRoundLabel">턴 1/3</div>
       </div>
       <div class="trade-rounds" id="tradeRoundDots"></div>
       <div class="trade-timer-row">
@@ -2124,6 +3638,13 @@ function renderTradeFrame(){
         <div class="trade-price"><div class="l">매수가</div><div class="v" id="tradeBuyPrice">-</div></div>
         <div class="trade-price"><div class="l">손익률</div><div class="v" id="tradeProfitRate">-</div></div>
       </div>
+      <div class="trade-ai">
+        <div class="trade-ai-avatar">쩐</div>
+        <div>
+          <span>AI 트레이더 '쩐주'</span>
+          <b id="tradeAiMsg">준비됐어?</b>
+        </div>
+      </div>
       <div class="trade-chart-wrap">
         <div class="trade-status" id="tradeStatus">대기중</div>
         <div class="trade-heart"><span id="tradeHeart">72</span> BPM</div>
@@ -2134,19 +3655,66 @@ function renderTradeFrame(){
         <button class="trade-action trade-buy" id="tradeBuyBtn">매수</button>
         <button class="trade-action trade-sell" id="tradeSellBtn" disabled>매도</button>
       </div>
-      <div class="trade-note" id="tradeRoundNote">준비가 끝나면 가격이 바로 움직입니다.</div>
+      <div class="trade-note" id="tradeRoundNote">준비가 끝나면 가격이 바로 움직이고, 로그 수집이 시작됩니다.</div>
     </div>`;
   $("#tradeClose").onclick=closeQuiz;
   $("#tradeBuyBtn").onclick=executeTradeBuy;
   $("#tradeSellBtn").onclick=executeTradeSell;
+}
+function addTradeLocalEvent(type,payload={}){
+  if(!tradeGame)return;
+  const deviation=tradeGame.basePrice?((tradeGame.currentPrice-tradeGame.basePrice)/tradeGame.basePrice*100):0;
+  tradeGame.eventLog.push({
+    turn:tradeGame.round,
+    scenario:tradeGame.scenario?.key||null,
+    type,
+    elapsed_ms:tradeGame.startTime?Date.now()-tradeGame.startTime:0,
+    price:Math.round(tradeGame.currentPrice),
+    deviation_pct:Number(deviation.toFixed(2)),
+    heart_rate:Math.round(tradeGame.heartRate),
+    ...payload
+  });
+}
+function setTradeAiMessage(text){
+  const host=$("#tradeAiMsg");
+  if(!host||!text)return;
+  host.textContent=text;
+  addTradeLocalEvent("ai_taunt",{msg:text,while:tradeGame?.hasBought?"holding":"waiting"});
+}
+function scheduleTradeTaunts(){
+  if(!tradeGame)return;
+  const emit=()=>{
+    if(!tradeGame?.running||tradeGame.hasSold)return;
+    const deviation=(tradeGame.currentPrice-tradeGame.basePrice)/tradeGame.basePrice;
+    let msg;
+    if(tradeGame.hasBought){
+      const pnl=(tradeGame.currentPrice-tradeGame.buyPrice)/tradeGame.buyPrice;
+      const pool=pnl>=0?TRADE_TAUNTS.holdingProfit:TRADE_TAUNTS.holdingLoss;
+      msg=pool[Math.floor(Math.random()*pool.length)];
+    }else{
+      msg=deviation>=0?TRADE_TAUNTS[tradeGame.round].rising:TRADE_TAUNTS[tradeGame.round].falling;
+    }
+    setTradeAiMessage(msg);
+  };
+  tradeGame.tauntTimers.push(setTimeout(emit,3400),setTimeout(emit,7000));
+}
+function scheduleTradeNews(){
+  if(!tradeGame)return;
+  const count=tradeGame.scenario?.newsCount||1;
+  for(let i=0;i<count;i++){
+    const delay=1100+Math.random()*6500;
+    tradeGame.tauntTimers.push(setTimeout(showTradeNews,delay));
+  }
 }
 function startTradeRound(){
   if(!tradeGame)return;
   clearTradeTimers();
   if(tradeGame.round>=tradeGame.maxRounds){finishTradeGame();return;}
   tradeGame.round++;
+  const scenario=TRADE_SCENARIOS[tradeGame.round]||TRADE_SCENARIOS[1];
   tradeGame.running=true;
   tradeGame.roundEnding=false;
+  tradeGame.scenario=scenario;
   tradeGame.hasBought=false;
   tradeGame.hasSold=false;
   tradeGame.buyPrice=null;
@@ -2155,24 +3723,30 @@ function startTradeRound(){
   tradeGame.currentPrice=tradeGame.basePrice;
   tradeGame.priceHistory=[tradeGame.basePrice];
   tradeGame.timeHistory=[0];
-  tradeGame.trend=(Math.random()-.5)*.4;
-  tradeGame.volatility=.008+Math.random()*.015;
+  tradeGame.trend=scenario.trend();
+  tradeGame.volatility=scenario.volatility();
   tradeGame.heartRate=72;
+  tradeGame.newsFiredCount=0;
+  tradeGame.lastNewsTime=null;
   tradeGame.startTime=Date.now();
   $("#tradeNews").style.display="none";
-  $("#tradeRoundNote").textContent="라운드가 시작됐습니다. 매수 후 매도 타이밍을 정하세요.";
+  $("#tradeRoundNote").textContent=`${scenario.label} 턴이 시작됐습니다. AI 자극과 뉴스 반응까지 기록됩니다.`;
   $("#tradeBuyBtn").disabled=false;
   $("#tradeSellBtn").disabled=true;
   $("#tradeBuyPrice").textContent="-";
   $("#tradeProfitRate").textContent="-";
+  $("#tradeInstruction").textContent=`${scenario.label} · 매수 타이밍`;
+  $("#tradeSub").textContent=TRADE_NEUTRAL_SUBS[Math.floor(Math.random()*TRADE_NEUTRAL_SUBS.length)];
+  $("#tradeStatus").textContent="대기중";
   updateTradeRoundDots();
   updateTradeUi();
   drawTradeChart();
+  addTradeLocalEvent("turn_start",{scenario:scenario.key,trend:Number(tradeGame.trend.toFixed(3)),volatility:Number(tradeGame.volatility.toFixed(4))});
+  setTradeAiMessage(TRADE_TAUNTS[tradeGame.round].start);
   runTradeLoop();
   runTradeTimer();
-  if(Math.random()<.55){
-    tradeGame.newsTimer=setTimeout(showTradeNews,1200+Math.random()*2800);
-  }
+  scheduleTradeTaunts();
+  scheduleTradeNews();
 }
 function updateTradeRoundDots(){
   const host=$("#tradeRoundDots");
@@ -2189,7 +3763,7 @@ function updateTradeRoundDots(){
 }
 function updateTradeUi(){
   if(!tradeGame)return;
-  $("#tradeRoundLabel").textContent=`라운드 ${tradeGame.round}/${tradeGame.maxRounds}`;
+  $("#tradeRoundLabel").textContent=`턴 ${tradeGame.round}/${tradeGame.maxRounds}`;
   $("#tradeAsset").textContent=tradeMoney(tradeGame.totalAsset);
   $("#tradeCurrentPrice").textContent=tradeMoney(tradeGame.currentPrice);
   $("#tradeHeart").textContent=Math.floor(tradeGame.heartRate);
@@ -2210,7 +3784,9 @@ function runTradeLoop(){
     if(Math.random()<.03)change+=(Math.random()-.5)*.04;
     tradeGame.currentPrice*=1+change;
     const deviation=(tradeGame.currentPrice-tradeGame.basePrice)/tradeGame.basePrice;
-    if(Math.abs(deviation)>.15)tradeGame.currentPrice-=(tradeGame.currentPrice-tradeGame.basePrice)*.05;
+    const limit=tradeGame.round===1 ? .15 : .30;
+    const meanRevert=tradeGame.round===1 ? .05 : .02;
+    if(Math.abs(deviation)>limit)tradeGame.currentPrice-=(tradeGame.currentPrice-tradeGame.basePrice)*meanRevert;
     tradeGame.priceHistory.push(tradeGame.currentPrice);
     tradeGame.timeHistory.push(elapsed);
     if(tradeGame.priceHistory.length>150){tradeGame.priceHistory.shift();tradeGame.timeHistory.shift();}
@@ -2295,6 +3871,12 @@ function executeTradeBuy(){
   tradeGame.hasBought=true;
   tradeGame.buyPrice=tradeGame.currentPrice;
   tradeGame.buyTime=Date.now();
+  const recent=tradeGame.priceHistory.slice(-6);
+  const rising=recent.length>=2&&recent[recent.length-1]>recent[0];
+  addTradeLocalEvent("buy",{
+    bought_while:rising?"rising":"falling",
+    reaction_after_news_ms:tradeGame.lastNewsTime?Date.now()-tradeGame.lastNewsTime:null
+  });
   $("#tradeBuyBtn").disabled=true;
   $("#tradeSellBtn").disabled=false;
   $("#tradeBuyPrice").textContent=tradeMoney(tradeGame.buyPrice);
@@ -2303,6 +3885,8 @@ function executeTradeBuy(){
   $("#tradeInstruction").textContent="매도 타이밍을 잡으세요.";
   $("#tradeSub").textContent="익절과 손절 사이에서 실제 반응을 기록합니다.";
   $("#tradeRoundNote").textContent="진입했습니다. 너무 오래 끌지, 너무 빨리 던질지의 패턴을 봅니다.";
+  setTradeAiMessage(rising?"오를 때 올라탔네. 배짱 좋은데.":"떨어질 때 줍줍? 역발상이군.");
+  recordDiagnosisTradeEvent("BUY","진단솔루션 손절·존버 미니게임에서 매수 선택");
   if(navigator.vibrate)navigator.vibrate(40);
 }
 function executeTradeSell(){
@@ -2312,6 +3896,7 @@ function executeTradeSell(){
   $("#tradeStatus").textContent="매도 완료";
   $("#tradeInstruction").textContent="거래 완료";
   $("#tradeSub").textContent="다음 라운드로 넘어갑니다.";
+  addTradeLocalEvent("sell_click",{manual:true});
   if(navigator.vibrate)navigator.vibrate(70);
   tradeGame.nextTimer=setTimeout(()=>endTradeRound("manual"),450);
 }
@@ -2331,6 +3916,8 @@ function endTradeRound(reason="timeout"){
     profit=-basis*.05;
   }
   const result={
+    round:tradeGame.round,
+    intent:tradeGame.scenario?.key||null,
     profitRate,
     profit,
     holdTime,
@@ -2338,10 +3925,21 @@ function endTradeRound(reason="timeout"){
     sold:tradeGame.hasSold,
     manualSell:reason==="manual",
     autoSell:tradeGame.hasBought&&!tradeGame.hasSold,
-    noBuy:!tradeGame.hasBought
+    noBuy:!tradeGame.hasBought,
+    outcome:!tradeGame.hasBought?"no_trade":reason==="manual"?"completed":"timeout_autosell",
+    newsFired:tradeGame.newsFiredCount,
+    eventLog:tradeGame.eventLog.filter(e=>e.turn===tradeGame.round)
   };
+  addTradeLocalEvent(result.outcome,{profit_rate:Number(profitRate.toFixed(2)),hold_sec:Number(holdTime.toFixed(1))});
   tradeGame.roundResults.push(result);
   tradeGame.totalAsset+=profit;
+  const action=result.noBuy?"HOLD":"SELL";
+  const context=result.noBuy
+    ?"진단솔루션 손절·존버 미니게임에서 제한시간 동안 매수하지 않고 관망"
+    : result.autoSell
+      ?"진단솔루션 손절·존버 미니게임에서 제한시간 자동 청산"
+      :"진단솔루션 손절·존버 미니게임에서 매도 선택";
+  recordDiagnosisTradeEvent(action,context,result);
   updateTradeUi();
   showTradeRoundNote(result);
   updateTradeRoundDots();
@@ -2362,17 +3960,23 @@ function showTradeRoundNote(result){
 function showTradeNews(){
   if(!tradeGame?.running||tradeGame.hasSold)return;
   const r=Math.random();
-  const category=r<.3?"surge":r<.6?"crash":r<.8?"volatile":"steady";
+  let category=r<.34?"surge":r<.68?"crash":"volatile";
+  if(tradeGame.round===2)category=r<.72?"crash":"volatile";
+  if(tradeGame.round===3)category=r<.72?"surge":"volatile";
   const messages=TRADE_NEWS[category];
   const msg=messages[Math.floor(Math.random()*messages.length)];
-  const isReal=Math.random()<.7;
+  const isReal=Math.random()>(tradeGame.scenario?.fakeNewsRatio||.2);
   if(isReal){
-    if(category==="surge")tradeGame.trend+=.28;
-    if(category==="crash")tradeGame.trend-=.28;
-    if(category==="volatile")tradeGame.volatility*=1.45;
+    if(category==="surge")tradeGame.trend+=.30;
+    if(category==="crash")tradeGame.trend-=.30;
+    if(category==="volatile")tradeGame.volatility*=1.5;
   }
+  tradeGame.lastNewsTime=Date.now();
+  tradeGame.newsFiredCount++;
+  const headline=`${tradeGame.stockName}, ${msg}`;
+  addTradeLocalEvent("news",{category,headline,is_real:isReal,fake:!isReal});
   const box=$("#tradeNews");
-  box.textContent=`속보: ${msg}${isReal?"":" (확인 필요)"}`;
+  box.textContent=`속보: ${headline}${isReal?"":" (확인 필요)"}`;
   box.style.display="block";
   tradeGame.newsTimer=setTimeout(()=>{if($("#tradeNews"))$("#tradeNews").style.display="none";},2800);
 }
@@ -2444,9 +4048,42 @@ function finishTradeGame(){
   state.tests.trade=result;
   renderTradeResult(result);
 }
+async function generateTradeLlmReport(){
+  const tradeHost=$("#tradeLlmReport");
+  const profileHost=$("#profileLlmReport");
+  const buttons=[$("#tradeReportBtn"),$("#profileReportBtn")].filter(Boolean);
+  const setHosts=(text,empty=false)=>{
+    [tradeHost,profileHost].filter(Boolean).forEach(host=>{
+      setMarkdownPreview(host,empty?"":text,text);
+    });
+  };
+  if(!state.tests.trade){
+    setHosts("손절·존버 미니게임을 먼저 완료해 주세요.",true);
+    return;
+  }
+  buttons.forEach(btn=>{btn.disabled=true;btn.textContent="생성 중";});
+  setHosts("게임 로그 저장을 확인하고 LLM 위키/리포트를 생성하는 중입니다...");
+  try{
+    if(state.gameLogPending.length)await Promise.allSettled([...state.gameLogPending]);
+    const sid=await ensureGameStarted("buy_sell");
+    if(!state.gameWikis.buy_sell){
+      const wiki=await postJson("/api/games/buy_sell/finish",{session_id:sid});
+      state.gameWikis.buy_sell=wiki.wiki;
+    }
+    const report=await postJson("/api/reports/synthesis",{session_id:sid,include_backtest:true});
+    const wikiText=state.gameWikis.buy_sell?.markdown||"";
+    state.llmReport=`${wikiText}\n\n---\n\n${report.report?.markdown||""}`.trim();
+    setHosts(state.llmReport||"리포트가 비어 있습니다.",!state.llmReport);
+  }catch(err){
+    setHosts(`리포트 생성 실패: ${err.message||err}`,true);
+  }finally{
+    buttons.forEach(btn=>{btn.disabled=false;btn.textContent=btn.id==="profileReportBtn"?"리포트 생성":"생성";});
+  }
+}
 function renderTradeResult(result){
   const m=result.metrics||{};
   const modal=$("#modal");
+  modal.classList.remove("saju-modal","interview-modal");
   modal.classList.add("trade-modal");
   const traits=[
     {name:"손절·존버 통제",score:m.stopDiscipline,color:"var(--blue)"},
@@ -2456,7 +4093,7 @@ function renderTradeResult(result){
   ];
   modal.innerHTML=`<div class="modal-head"><div>
       <div class="eyebrow">손절·존버 미니게임 결과</div>
-      <div class="muted small" style="margin-top:4px">${escapeHtml(tradeGame.stockName)} · 5라운드 완료</div></div>
+      <div class="muted small" style="margin-top:4px">${escapeHtml(tradeGame.stockName)} · 3턴 완료</div></div>
       <button class="close" id="tradeClose">×</button></div>
     <div class="modal-body">
       <div class="q-result">
@@ -2466,19 +4103,34 @@ function renderTradeResult(result){
       </div>
       <div class="trade-stat-grid">
         <div class="trade-stat"><div class="l">최종 수익률</div><div class="v" style="color:${m.totalReturn>=0?"var(--good)":"var(--bad)"}">${tradeRate(m.totalReturn)}</div></div>
-        <div class="trade-stat"><div class="l">성공 라운드</div><div class="v">${m.wins}/5</div></div>
+        <div class="trade-stat"><div class="l">성공 턴</div><div class="v">${m.wins}/3</div></div>
         <div class="trade-stat"><div class="l">평균 보유</div><div class="v">${(m.avgHold||0).toFixed(1)}초</div></div>
         <div class="trade-stat"><div class="l">최악 손익</div><div class="v" style="color:${m.worstRate>=0?"var(--good)":"var(--bad)"}">${tradeRate(m.worstRate)}</div></div>
+      </div>
+      <div class="trade-turn-summary">
+        ${(tradeGame.roundResults||[]).map(r=>`<div class="trade-turn-item">
+          <div class="top"><b>턴 ${r.round||"-"} · ${escapeHtml(TRADE_TURN_LABELS[r.intent]||"행동 로그")}</b>
+            <span style="color:${r.profitRate>=0?"var(--good)":"var(--bad)"}">${tradeRate(r.profitRate)}</span></div>
+          <p>${escapeHtml(tradeRoundInsight(r))}</p>
+        </div>`).join("")}
       </div>
       <div class="trade-traits">
         ${traits.map(t=>`<div class="trade-trait"><div class="top"><b>${escapeHtml(t.name)}</b><span>${Math.round(t.score)}/100</span></div>
           <div class="track"><i style="width:${clamp(t.score,0,100)}%;background:${t.color}"></i></div></div>`).join("")}
+      </div>
+      <div class="llm-report-card">
+        <div class="llm-report-head">
+          <div><div class="t">LLM 로그 분석 리포트</div><div class="s">수집된 매수·매도·관망 로그를 위키로 만들고 종합 리포트까지 생성합니다.</div></div>
+          <button class="btn btn-ghost btn-sm" id="tradeReportBtn">생성</button>
+        </div>
+        <div class="llm-report-body empty" id="tradeLlmReport">아직 생성되지 않았습니다.</div>
       </div>
       <button class="btn btn-dark" id="tradeDone" style="width:100%;justify-content:center;margin-top:22px">결과 저장하고 닫기</button>
       <button class="btn btn-ghost btn-sm" id="tradeRetry" style="width:100%;justify-content:center;margin-top:8px">다시 플레이</button>
     </div>`;
   $("#tradeClose").onclick=$("#tradeDone").onclick=closeQuiz;
   $("#tradeRetry").onclick=()=>{stopTradeGame();renderTradeIntro();};
+  $("#tradeReportBtn").onclick=generateTradeLlmReport;
 }
 
 /* ============================================================
@@ -2510,16 +4162,88 @@ function inputPositionsForApi(positions=state.inputPositions){
   return normalizeInputPositions(positions).map(p=>({
     ticker:p.ticker,
     amount:p.amount,
+    name:p.name||p.ticker,
+    type_hint:p.typeHint||"stock",
     account_type:p.accountType||"taxable",
     account_label:p.accountLabel||ACCOUNT_LABEL_MAP[p.accountType]||"주식계좌"
   }));
+}
+async function postJson(path,payload){
+  const res=await fetch(path,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  const raw=await res.text();
+  let data=null;
+  try{data=raw?JSON.parse(raw):{};}catch(_){throw new Error("API 응답을 해석하지 못했습니다.");}
+  if(!res.ok||data?.success===false)throw new Error(data?.message||data?.detail||`API 오류 (${res.status})`);
+  return data;
+}
+async function ensureGameSession(){
+  if(state.gameSessionId)return state.gameSessionId;
+  const data=await postJson("/api/games/session",{positions:inputPositionsForApi()});
+  state.gameSessionId=data.session_id;
+  state.gameStarted={};
+  return state.gameSessionId;
+}
+async function ensureGameStarted(gameId){
+  const sid=await ensureGameSession();
+  if(state.gameStarted[gameId])return sid;
+  await postJson(`/api/games/${gameId}/start`,{session_id:sid,context:{source:"diagnosis_solution",profile:state.profile?.title||""}});
+  state.gameStarted[gameId]=true;
+  return sid;
+}
+function tradeTraitSignal(action,result=null){
+  if(action==="BUY")return {risk_tolerance:2,behavior_bias:1,time_horizon:2,stability_growth:2};
+  if(action==="SELL"){
+    const rate=Number(result?.profitRate)||0;
+    return {
+      risk_tolerance:rate<0?-2:1,
+      behavior_bias:Math.abs(rate)>4?3:1,
+      time_horizon:4,
+      stability_growth:rate>=0?2:-1
+    };
+  }
+  return {risk_tolerance:-1,behavior_bias:2,time_horizon:3,stability_growth:-1};
+}
+function recordDiagnosisTradeEvent(action,context,result=null){
+  const task=(async()=>{
+    try{
+      const sid=await ensureGameStarted("buy_sell");
+      await postJson("/api/games/buy_sell/events",{
+      session_id:sid,
+      turn:tradeGame?.round||0,
+      event_type:"user_action",
+      action,
+      context,
+      reaction_latency_ms:tradeGame?.startTime?Date.now()-tradeGame.startTime:null,
+      signal:tradeTraitSignal(action,result),
+      payload:{
+        source:"diagnosis_solution_trade_mini_game",
+        round:tradeGame?.round||0,
+        scenario:tradeGame?.scenario?.key||null,
+        stock_name:tradeGame?.stockName||"",
+        current_price:tradeGame?.currentPrice?Math.round(tradeGame.currentPrice):null,
+        buy_price:tradeGame?.buyPrice?Math.round(tradeGame.buyPrice):null,
+        event_log:(tradeGame?.eventLog||[]).filter(e=>e.turn===(tradeGame?.round||0)),
+        result
+      }
+    });
+    }catch(err){
+      console.warn("[diagnosis-game-log] failed",err);
+    }
+  })();
+  state.gameLogPending.push(task);
+  task.finally(()=>{state.gameLogPending=state.gameLogPending.filter(item=>item!==task);});
+  return task;
 }
 function topExposureContributors(analysis){
   const top=analysis?.top;
   if(!top)return [];
   return state.holdings.map(h=>{
     const c=(h.composition||[]).find(x=>x.ticker===top.ticker);
-    return c?{holding:h,amount:h.amount*(Number(c.weight)||0)}:null;
+    return c?{holding:h,amount:h.amount*levOf(h)*(Number(c.weight)||0)}:null;
   }).filter(Boolean).sort((x,y)=>y.amount-x.amount);
 }
 function tradeRebalanceSignal(profile){
@@ -2815,7 +4539,7 @@ function initNav(){
   $("#prevBtn").onclick=()=>goStep(state.step-1);
   const restart=()=>{
     $("#modalBg").classList.remove("open"); // 퀴즈 모달이 열려 있으면 닫고 초기화
-    state.inputPositions=[];state.holdings=[];state.analysis=null;state.analysisKey="";state.tests={};state.profile=null;state.maxStep=1;state.isAnalyzing=false;
+    state.inputPositions=[];state.holdings=[];state.analysis=null;state.analysisKey="";state.analysisSourceMode="";state.analysisRefreshId++;state.tests={};state.profile=null;state.maxStep=1;state.isAnalyzing=false;
     renderHoldings();renderAgents();
     $("#dropDefault").style.display="";$("#dropPreview").style.display="none";
     goStep(1);

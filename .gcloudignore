@@ -1,0 +1,26 @@
+.git
+.gitignore
+.gcloudignore
+.env
+.venv
+venv
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.codex/
+.agents/
+memory/
+notes/
+tests/
+node_modules/
+*.log
+손절존버v2.html
+손절존버v*.html
+사주v*.html
+면담게임v*.html
+멘토면담_시뮬레이션v*.html
+LUX-RU_demo_badang.html
+회의록 기반 추가개발 요건서.pdf

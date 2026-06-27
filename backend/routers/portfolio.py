@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
 from ..historical import compute_backtest, compute_benchmark_comparison, list_scenarios
+from ..income_fees import compute_income_fees
 from ..instrument_insights import get_instrument_insights
 from ..live_data import analyze_live_portfolio
 from ..lookthrough import compute_exposure
@@ -146,12 +147,13 @@ async def search_instruments_api(q: str = "", limit: int = 12) -> dict:
 # ---- Live (사용자 직접 입력) 분석 ----
 class LiveRequest(BaseModel):
     positions: list[dict]  # [{"ticker": "SPY", "amount": 10000000, "account_type": "taxable"}]
+    source_mode: str = "seed_fast"
 
 
 @router.post("/analyze_real")
 async def analyze_real_portfolio(req: LiveRequest) -> dict:
     """Analyze a user-input portfolio (ticker + amount)."""
-    return analyze_live_portfolio(req.positions)
+    return analyze_live_portfolio(req.positions, source_mode=req.source_mode)
 
 
 class BacktestRequest(BaseModel):
@@ -162,6 +164,10 @@ class BacktestRequest(BaseModel):
 class BenchmarkCompareRequest(BaseModel):
     positions: list[dict]
     period_days: int = 365
+
+
+class IncomeFeesRequest(BaseModel):
+    positions: list[dict]
 
 
 @router.get("/backtest/scenarios")
@@ -184,6 +190,12 @@ async def run_backtest(req: BacktestRequest) -> dict:
 async def compare_benchmarks(req: BenchmarkCompareRequest) -> dict:
     """Compare portfolio cumulative return with benchmark indices."""
     return await run_in_threadpool(compute_benchmark_comparison, req.positions, req.period_days)
+
+
+@router.post("/income-fees")
+async def income_fees(req: IncomeFeesRequest) -> dict:
+    """Return live dividend and fee lookups for portfolio positions."""
+    return await run_in_threadpool(compute_income_fees, req.positions)
 
 
 @router.get("/instrument-insights")

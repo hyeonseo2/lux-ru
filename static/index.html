@@ -4729,9 +4729,9 @@
             });
             appendHistoricalAnalysisLog("INFO", "영향 종목 렌더", `${impactSorted.length}개 종목 표시 완료`);
 
-            // 백엔드 시나리오 설명 + Gemini 동적 코멘트
+            // 백엔드 시나리오 설명 + OpenAI 동적 코멘트
             document.getElementById("srRationale").textContent = result.rationale;
-            fetchGeminiCommentForBacktest(result);
+            fetchAiCommentForBacktest(result);
 
             // Before/After 도넛
             showAfterDonut(portfolioImpact);
@@ -4758,7 +4758,7 @@
             );
         }
 
-        async function fetchGeminiCommentForBacktest(result) {
+        async function fetchAiCommentForBacktest(result) {
             const baseRationale = result.rationale;
             try {
                 const resp = await fetch("/api/chat", {
@@ -5932,7 +5932,7 @@
 
         // ── 스크린샷 자동 파싱 ────────────────────────────────
         // 사용자가 증권사 앱 등의 보유종목 스크린샷을 드롭/붙여넣기하면
-        // Gemini Vision으로 종목·금액·계좌를 추출해 livePositions에 병합한다.
+        // OpenAI vision으로 종목·금액·계좌를 추출해 livePositions에 병합한다.
         // 추출 결과는 추정값이므로 삭제·재입력으로 사용자가 수정 가능해야 한다.
         (function setupScreenshotUploader() {
             const SCREENSHOT_MAX_BYTES = 8 * 1024 * 1024;
@@ -6126,7 +6126,7 @@
             if (previewClose) previewClose.addEventListener("click", hidePreview);
 
             // 샘플 이미지 버튼 — AI 호출을 건너뛰고 사전 파싱된 종목을 livePositions에 바로 주입.
-            // GOOGLE_API_KEY 미설정 환경에서도 데모 UX를 끝까지 보여줄 수 있다.
+            // OPENAI_API_KEY 미설정 환경에서도 데모 UX를 끝까지 보여줄 수 있다.
             const SAMPLE_IMAGE_SRC = "/static/assets/sample-screenshot.png";
             const SAMPLE_POSITIONS = [
                 { ticker: "005930", name: "삼성전자",          amount: 12400000, accountType: "taxable",        accountLabel: "주식계좌" },

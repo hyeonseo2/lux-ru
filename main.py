@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from backend.config import ALLOWED_ORIGINS as DEFAULT_ALLOWED_ORIGINS
-from backend.routers import portfolio, upload, chat, finlife
+from backend.routers import portfolio, upload, chat, finlife, games, reports
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,6 +43,8 @@ app.include_router(portfolio.router)
 app.include_router(upload.router)
 app.include_router(chat.router)
 app.include_router(finlife.router)
+app.include_router(games.router)
+app.include_router(reports.router)
 
 # Static files
 BASE_DIR = Path(__file__).parent
@@ -77,6 +79,15 @@ async def diagnosis_solution_service():
     if demo_path.exists():
         return FileResponse(str(demo_path))
     return await original_service()
+
+
+@app.get("/interactive-diagnosis")
+async def interactive_diagnosis_service():
+    """Serve the interactive AI diagnosis game service."""
+    interactive_path = STATIC_DIR / "interactive.html"
+    if interactive_path.exists():
+        return FileResponse(str(interactive_path))
+    return await diagnosis_solution_service()
 
 
 @app.get("/health")

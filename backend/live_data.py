@@ -159,7 +159,7 @@ def _normalize_account(raw: Any) -> tuple[str, str]:
     return "기타", "etc"
 
 
-def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
+def analyze_live_portfolio(positions: List[Dict[str, Any]], source_mode: str = "seed_fast") -> Dict[str, Any]:
     """
     Build a dynamic persona graph from user-input positions.
     positions: [{"ticker": "SPY", "amount": 10000000}, ...]
@@ -170,6 +170,7 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
     sectors = {}
     trace = []
     started_at = time.time()
+    mode = "live" if str(source_mode or "").lower() in {"live", "realtime", "real"} else "seed_fast"
 
     def _log(level: str, title: str, detail: str, payload: Dict[str, Any] | None = None):
         entry = {
@@ -203,9 +204,12 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
         "yfinance": 0,
         "krx": 0,
         "seed": 0,
+        "seed_fast": 0,
+        "seed_fallback": 0,
         "direct": 0,
         "invalid": 0,
         "positions_requested": 0,
+        "source_mode": mode,
     }
     resolved_meta_map: dict[str, tuple[str, str]] = {}
 
@@ -230,27 +234,25 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
         _log("DEBUG", "정규화", f"{idx}번: {ticker} / {int(amount):,}원 정규화 완료")
 
         # Determine if it's likely an ETF or stock.
-        # Prefer bundled seed holdings for known demo/common ETFs so the
-        # user flow does not block on external data providers.
+        # seed_fast mode uses known seed compositions first for speed, while live mode
+        # forces KRX/yfinance lookup and keeps seed only as a fallback.
         seed_holdings = _seed_holdings_for_ticker(ticker)
-        if seed_holdings:
+        if mode == "seed_fast" and seed_holdings:
             holdings = seed_holdings
-            source = "seed"
+            source = "seed_fast"
             source_metrics["seed"] += 1
+            source_metrics["seed_fast"] += 1
             _log(
                 "INFO",
-                "데이터 수집 (시드)",
-                f"{ticker}: 시드 데이터에서 상위 보유종목 {len(holdings)}개 조회",
+                "데이터 수집 (시드 fast)",
+                f"{ticker}: 속도 우선 경로로 시드 구성종목 {len(holdings)}개 즉시 사용",
                 {
                     "ticker": ticker,
-                    "source": "seed_data",
+                    "source": "seed_data_fast",
                     "count": len(holdings),
-                    "top": [h.get("holding_symbol") for h in holdings[:5]]
-                }
+                    "top": [h.get("holding_symbol") for h in holdings[:5]],
+                },
             )
-        elif _is_seed_direct_instrument(ticker):
-            holdings = []
-            source = "direct"
         elif is_krx_etf_symbol(ticker):
             krx_holdings = _krx_holdings_for_ticker(ticker)
             if krx_holdings:
@@ -271,6 +273,25 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
             else:
                 holdings = []
                 source = ""
+                if seed_holdings:
+                    holdings = seed_holdings
+                    source = "seed"
+                    source_metrics["seed"] += 1
+                    source_metrics["seed_fallback"] += 1
+                    _log(
+                        "WARN",
+                        "데이터 수집 (시드 fallback)",
+                        f"{ticker}: KRX 실데이터 조회 실패로 시드 구성종목 {len(holdings)}개 사용",
+                        {
+                            "ticker": ticker,
+                            "source": "seed_data_fallback",
+                            "count": len(holdings),
+                            "top": [h.get("holding_symbol") for h in holdings[:5]],
+                        },
+                    )
+        elif _is_seed_direct_instrument(ticker):
+            holdings = []
+            source = "direct"
         else:
             raw_holdings = _get_holdings_from_crawler(ticker)
             if raw_holdings:
@@ -291,6 +312,22 @@ def analyze_live_portfolio(positions: List[Dict[str, Any]]) -> Dict[str, Any]:
             else:
                 holdings = []
                 source = ""
+                if seed_holdings:
+                    holdings = seed_holdings
+                    source = "seed"
+                    source_metrics["seed"] += 1
+                    source_metrics["seed_fallback"] += 1
+                    _log(
+                        "WARN",
+                        "데이터 수집 (시드 fallback)",
+                        f"{ticker}: yfinance 구성종목 조회 실패로 시드 구성종목 {len(holdings)}개 사용",
+                        {
+                            "ticker": ticker,
+                            "source": "seed_data_fallback",
+                            "count": len(holdings),
+                            "top": [h.get("holding_symbol") for h in holdings[:5]],
+                        },
+                    )
 
         if not holdings:
             holdings = []

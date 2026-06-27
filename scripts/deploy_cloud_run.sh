@@ -9,6 +9,7 @@ SERVICE_ACCOUNT="${SERVICE_ACCOUNT:-415500942280-compute@developer.gserviceaccou
 
 KRX_ID_SECRET="${KRX_ID_SECRET:-krx-id}"
 KRX_PW_SECRET="${KRX_PW_SECRET:-krx-pw}"
+OPENAI_API_KEY_SECRET="${OPENAI_API_KEY_SECRET:-openai-api-key}"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   echo "Missing $ENV_FILE. Create it from .env.example first." >&2
@@ -80,12 +81,21 @@ chmod 700 "$tmp_dir"
 
 krx_id_file="$tmp_dir/KRX_ID"
 krx_pw_file="$tmp_dir/KRX_PW"
+openai_api_key_file="$tmp_dir/OPENAI_API_KEY"
 require_value "KRX_ID" > "$krx_id_file"
 require_value "KRX_PW" > "$krx_pw_file"
-chmod 600 "$krx_id_file" "$krx_pw_file"
+require_value "OPENAI_API_KEY" > "$openai_api_key_file"
+chmod 600 "$krx_id_file" "$krx_pw_file" "$openai_api_key_file"
 
 upsert_secret "$KRX_ID_SECRET" "$krx_id_file"
 upsert_secret "$KRX_PW_SECRET" "$krx_pw_file"
+upsert_secret "$OPENAI_API_KEY_SECRET" "$openai_api_key_file"
+
+openai_model="$(require_value "OPENAI_MODEL")"
+openai_fast_model="$(read_env_value "OPENAI_FAST_MODEL")"
+if [[ -z "$openai_fast_model" ]]; then
+  openai_fast_model="$openai_model"
+fi
 
 gcloud run deploy "$SERVICE" \
   --source . \
@@ -93,4 +103,5 @@ gcloud run deploy "$SERVICE" \
   --project="$PROJECT_ID" \
   --timeout=600 \
   --quiet \
-  --update-secrets="KRX_ID=${KRX_ID_SECRET}:latest,KRX_PW=${KRX_PW_SECRET}:latest"
+  --set-env-vars="OPENAI_MODEL=${openai_model},OPENAI_FAST_MODEL=${openai_fast_model}" \
+  --update-secrets="KRX_ID=${KRX_ID_SECRET}:latest,KRX_PW=${KRX_PW_SECRET}:latest,OPENAI_API_KEY=${OPENAI_API_KEY_SECRET}:latest"

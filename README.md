@@ -95,7 +95,7 @@ TIGER 미국S&P500 + TIGER 미국나스닥100 + 엔비디아 직접 보유분을
 Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfinance 영문 섹터와 KRX 공식 `업종명`을 같은 한국어 canonical 라벨로 정규화하고, NVDA·005930 등 반도체 본업 종목은 ticker 기반 오버라이드로 격상합니다. 프런트 범례는 실질 노출된 섹터 전체를 대상으로 동적으로 렌더링됩니다.
 
 ### 시장 충격 시뮬레이션 (실측 백테스트)
-5개 실제 과거 이벤트(2008 금융위기 · 2018 미중 무역분쟁 · 2020 코로나19 · 2022 美 금리 인상 · 2024 엔비디아 쇼크)에 대해 **yfinance 일봉 실측 데이터**로 종목별 수익률 + 일별 시계열을 계산. 채권형 종목은 KODEX 종합채권(273130.KS) 프록시로 대체. Gemini API로 근거(Rationale) 생성 + 리밸런싱 제안 카드 표시.
+5개 실제 과거 이벤트(2008 금융위기 · 2018 미중 무역분쟁 · 2020 코로나19 · 2022 美 금리 인상 · 2024 엔비디아 쇼크)에 대해 **yfinance 일봉 실측 데이터**로 종목별 수익률 + 일별 시계열을 계산. 채권형 종목은 KODEX 종합채권(273130.KS) 프록시로 대체. OpenAI API로 근거(Rationale) 생성 + 리밸런싱 제안 카드 표시.
 
 ### 대시보드 벤치마크 비교 차트 (NEW)
 포트폴리오 대시보드에서 **내 포트폴리오 누적 수익률**을 `KOSPI`, `S&P 500`, `NASDAQ`과 동일 기간(기본 최근 1년) 기준으로 비교하는 선그래프를 제공합니다.
@@ -108,13 +108,13 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfi
 - 내 종목 현황 탭은 최초 계좌만 표시하지 않고, 추가된 모든 계좌의 상품을 함께 렌더링하며 단일 계좌 입력 케이스도 누락 없이 표시합니다.
 - `목표 포트폴리오 설정` 버튼/모달/목표비중 오버레이 기능은 제거되어 도넛 비교 UI를 단순화했습니다.
 
-### AI 챗봇 (Gemini, `gemini-2.5-flash`)
+### AI 챗봇 (OpenAI API)
 - **Look-through 결과만을 컨텍스트로 사용** — 임의 추정·계산 금지가 시스템 프롬프트에 명시
 - 한국 금융업 컴플라이언스 가드: "사세요/매수하세요/원금 보장/대박/떡상" 등 9종 표현 정규식으로 자동 차단·치환
 - 모든 응답 말미에 "본 정보는 정보제공 및 시뮬레이션이며 투자자문이 아닙니다" 면책 자동 부착
 
 ### 📸 스크린샷 자동 파싱 (NEW)
-증권사 앱의 보유종목 화면을 캡처해서 좌측 패널 📸 드롭존에 드래그/클릭/`Ctrl+V`로 업로드하면 Gemini Vision이 **종목·금액·계좌 유형**을 자동 추출해 직접 입력 폼에 채워 넣습니다.
+증권사 앱의 보유종목 화면을 캡처해서 좌측 패널 📸 드롭존에 드래그/클릭/`Ctrl+V`로 업로드하면 OpenAI vision이 **종목·금액·계좌 유형**을 자동 추출해 직접 입력 폼에 채워 넣습니다.
 - 이미지는 메모리에서만 처리(디스크 저장 없음)
 - 응답에 면책 문구 항상 포함, 사용자 확인 UX(편집·삭제 가능)
 - API 키 미설정 환경에서도 데모를 보여줄 수 있는 **🧪 샘플 이미지로 테스트** 버튼 제공
@@ -145,7 +145,7 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfi
                      │
    ┌─────────────────┼─────────────────┬─────────────┐
    ▼                 ▼                 ▼             ▼
- Seed DB         yfinance         Gemini API     PostgreSQL
+ Seed DB         yfinance         OpenAI API     PostgreSQL
  (시드)         (실시간/과거)    (텍스트+비전)  + Neo4j (옵션)
 ```
 
@@ -154,7 +154,7 @@ Look-through 결과를 차원별로 재집계. `backend/sector_labels.py`가 yfi
 |---|---|
 | Frontend | Vanilla JS, HTML5, CSS3, **D3.js v7 (Canvas)**, Chart.js, Cytoscape |
 | Backend | Python 3.12, FastAPI, Pydantic v2 |
-| AI/LLM | Google Gemini (`gemini-2.5-flash`, 텍스트 + 비전) |
+| AI/LLM | OpenAI API (텍스트 + 비전) |
 | Data | yfinance, pykrx(KRX ETF), SQLAlchemy, Neo4j (옵션) |
 | Infra | Docker, Google Cloud Run (asia-northeast3) |
 
@@ -170,7 +170,9 @@ pip install -r requirements.txt
 `.env` 파일에 필요한 키를 넣습니다.
 
 ```bash
-GOOGLE_API_KEY=your_gemini_api_key
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=your_openai_model
+OPENAI_FAST_MODEL=your_fast_openai_model
 DART_API_KEY=your_dart_api_key
 KRX_ID=your_krx_id
 KRX_PW=your_krx_password
@@ -186,7 +188,7 @@ uvicorn main:app --host 0.0.0.0 --port 8080 --reload
 ### Docker
 ```bash
 docker build -t lux-ru .
-docker run -p 8080:8080 -e GOOGLE_API_KEY=$GOOGLE_API_KEY lux-ru
+docker run -p 8080:8080 -e OPENAI_API_KEY=$OPENAI_API_KEY -e OPENAI_MODEL=$OPENAI_MODEL lux-ru
 ```
 
 ### Cloud Run 배포
@@ -195,6 +197,7 @@ docker run -p 8080:8080 -e GOOGLE_API_KEY=$GOOGLE_API_KEY lux-ru
 ```
 
 이 스크립트는 `.env`의 `KRX_ID`, `KRX_PW`를 Secret Manager(`krx-id`, `krx-pw`)에 자동 반영하고 Cloud Run에 secret env로 연결합니다. `.env` 자체는 배포 소스에 포함하지 않습니다.
+OpenAI 설정은 `.env`의 `OPENAI_API_KEY`를 Secret Manager(`openai-api-key`)에 반영하고, `OPENAI_MODEL`, `OPENAI_FAST_MODEL`은 Cloud Run 환경변수로 설정합니다.
 
 운영 URL: `https://lux-ru-415500942280.asia-northeast3.run.app`
 
@@ -215,8 +218,8 @@ lux-ru/
 │   ├── fx.py                     # FX 환율 동적 조회 (yfinance + TTL 캐시)
 │   ├── sector_labels.py          # GICS → 한국어 섹터 라벨 단일 출처
 │   ├── csv_parser.py             # 증권사 CSV 파서 (5사 매핑)
-│   ├── screenshot_parser.py      # 📸 Gemini Vision 스크린샷 추출
-│   ├── ai_chat.py                # Gemini 텍스트 챗
+│   ├── screenshot_parser.py      # 📸 OpenAI vision 스크린샷 추출
+│   ├── ai_chat.py                # OpenAI 텍스트 챗
 │   ├── compliance.py             # 금지 표현 필터 + 면책 부착
 │   ├── seed_data.py              # ETF 구성/주식/예적금 시드
 │   ├── search_universe.py        # 대형 검색 유니버스 + KRX ETF 병합
@@ -244,7 +247,7 @@ lux-ru/
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | `POST` | `/api/upload` | 증권사 CSV 업로드 및 파싱 |
-| `POST` | `/api/upload/screenshot` | 📸 스크린샷에서 종목 추출 (Gemini Vision) |
+| `POST` | `/api/upload/screenshot` | 📸 스크린샷에서 종목 추출 (OpenAI vision) |
 | `POST` | `/api/portfolio/analyze` | CSV 결과에 대한 전체 Look-through 분석 |
 | `POST` | `/api/portfolio/analyze_real` | 사용자 직접 입력 종목 라이브 분석 |
 | `POST` | `/api/portfolio/benchmark-compare` | 포트폴리오 vs KOSPI/S&P500/NASDAQ 누적 수익률 비교 |
@@ -253,7 +256,7 @@ lux-ru/
 | `GET`  | `/api/portfolio/analysis/{sid}` | 세션의 최신 분석 결과 조회 |
 | `GET`  | `/api/portfolio/sessions/{sid}` | 세션 정보 조회 |
 | `GET`  | `/api/portfolio/search-instruments?q=` | 종목 자동완성 |
-| `POST` | `/api/chat` | Gemini SSE 스트리밍 챗 |
+| `POST` | `/api/chat` | OpenAI 기반 SSE 챗 |
 | `GET`  | `/api/finlife/deposits` · `/savings` · `/pension` · `/all` | 예적금/연금 상품 |
 | `GET`  | `/health` | 헬스체크 |
 
@@ -292,14 +295,14 @@ lux-ru/
 ## 🗺️ 로드맵
 
 - [x] 실제 과거 가격 데이터 기반 백테스트 (5개 시나리오 yfinance 일봉)
-- [x] 📸 스크린샷 자동 파싱 (Gemini Vision)
+- [x] 📸 스크린샷 자동 파싱 (OpenAI vision)
 - [ ] 증권사 OpenAPI 연동 (현재는 CSV 업로드 / 스크린샷 / 수동 입력)
 - [ ] 분석 결과 영속화 (현재는 in-memory 세션)
 - [ ] 종목 클릭 시 역추적(Back-tracing): 그 종목이 들어있는 모든 ETF/펀드를 그래프에서 하이라이트
 - [x] 국내 ETF 검색/추가 기반 확장 (`pykrx` KRX ETF 리스트 + PDF 구성종목, `KRX_ID/KRX_PW` 필요)
 - [ ] KOFIA·DART·KRX 공시 기반 펀드 구성 자동 갱신 (현재는 시드 + KRX ETF PDF + yfinance)
 - [ ] 모바일 반응형 디자인 고도화
-- [ ] 한국 PIPA 국외이전 대응: Gemini → Vertex AI `asia-northeast3` 리전 마이그레이션
+- [ ] 한국 PIPA 국외이전 대응: OpenAI API 사용 시 데이터 처리/보관 정책 검토
 
 ---
 

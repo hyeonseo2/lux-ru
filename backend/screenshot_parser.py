@@ -1,4 +1,4 @@
-"""Screenshot-based portfolio extraction via Gemini vision.
+"""Screenshot-based portfolio extraction via OpenAI vision.
 
 사용자가 업로드한 증권사·자산관리 앱의 보유종목 스크린샷에서
 종목/티커/평가금액/계좌 유형을 추출해 직접 입력 폼에 채워 넣을 수 있는
@@ -15,9 +15,10 @@ from __future__ import annotations
 import json
 import logging
 import re
+import base64
 from typing import Any
 
-from .config import GOOGLE_API_KEY, GEMINI_MODEL
+from .openai_client import OpenAIConfigError, generate_vision_text
 from .seed_data import ALL_INSTRUMENTS, resolve_instrument
 
 LOG = logging.getLogger(__name__)
@@ -148,14 +149,11 @@ def _result(success: bool, positions: list, warnings: list, extra: dict | None =
 
 
 def parse_screenshot(image_bytes: bytes, mime_type: str) -> dict[str, Any]:
-    """Gemini Vision으로 스크린샷에서 보유종목을 추출.
+    """OpenAI vision으로 스크린샷에서 보유종목을 추출.
 
     Returns:
         {success, positions, warnings, disclaimer, extracted_count, matched_count}
     """
-    if not GOOGLE_API_KEY:
-        return _result(False, [], ["GOOGLE_API_KEY가 설정되지 않아 스크린샷 파싱을 사용할 수 없습니다."])
-
     if not image_bytes:
         return _result(False, [], ["빈 이미지입니다."])
 
@@ -167,19 +165,18 @@ def parse_screenshot(image_bytes: bytes, mime_type: str) -> dict[str, Any]:
         return _result(False, [], [f"지원하지 않는 이미지 형식입니다: {mt or '미상'}"])
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=GOOGLE_API_KEY)
-        model = genai.GenerativeModel(GEMINI_MODEL)
-        response = model.generate_content(
-            [EXTRACTION_PROMPT, {"mime_type": mt, "data": image_bytes}],
-            generation_config={
-                "response_mime_type": "application/json",
-                "temperature": 0.1,
-            },
+        image_b64 = base64.b64encode(image_bytes).decode("ascii")
+        raw = generate_vision_text(
+            system="이미지에서 포트폴리오 보유종목을 추출하는 JSON 전용 파서입니다.",
+            prompt=EXTRACTION_PROMPT,
+            image_data_url=f"data:{mt};base64,{image_b64}",
+            max_output_tokens=1400,
         )
-        raw = (getattr(response, "text", None) or "").strip()
+        raw = raw.strip()
+    except OpenAIConfigError as exc:
+        return _result(False, [], [f"OpenAI API 설정이 없어 스크린샷 파싱을 사용할 수 없습니다: {exc}"])
     except Exception as exc:
-        LOG.error("Gemini vision call failed: %s", exc)
+        LOG.error("OpenAI vision call failed: %s", exc)
         return _result(False, [], [f"AI 추출 호출 실패: {exc}"])
 
     if not raw:
@@ -189,7 +186,7 @@ def parse_screenshot(image_bytes: bytes, mime_type: str) -> dict[str, Any]:
     try:
         parsed = json.loads(raw_stripped)
     except json.JSONDecodeError as exc:
-        LOG.warning("Failed to parse Gemini JSON: %s | raw=%s", exc, raw_stripped[:300])
+        LOG.warning("Failed to parse OpenAI JSON: %s | raw=%s", exc, raw_stripped[:300])
         return _result(False, [], ["AI 응답을 JSON으로 해석하지 못했습니다."])
 
     if isinstance(parsed, dict):

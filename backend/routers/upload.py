@@ -33,7 +33,7 @@ async def upload_csv(
 
 @router.post("/screenshot")
 async def upload_screenshot(file: UploadFile = File(...)):
-    """포트폴리오 스크린샷을 Gemini Vision으로 파싱.
+    """포트폴리오 스크린샷을 OpenAI vision으로 파싱.
 
     이미지 바이트는 메모리에서만 처리되며 디스크에 저장되지 않습니다.
     """
