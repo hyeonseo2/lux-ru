@@ -253,7 +253,7 @@ h1,h2,h3,.display,.lead,.kicker,.h2,.h3,.muted,.small,.empty,.btn,.chip,.card,.c
 .risk-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
 @media(max-width:640px){.risk-kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:460px){.risk-kpis{grid-template-columns:1fr}}
-.rk{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:126px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:0 10px 26px -22px rgba(15,23,42,.42);cursor:help}
+.rk{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:126px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:0 10px 26px -22px rgba(15,23,42,.42)}
 .rk-top{display:flex;align-items:center;gap:8px;min-width:0}
 .rk-ic{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--bg-softer);color:var(--ink);font-weight:900;font-size:13px}
 .rk-label{font-size:11.5px;color:var(--muted);font-weight:800;line-height:1.25}
@@ -1895,7 +1895,7 @@ function renderIncomeFeesError(err){
 async function fetchIncomeFees(){
   const key=inputSignature();
   if(state.incomeFees&&state.incomeFeesKey===key)return state.incomeFees;
-  const data=await postJson("/api/portfolio/income-fees",{positions:inputPositionsForApi()},9000);
+  const data=await postJson("/api/portfolio/income-fees",{positions:inputPositionsForApi()},65000);
   state.incomeFees=data;
   state.incomeFeesKey=key;
   return data;
@@ -2342,7 +2342,7 @@ function renderProfile(){
 
 function tradeRoundInsight(round){
   if(!round)return"";
-  const label=TRADE_TURN_LABELS[round.intent]||`턴 ${round.round||""}`;
+  const label=round.scenarioLabel||TRADE_TURN_LABELS[round.intent]||`턴 ${round.round||""}`;
   if(round.noBuy)return `${label}: 매수하지 않고 관망했습니다. 의사결정 지연 또는 정보 확인 욕구가 강하게 기록됐습니다.`;
   if(round.autoSell)return `${label}: 매수 후 제한시간까지 청산을 미뤘습니다. 존버 편향과 자동 규칙 필요성이 드러났습니다.`;
   if(round.profitRate>=0)return `${label}: ${round.holdTime.toFixed(1)}초 보유 후 수익을 실현했습니다. 익절 타이밍 반응이 기록됐습니다.`;
@@ -2365,7 +2365,7 @@ function renderProfileLogAnalysis(trade){
     {l:"최종 수익률",v:tradeRate(m.totalReturn||0)}
   ];
   grid.innerHTML=rows.map(row=>`<div class="profile-log-metric"><div class="l">${row.l}</div><div class="v">${row.v}</div></div>`).join("");
-  const turns=(tradeGame?.roundResults||[]).map(r=>`<div class="profile-log-turn"><b>턴 ${r.round||"-"} · ${escapeHtml(TRADE_TURN_LABELS[r.intent]||"행동 로그")}</b>${escapeHtml(tradeRoundInsight(r))}</div>`).join("");
+  const turns=(tradeGame?.roundResults||[]).map(r=>`<div class="profile-log-turn"><b>턴 ${r.round||"-"} · ${escapeHtml(r.scenarioLabel||TRADE_TURN_LABELS[r.intent]||"행동 로그")}</b>${escapeHtml(tradeRoundInsight(r))}</div>`).join("");
   detail.innerHTML=`게임 로그 기준으로 <b>${escapeHtml(trade.t)}</b> 성향이 산출됐습니다.
     손절·존버 통제 ${Math.round(m.stopDiscipline||0)}/100, 존버 편향 ${Math.round(m.holdBias||0)}/100, 충동성 ${Math.round(m.impulse||0)}/100이 마지막 솔루션의 리밸런싱 강도에 반영됩니다.
     ${turns?`<div class="profile-log-turns">${turns}</div>`:""}`;
@@ -3580,6 +3580,49 @@ function tradePrice(n){
   return "₩"+Math.round(value).toLocaleString();
 }
 function tradeRate(n,digits=2){const v=Number(n)||0;return `${v>=0?"+":""}${v.toFixed(digits)}%`;}
+function syntheticTradePath(base,drift,volatility,points=14){
+  const values=[base];
+  for(let i=1;i<points;i++){
+    const shock=(Math.random()*2-1)*volatility;
+    const next=values[i-1]*(1+drift+shock);
+    values.push(clamp(next,base*.55,base*1.65));
+  }
+  return values;
+}
+function syntheticTradeScenario(key,label,prices,offsetDays,reason){
+  const start=new Date(Date.now()-(offsetDays+prices.length)*86400000);
+  const iso=d=>d.toISOString().slice(0,10);
+  const end=new Date(start.getTime()+(prices.length-1)*86400000);
+  const returns=prices.slice(1).map((p,i)=>prices[i]>0?p/prices[i]-1:0);
+  const totalReturn=prices[0]>0?(prices[prices.length-1]/prices[0]-1)*100:0;
+  const absMove=returns.reduce((sum,v)=>sum+Math.abs(v),0)*100;
+  const avg=returns.reduce((sum,v)=>sum+v,0)/(returns.length||1);
+  const variance=returns.length>1?returns.reduce((sum,v)=>sum+(v-avg)**2,0)/(returns.length-1):0;
+  let peak=prices[0],mdd=0;
+  prices.forEach(v=>{peak=Math.max(peak,v); if(peak>0)mdd=Math.min(mdd,v/peak-1);});
+  return {
+    key,label,start:iso(start),end:iso(end),prices:prices.map(v=>Number(v.toFixed(4))),base_price:prices[0],
+    total_return_pct:totalReturn,abs_move_pct:absMove,annual_volatility_pct:Math.sqrt(Math.max(0,variance))*Math.sqrt(252)*100,max_drawdown_pct:mdd*100,
+    events:[
+      {offset:.18,category:"random_fallback",headline:`${reason} 랜덤 가격 경로를 재생합니다.`},
+      {offset:.50,category:"random_fallback",headline:`${label} 수익률 ${tradeRate(totalReturn,1)}.`},
+      {offset:.78,category:"random_fallback",headline:`시뮬레이션 변동성 ${(Math.sqrt(Math.max(0,variance))*Math.sqrt(252)*100).toFixed(1)}%.`}
+    ]
+  };
+}
+function fallbackTradeMarketData(name,ticker,reason="실데이터 조회 지연"){
+  const symbol=normalizeTicker(ticker)||defaultTradeStockMeta().ticker||"005930";
+  const currency=/^\d{6}$/.test(symbol)?"KRW":"USD";
+  let base=currency==="KRW"?75000:180;
+  if(symbol==="BTC-USD")base=95000;
+  if(["NVDA","TSLA","QQQ"].includes(symbol))base=240;
+  const scenarios=[
+    syntheticTradeScenario("news_sensitivity","랜덤 변동성 구간",syntheticTradePath(base,0,.045),48,reason),
+    syntheticTradeScenario("downtrend_response","랜덤 하락 구간",syntheticTradePath(base*(.94+Math.random()*.14),-.012,.028),28,reason),
+    syntheticTradeScenario("uptrend_response","랜덤 상승 구간",syntheticTradePath(base*(.92+Math.random()*.12),.012,.028),8,reason)
+  ];
+  return {success:true,symbol,name:name||symbol,currency,yf_symbol:null,period_days:0,scenario_count:scenarios.length,scenarios,data_source:"random_fallback",synthetic:true,message:reason};
+}
 function createTradeGame(stockName=defaultTradeStockName(),marketData=null){
   return {
     stockName,
@@ -3689,20 +3732,22 @@ async function startTradeGame(){
   state.gameWikis={};
   state.llmReport=null;
   state.gameLogPending=[];
+  let marketData;
   try{
-    const marketData=await postJson("/api/portfolio/trade-game-data",{query:input||defaultTradeStockName(),ticker,period_days:1095});
-    tradeGame=createTradeGame(marketData.name||input||defaultTradeStockName(),marketData);
-    tradeGame.maxRounds=Math.max(1,Math.min(3,(marketData.scenarios||[]).length));
-    try{await ensureGameStarted("buy_sell");}catch(err){console.warn("[diagnosis-game-start] failed",err);}
-    renderTradeFrame();
-    startTradeRound();
+    marketData=await postJson("/api/portfolio/trade-game-data",{query:input||defaultTradeStockName(),ticker,period_days:1095},8000);
   }catch(err){
-    if(msg)msg.innerHTML=`<span style="color:var(--bad)">실제 가격 데이터를 불러오지 못했습니다. ${escapeHtml(err.message||err)}</span>`;
-    if(startBtn){startBtn.disabled=false;startBtn.textContent="시작";}
+    marketData=fallbackTradeMarketData(input||defaultTradeStockName(),ticker||defaultTradeStockMeta().ticker,err?.message||"실데이터 조회 지연");
+    if(msg)msg.textContent="실데이터 조회가 길어 랜덤 시뮬레이션으로 바로 시작합니다.";
   }
+  tradeGame=createTradeGame(marketData.name||input||defaultTradeStockName(),marketData);
+  tradeGame.maxRounds=Math.max(1,Math.min(3,(marketData.scenarios||[]).length));
+  try{await ensureGameStarted("buy_sell");}catch(err){console.warn("[diagnosis-game-start] failed",err);}
+  renderTradeFrame();
+  startTradeRound();
 }
 function renderTradeFrame(){
   const modal=$("#modal");
+  const sourceLabel=tradeGame?.marketData?.synthetic||tradeGame?.marketData?.data_source==="random_fallback"?"랜덤 시뮬레이션":"실제 구간";
   modal.classList.remove("saju-modal","interview-modal");
   modal.classList.add("trade-modal");
   modal.innerHTML=`<div class="modal-head"><div>
@@ -3712,7 +3757,7 @@ function renderTradeFrame(){
     <div class="modal-body">
       <div class="trade-game-head">
         <div><div class="stock" id="tradeStockName">${escapeHtml(tradeGame.stockName)}</div>
-          <div class="asset">자산 <span id="tradeAsset">${tradeMoney(tradeGame.totalAsset)}</span> · ${escapeHtml(tradeGame.symbol||"")} 실제 구간</div></div>
+          <div class="asset">자산 <span id="tradeAsset">${tradeMoney(tradeGame.totalAsset)}</span> · ${escapeHtml(tradeGame.symbol||"")} ${sourceLabel}</div></div>
         <div class="chip blue" id="tradeRoundLabel">턴 1/3</div>
       </div>
       <div class="trade-rounds" id="tradeRoundDots"></div>
@@ -3824,14 +3869,17 @@ function startTradeRound(){
   tradeGame.newsFiredCount=0;
   tradeGame.lastNewsTime=null;
   tradeGame.startTime=Date.now();
+  const synthetic=tradeGame.marketData?.synthetic||tradeGame.marketData?.data_source==="random_fallback";
   $("#tradeNews").classList.remove("show");
-  $("#tradeRoundNote").textContent=`${scenario.label} (${scenario.start}~${scenario.end}) 실제 가격 구간이 시작됐습니다.`;
+  $("#tradeRoundNote").textContent=`${scenario.label} (${scenario.start}~${scenario.end}) ${synthetic?"랜덤 시뮬레이션":"실제 가격 구간"}이 시작됐습니다.`;
   $("#tradeBuyBtn").disabled=false;
   $("#tradeSellBtn").disabled=true;
   $("#tradeBuyPrice").textContent="-";
   $("#tradeProfitRate").textContent="-";
   $("#tradeInstruction").textContent=`${scenario.label} · 매수 타이밍`;
-  $("#tradeSub").textContent=`최근 실제 일봉 경로를 10초로 압축 재생합니다. 구간 수익률 ${tradeRate(scenario.total_return_pct||0,1)}.`;
+  $("#tradeSub").textContent=synthetic
+    ? `실데이터 조회가 길어 랜덤 가격 경로를 10초로 재생합니다. 구간 수익률 ${tradeRate(scenario.total_return_pct||0,1)}.`
+    : `최근 실제 일봉 경로를 10초로 압축 재생합니다. 구간 수익률 ${tradeRate(scenario.total_return_pct||0,1)}.`;
   $("#tradeStatus").textContent="대기중";
   updateTradeRoundDots();
   updateTradeUi();
@@ -3840,6 +3888,7 @@ function startTradeRound(){
     scenario:scenario.key,
     scenario_start:scenario.start,
     scenario_end:scenario.end,
+    synthetic:Boolean(synthetic),
     total_return_pct:Number(Number(scenario.total_return_pct||0).toFixed(2)),
     annual_volatility_pct:Number(Number(scenario.annual_volatility_pct||0).toFixed(2))
   });
@@ -4020,6 +4069,8 @@ function endTradeRound(reason="timeout"){
   const result={
     round:tradeGame.round,
     intent:tradeGame.scenario?.key||null,
+    scenarioLabel:tradeGame.scenario?.label||null,
+    synthetic:Boolean(tradeGame.marketData?.synthetic||tradeGame.marketData?.data_source==="random_fallback"),
     profitRate,
     profit,
     holdTime,
@@ -4063,11 +4114,12 @@ function showTradeNews(event=null){
   if(!tradeGame?.running||tradeGame.hasSold)return;
   tradeGame.lastNewsTime=Date.now();
   tradeGame.newsFiredCount++;
-  const headline=event?.headline||`${tradeGame.stockName} 실제 가격 구간 재생 중`;
-  const category=event?.category||"real_market";
-  addTradeLocalEvent("news",{category,headline,is_real:true,fake:false});
+  const synthetic=tradeGame.marketData?.synthetic||tradeGame.marketData?.data_source==="random_fallback";
+  const headline=event?.headline||(synthetic?`${tradeGame.stockName} 랜덤 가격 경로 재생 중`:`${tradeGame.stockName} 실제 가격 구간 재생 중`);
+  const category=event?.category||(synthetic?"random_fallback":"real_market");
+  addTradeLocalEvent("news",{category,headline,is_real:!synthetic,fake:false});
   const box=$("#tradeNews");
-  box.textContent=`시장 구간: ${headline}`;
+  box.textContent=`${synthetic?"시뮬레이션":"시장 구간"}: ${headline}`;
   box.classList.add("show");
   tradeGame.newsTimer=setTimeout(()=>{if($("#tradeNews"))$("#tradeNews").classList.remove("show");},2800);
 }
@@ -4199,7 +4251,7 @@ function renderTradeResult(result){
       </div>
       <div class="trade-turn-summary">
         ${(tradeGame.roundResults||[]).map(r=>`<div class="trade-turn-item">
-          <div class="top"><b>턴 ${r.round||"-"} · ${escapeHtml(TRADE_TURN_LABELS[r.intent]||"행동 로그")}</b>
+          <div class="top"><b>턴 ${r.round||"-"} · ${escapeHtml(r.scenarioLabel||TRADE_TURN_LABELS[r.intent]||"행동 로그")}</b>
             <span style="color:${r.profitRate>=0?"var(--good)":"var(--bad)"}">${tradeRate(r.profitRate)}</span></div>
           <p>${escapeHtml(tradeRoundInsight(r))}</p>
         </div>`).join("")}

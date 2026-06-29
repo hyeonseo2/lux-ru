@@ -16,7 +16,7 @@ from ..lookthrough import compute_exposure
 from ..overlap import find_overlaps
 from ..rebalance import compute_dynamic_rebalance_plan
 from ..risk import compute_market_risk
-from ..trade_game import build_trade_game_data
+from ..trade_game import build_random_trade_game_data, build_trade_game_data
 from ..models import Position, PortfolioAnalysis
 from ..seed_data import FINLIFE_PRODUCTS
 from ..search_universe import search_instruments as search_universe_instruments
@@ -336,7 +336,7 @@ async def compare_benchmarks(req: BenchmarkCompareRequest) -> dict:
 async def income_fees(req: IncomeFeesRequest) -> dict:
     """Return live dividend and fee lookups for portfolio positions."""
     try:
-        return await _run_with_timeout(compute_income_fees, 8.0, req.positions)
+        return await _run_with_timeout(compute_income_fees, 60.0, req.positions)
     except asyncio.TimeoutError:
         return {"success": False, "message": "배당·수수료 조회 시간이 길어 중단했습니다.", "items": [], "summary": {}}
 
@@ -344,7 +344,10 @@ async def income_fees(req: IncomeFeesRequest) -> dict:
 @router.post("/trade-game-data")
 async def trade_game_data(req: TradeGameDataRequest) -> dict:
     """Return real historical price paths for the buy/sell mini game."""
-    return await run_in_threadpool(build_trade_game_data, req.query, req.ticker, req.period_days)
+    try:
+        return await _run_with_timeout(build_trade_game_data, 6.0, req.query, req.ticker, req.period_days)
+    except asyncio.TimeoutError:
+        return build_random_trade_game_data(req.query, req.ticker, "실데이터 조회 지연")
 
 
 @router.post("/rebalance-plan")

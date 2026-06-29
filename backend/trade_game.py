@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 import math
+import random
 import re
 import time
 from typing import Any, Optional
@@ -184,6 +185,81 @@ def _event_text(name: str, item: dict[str, Any], idx: int) -> str:
     return f"방향보다 흔들림이 컸던 구간입니다 ({ret:+.1f}%)."
 
 
+def _synthetic_path(base: float, drift: float, volatility: float, rng: random.Random, points: int = 14) -> list[float]:
+    values = [base]
+    for _ in range(points - 1):
+        shock = rng.uniform(-volatility, volatility)
+        next_value = values[-1] * (1 + drift + shock)
+        values.append(max(base * 0.55, min(base * 1.65, next_value)))
+    return values
+
+
+def _synthetic_scenario(
+    key: str,
+    label: str,
+    values: list[float],
+    offset_days: int,
+    reason: str,
+) -> dict[str, Any]:
+    today = date.today()
+    start_date = today - timedelta(days=offset_days + len(values))
+    end_date = start_date + timedelta(days=len(values) - 1)
+    item = _window_metrics(
+        [(start_date + timedelta(days=i)).isoformat() for i in range(len(values))],
+        values,
+        0,
+        len(values),
+    )
+    prices = [round(v, 4) for v in item["prices"]]
+    return {
+        "key": key,
+        "label": label,
+        "start": item["start"],
+        "end": item["end"],
+        "prices": prices,
+        "base_price": prices[0],
+        "total_return_pct": item["total_return_pct"],
+        "abs_move_pct": item["abs_move_pct"],
+        "annual_volatility_pct": item["annual_volatility_pct"],
+        "max_drawdown_pct": item["max_drawdown_pct"],
+        "events": [
+            {"offset": 0.18, "category": "random_fallback", "headline": f"{reason} 랜덤 가격 경로를 재생합니다."},
+            {"offset": 0.50, "category": "random_fallback", "headline": f"{label} 수익률 {item['total_return_pct']:+.1f}%."},
+            {"offset": 0.78, "category": "random_fallback", "headline": f"시뮬레이션 변동성 {item['annual_volatility_pct']:.1f}%."},
+        ],
+    }
+
+
+def build_random_trade_game_data(query: str = "", ticker: str = "", reason: str = "실데이터 조회 지연") -> dict[str, Any]:
+    instrument = resolve_trade_instrument(query, ticker)
+    symbol = instrument["symbol"]
+    currency = instrument["currency"]
+    base = 75_000.0 if currency == "KRW" else 180.0
+    if symbol == "BTC-USD":
+        base = 95_000.0
+    elif symbol in {"NVDA", "TSLA", "QQQ"}:
+        base = 240.0
+    rng = random.Random(f"{symbol}:{time.time_ns()}")
+    scenarios = [
+        _synthetic_scenario("news_sensitivity", "랜덤 변동성 구간", _synthetic_path(base, 0.000, 0.045, rng), 48, reason),
+        _synthetic_scenario("downtrend_response", "랜덤 하락 구간", _synthetic_path(base * rng.uniform(0.94, 1.08), -0.012, 0.028, rng), 28, reason),
+        _synthetic_scenario("uptrend_response", "랜덤 상승 구간", _synthetic_path(base * rng.uniform(0.92, 1.04), 0.012, 0.028, rng), 8, reason),
+    ]
+    return {
+        "success": True,
+        "symbol": symbol,
+        "name": instrument["name"],
+        "currency": currency,
+        "yf_symbol": None,
+        "period_days": 0,
+        "scenario_count": len(scenarios),
+        "scenarios": scenarios,
+        "data_source": "random_fallback",
+        "synthetic": True,
+        "message": reason,
+    }
+
+
 def build_trade_game_data(query: str = "", ticker: str = "", period_days: int = 1095) -> dict[str, Any]:
     instrument = resolve_trade_instrument(query, ticker)
     symbol = instrument["symbol"]
@@ -211,14 +287,7 @@ def build_trade_game_data(query: str = "", ticker: str = "", period_days: int = 
             break
 
     if not chosen or not series:
-        result = {
-            "success": False,
-            "message": "실제 가격 데이터가 부족해 손절·존버 게임을 시작할 수 없습니다.",
-            "symbol": symbol,
-            "name": instrument["name"],
-            "yf_symbol": chosen,
-            "data_source": "yfinance_daily_close",
-        }
+        result = build_random_trade_game_data(query, ticker, "실제 가격 데이터 부족")
         _TRADE_GAME_CACHE[cache_key] = (dict(result), now + 60)
         return result
 

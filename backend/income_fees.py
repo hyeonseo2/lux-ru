@@ -22,7 +22,7 @@ from .historical import map_to_yfinance
 from .search_universe import load_expanded_universe
 
 INCOME_FEES_TTL_SECONDS = 6 * 3600
-INCOME_FEES_LOOKUP_TIMEOUT_SECONDS = float(os.getenv("INCOME_FEES_LOOKUP_TIMEOUT_SECONDS", "4.0"))
+INCOME_FEES_LOOKUP_TIMEOUT_SECONDS = float(os.getenv("INCOME_FEES_LOOKUP_TIMEOUT_SECONDS", "55.0"))
 INCOME_FEES_MAX_WORKERS = max(2, int(os.getenv("INCOME_FEES_MAX_WORKERS", "8")))
 
 _CACHE_LOCK = threading.Lock()
