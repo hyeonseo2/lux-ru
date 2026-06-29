@@ -3535,17 +3535,6 @@ function switchSajuTab(tab){
 const TRADE_TIME_LIMIT=10000;
 const TRADE_TICK_MS=90;
 const TRADE_TIMER_CIRC=276.46;
-const TRADE_NEWS={
-  surge:["외국인 매수세 유입", "호재성 공시 기대", "거래량 급증"],
-  crash:["단기 차익실현 매물", "시장 변동성 확대", "부정적 루머 확산"],
-  volatile:["분봉 변동성 급등", "호가 공백 확대", "단기 수급 충돌"],
-  steady:["박스권 등락 지속", "관망세 유지", "거래량 안정"]
-};
-const TRADE_SCENARIOS={
-  1:{key:"news_sensitivity",label:"뉴스 민감도",trend:()=> (Math.random()-.5)*.2,volatility:()=>.012+Math.random()*.012,newsCount:3,fakeNewsRatio:.5},
-  2:{key:"downtrend_response",label:"하락 대응",trend:()=>-.45-Math.random()*.25,volatility:()=>.010+Math.random()*.008,newsCount:1,fakeNewsRatio:.2},
-  3:{key:"uptrend_response",label:"상승 대응",trend:()=>.45+Math.random()*.25,volatility:()=>.010+Math.random()*.008,newsCount:1,fakeNewsRatio:.2}
-};
 const TRADE_TAUNTS={
   1:{start:"속보 뜬다 속보. 믿어도 되나?",rising:"다들 달려든다. 너도 탈래?",falling:"악재 떴어. 던지는 사람 많아."},
   2:{start:"분위기 안 좋은데 들어갈 거야?",rising:"잠깐 반등일 수도 있어. 속지 마.",falling:"계속 빠진다. 손절 안 해?"},
@@ -3553,22 +3542,44 @@ const TRADE_TAUNTS={
   holdingProfit:["벌써 플러스네. 더 먹을래?","익절각인데 욕심부리다 뱉는다?","여기서 만족할 거야, 더 볼 거야?"],
   holdingLoss:["물렸네. 존버할 거야?","지금 끊는 게 약일 수도.","심장 쫄깃하지? 어쩔 거야."]
 };
-const TRADE_NEUTRAL_SUBS=["직감을 믿되, 로그는 냉정하게 남습니다.","타이밍을 잡으세요.","침착하게 대응하세요."];
 const TRADE_TURN_LABELS={
-  news_sensitivity:"뉴스 민감도",
-  downtrend_response:"하락 대응",
-  uptrend_response:"상승 대응"
+  news_sensitivity:"실제 변동성 구간",
+  downtrend_response:"실제 하락 구간",
+  uptrend_response:"실제 상승 구간"
 };
+const TRADE_QUICK_STOCKS=[
+  {name:"삼성전자",ticker:"005930"},
+  {name:"테슬라",ticker:"TSLA"},
+  {name:"NVIDIA",ticker:"NVDA"},
+  {name:"QQQ",ticker:"QQQ"},
+  {name:"비트코인",ticker:"BTC-USD"}
+];
 let tradeGame=null;
 
+function defaultTradeStockMeta(){
+  return {
+    name:state.analysis?.top?.name||state.holdings[0]?.name||"삼성전자",
+    ticker:state.analysis?.top?.ticker||state.inputPositions[0]?.ticker||"005930"
+  };
+}
 function defaultTradeStockName(){
-  return state.analysis?.top?.name||state.holdings[0]?.name||"삼성전자";
+  return defaultTradeStockMeta().name;
 }
 function tradeMoney(n){return "₩"+Math.floor(Number(n)||0).toLocaleString();}
+function tradePrice(n){
+  const value=Number(n)||0;
+  const c=tradeGame?.currency||"KRW";
+  if(c==="USD")return "$"+value.toLocaleString(undefined,{maximumFractionDigits:value>=1000?0:2});
+  return "₩"+Math.round(value).toLocaleString();
+}
 function tradeRate(n,digits=2){const v=Number(n)||0;return `${v>=0?"+":""}${v.toFixed(digits)}%`;}
-function createTradeGame(stockName=defaultTradeStockName()){
+function createTradeGame(stockName=defaultTradeStockName(),marketData=null){
   return {
     stockName,
+    symbol:marketData?.symbol||defaultTradeStockMeta().ticker,
+    currency:marketData?.currency||"KRW",
+    yfSymbol:marketData?.yf_symbol||"",
+    marketData,
     initialAsset:10000000,
     totalAsset:10000000,
     basePrice:50000,
@@ -3583,8 +3594,6 @@ function createTradeGame(stockName=defaultTradeStockName()){
     priceHistory:[],
     timeHistory:[],
     startTime:null,
-    trend:0,
-    volatility:.012,
     heartRate:72,
     running:false,
     roundEnding:false,
@@ -3640,23 +3649,32 @@ function renderTradeIntro(){
           <div class="trade-rule"><b>미거래 패널티</b><span>관망만 하면 -5%로 기록합니다.</span></div>
         </div>
         <div class="trade-stock-row">
-          <input class="inp" id="tradeStockInput" maxlength="20" value="${escapeHtml(defaultTradeStockName())}" aria-label="미니게임 종목명">
+          <input class="inp" id="tradeStockInput" maxlength="20" value="${escapeHtml(defaultTradeStockName())}" data-trade-ticker="${escapeHtml(defaultTradeStockMeta().ticker)}" aria-label="미니게임 종목명">
           <button class="btn btn-dark btn-sm" id="tradeStart">시작</button>
         </div>
+        <div class="muted small" id="tradeDataMsg" style="margin-top:8px">선택 종목의 최근 실제 가격 구간을 불러와 게임으로 재생합니다.</div>
         <div class="trade-quick">
-          ${["삼성전자","테슬라","NVIDIA","QQQ","비트코인"].map(n=>`<button type="button" data-trade-stock="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("")}
+          ${TRADE_QUICK_STOCKS.map(item=>`<button type="button" data-trade-stock="${escapeHtml(item.name)}" data-trade-ticker="${escapeHtml(item.ticker)}">${escapeHtml(item.name)}</button>`).join("")}
         </div>
       </div>
       ${prev?`<div class="trade-note" style="margin-top:12px"><b>저장된 결과</b><br>${escapeHtml(prev.t)} · 손절·존버 통제 ${Math.round(prev.metrics?.stopDiscipline??0)}/100</div>`:""}
     </div>`;
   $("#tradeClose").onclick=closeQuiz;
   $("#tradeStart").onclick=startTradeGame;
+  $("#tradeStockInput").oninput=e=>{delete e.target.dataset.tradeTicker;};
   modal.querySelectorAll("[data-trade-stock]").forEach(b=>b.onclick=()=>{
     $("#tradeStockInput").value=b.dataset.tradeStock;
+    $("#tradeStockInput").dataset.tradeTicker=b.dataset.tradeTicker||"";
   });
 }
 async function startTradeGame(){
-  const input=$("#tradeStockInput")?.value?.trim();
+  const inputEl=$("#tradeStockInput");
+  const input=inputEl?.value?.trim();
+  const ticker=inputEl?.dataset?.tradeTicker||"";
+  const startBtn=$("#tradeStart");
+  const msg=$("#tradeDataMsg");
+  if(startBtn){startBtn.disabled=true;startBtn.textContent="데이터 조회 중";}
+  if(msg)msg.textContent="yfinance 실제 일봉에서 변동성·하락·상승 구간을 찾는 중입니다.";
   if(state.gameLogPending.length)await Promise.allSettled([...state.gameLogPending]);
   delete state.tests.trade;
   state.gameSessionId=null;
@@ -3664,10 +3682,17 @@ async function startTradeGame(){
   state.gameWikis={};
   state.llmReport=null;
   state.gameLogPending=[];
-  tradeGame=createTradeGame(input||defaultTradeStockName());
-  try{await ensureGameStarted("buy_sell");}catch(err){console.warn("[diagnosis-game-start] failed",err);}
-  renderTradeFrame();
-  startTradeRound();
+  try{
+    const marketData=await postJson("/api/portfolio/trade-game-data",{query:input||defaultTradeStockName(),ticker,period_days:1095});
+    tradeGame=createTradeGame(marketData.name||input||defaultTradeStockName(),marketData);
+    tradeGame.maxRounds=Math.max(1,Math.min(3,(marketData.scenarios||[]).length));
+    try{await ensureGameStarted("buy_sell");}catch(err){console.warn("[diagnosis-game-start] failed",err);}
+    renderTradeFrame();
+    startTradeRound();
+  }catch(err){
+    if(msg)msg.innerHTML=`<span style="color:var(--bad)">실제 가격 데이터를 불러오지 못했습니다. ${escapeHtml(err.message||err)}</span>`;
+    if(startBtn){startBtn.disabled=false;startBtn.textContent="시작";}
+  }
 }
 function renderTradeFrame(){
   const modal=$("#modal");
@@ -3680,7 +3705,7 @@ function renderTradeFrame(){
     <div class="modal-body">
       <div class="trade-game-head">
         <div><div class="stock" id="tradeStockName">${escapeHtml(tradeGame.stockName)}</div>
-          <div class="asset">자산 <span id="tradeAsset">${tradeMoney(tradeGame.totalAsset)}</span></div></div>
+          <div class="asset">자산 <span id="tradeAsset">${tradeMoney(tradeGame.totalAsset)}</span> · ${escapeHtml(tradeGame.symbol||"")} 실제 구간</div></div>
         <div class="chip blue" id="tradeRoundLabel">턴 1/3</div>
       </div>
       <div class="trade-rounds" id="tradeRoundDots"></div>
@@ -3734,6 +3759,8 @@ function addTradeLocalEvent(type,payload={}){
     price:Math.round(tradeGame.currentPrice),
     deviation_pct:Number(deviation.toFixed(2)),
     heart_rate:Math.round(tradeGame.heartRate),
+    data_source:tradeGame.marketData?.data_source||"unknown",
+    symbol:tradeGame.symbol||"",
     ...payload
   });
 }
@@ -3762,18 +3789,19 @@ function scheduleTradeTaunts(){
 }
 function scheduleTradeNews(){
   if(!tradeGame)return;
-  const count=tradeGame.scenario?.newsCount||1;
-  for(let i=0;i<count;i++){
-    const delay=1100+Math.random()*6500;
-    tradeGame.tauntTimers.push(setTimeout(showTradeNews,delay));
-  }
+  const events=Array.isArray(tradeGame.scenario?.events)?tradeGame.scenario.events:[];
+  events.forEach(event=>{
+    const delay=clamp(Number(event.offset)||0.5,0.05,0.95)*TRADE_TIME_LIMIT;
+    tradeGame.tauntTimers.push(setTimeout(()=>showTradeNews(event),delay));
+  });
 }
 function startTradeRound(){
   if(!tradeGame)return;
   clearTradeTimers();
   if(tradeGame.round>=tradeGame.maxRounds){finishTradeGame();return;}
   tradeGame.round++;
-  const scenario=TRADE_SCENARIOS[tradeGame.round]||TRADE_SCENARIOS[1];
+  const scenario=(tradeGame.marketData?.scenarios||[])[tradeGame.round-1];
+  if(!scenario){finishTradeGame();return;}
   tradeGame.running=true;
   tradeGame.roundEnding=false;
   tradeGame.scenario=scenario;
@@ -3781,29 +3809,33 @@ function startTradeRound(){
   tradeGame.hasSold=false;
   tradeGame.buyPrice=null;
   tradeGame.buyTime=null;
-  tradeGame.basePrice=40000+Math.random()*20000;
+  tradeGame.basePrice=Number(scenario.base_price)||Number(scenario.prices?.[0])||50000;
   tradeGame.currentPrice=tradeGame.basePrice;
   tradeGame.priceHistory=[tradeGame.basePrice];
   tradeGame.timeHistory=[0];
-  tradeGame.trend=scenario.trend();
-  tradeGame.volatility=scenario.volatility();
   tradeGame.heartRate=72;
   tradeGame.newsFiredCount=0;
   tradeGame.lastNewsTime=null;
   tradeGame.startTime=Date.now();
   $("#tradeNews").style.display="none";
-  $("#tradeRoundNote").textContent=`${scenario.label} 턴이 시작됐습니다. AI 자극과 뉴스 반응까지 기록됩니다.`;
+  $("#tradeRoundNote").textContent=`${scenario.label} (${scenario.start}~${scenario.end}) 실제 가격 구간이 시작됐습니다.`;
   $("#tradeBuyBtn").disabled=false;
   $("#tradeSellBtn").disabled=true;
   $("#tradeBuyPrice").textContent="-";
   $("#tradeProfitRate").textContent="-";
   $("#tradeInstruction").textContent=`${scenario.label} · 매수 타이밍`;
-  $("#tradeSub").textContent=TRADE_NEUTRAL_SUBS[Math.floor(Math.random()*TRADE_NEUTRAL_SUBS.length)];
+  $("#tradeSub").textContent=`최근 실제 일봉 경로를 10초로 압축 재생합니다. 구간 수익률 ${tradeRate(scenario.total_return_pct||0,1)}.`;
   $("#tradeStatus").textContent="대기중";
   updateTradeRoundDots();
   updateTradeUi();
   drawTradeChart();
-  addTradeLocalEvent("turn_start",{scenario:scenario.key,trend:Number(tradeGame.trend.toFixed(3)),volatility:Number(tradeGame.volatility.toFixed(4))});
+  addTradeLocalEvent("turn_start",{
+    scenario:scenario.key,
+    scenario_start:scenario.start,
+    scenario_end:scenario.end,
+    total_return_pct:Number(Number(scenario.total_return_pct||0).toFixed(2)),
+    annual_volatility_pct:Number(Number(scenario.annual_volatility_pct||0).toFixed(2))
+  });
   setTradeAiMessage(TRADE_TAUNTS[tradeGame.round].start);
   runTradeLoop();
   runTradeTimer();
@@ -3827,7 +3859,7 @@ function updateTradeUi(){
   if(!tradeGame)return;
   $("#tradeRoundLabel").textContent=`턴 ${tradeGame.round}/${tradeGame.maxRounds}`;
   $("#tradeAsset").textContent=tradeMoney(tradeGame.totalAsset);
-  $("#tradeCurrentPrice").textContent=tradeMoney(tradeGame.currentPrice);
+  $("#tradeCurrentPrice").textContent=tradePrice(tradeGame.currentPrice);
   $("#tradeHeart").textContent=Math.floor(tradeGame.heartRate);
   if(tradeGame.hasBought){
     const pl=(tradeGame.currentPrice-tradeGame.buyPrice)/tradeGame.buyPrice*100;
@@ -3841,14 +3873,13 @@ function runTradeLoop(){
     if(!tradeGame?.running)return;
     const elapsed=Date.now()-tradeGame.startTime;
     if(elapsed>=TRADE_TIME_LIMIT){endTradeRound("timeout");return;}
-    let change=(Math.random()-.5)*2*tradeGame.volatility;
-    change+=tradeGame.trend*.005;
-    if(Math.random()<.03)change+=(Math.random()-.5)*.04;
-    tradeGame.currentPrice*=1+change;
+    const path=(tradeGame.scenario?.prices||[]).map(Number).filter(v=>Number.isFinite(v)&&v>0);
+    if(path.length>=2){
+      const pos=clamp(elapsed/TRADE_TIME_LIMIT,0,1)*(path.length-1);
+      const lo=Math.floor(pos), hi=Math.min(path.length-1,lo+1), t=pos-lo;
+      tradeGame.currentPrice=path[lo]+(path[hi]-path[lo])*t;
+    }
     const deviation=(tradeGame.currentPrice-tradeGame.basePrice)/tradeGame.basePrice;
-    const limit=tradeGame.round===1 ? .15 : .30;
-    const meanRevert=tradeGame.round===1 ? .05 : .02;
-    if(Math.abs(deviation)>limit)tradeGame.currentPrice-=(tradeGame.currentPrice-tradeGame.basePrice)*meanRevert;
     tradeGame.priceHistory.push(tradeGame.currentPrice);
     tradeGame.timeHistory.push(elapsed);
     if(tradeGame.priceHistory.length>150){tradeGame.priceHistory.shift();tradeGame.timeHistory.shift();}
@@ -3892,7 +3923,9 @@ function drawTradeChart(){
   const pad={t:44,r:18,b:24,l:54};
   const prices=tradeGame.priceHistory;
   if(prices.length<2)return;
-  const minRange=tradeGame.basePrice*.85,maxRange=tradeGame.basePrice*1.15;
+  const scenarioPrices=(tradeGame.scenario?.prices||[]).map(Number).filter(v=>Number.isFinite(v)&&v>0);
+  const baseRange=scenarioPrices.length?scenarioPrices:[tradeGame.basePrice];
+  const minRange=Math.min(...baseRange),maxRange=Math.max(...baseRange);
   let minP=Math.min(...prices,minRange),maxP=Math.max(...prices,maxRange);
   const padRange=(maxP-minP)*.1;minP-=padRange;maxP+=padRange;
   const range=maxP-minP||1;
@@ -3904,7 +3937,7 @@ function drawTradeChart(){
     ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
     const price=maxP-range/4*i;
     ctx.fillStyle="rgba(226,232,240,.72)";ctx.font="11px sans-serif";ctx.textAlign="right";
-    ctx.fillText(tradeMoney(price),pad.l-6,y+4);
+    ctx.fillText(tradePrice(price),pad.l-6,y+4);
   }
   const isUp=prices[prices.length-1]>=tradeGame.basePrice;
   ctx.beginPath();
@@ -3922,7 +3955,7 @@ function drawTradeChart(){
     ctx.strokeStyle="#60a5fa";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
     ctx.beginPath();ctx.moveTo(pad.l,buyY);ctx.lineTo(W-pad.r,buyY);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle="#bfdbfe";ctx.font="bold 11px sans-serif";ctx.textAlign="left";
-    ctx.fillText("BUY "+tradeMoney(tradeGame.buyPrice),pad.l+5,buyY-5);
+    ctx.fillText("BUY "+tradePrice(tradeGame.buyPrice),pad.l+5,buyY-5);
   }
   const lx=X(prices.length-1),ly=Y(prices[prices.length-1]);
   ctx.beginPath();ctx.arc(lx,ly,5,0,Math.PI*2);ctx.fillStyle=isUp?"#22c55e":"#fb7185";ctx.fill();
@@ -3941,7 +3974,7 @@ function executeTradeBuy(){
   });
   $("#tradeBuyBtn").disabled=true;
   $("#tradeSellBtn").disabled=false;
-  $("#tradeBuyPrice").textContent=tradeMoney(tradeGame.buyPrice);
+  $("#tradeBuyPrice").textContent=tradePrice(tradeGame.buyPrice);
   $("#tradeBuyPrice").style.color="var(--blue)";
   $("#tradeStatus").textContent="보유중";
   $("#tradeInstruction").textContent="매도 타이밍을 잡으세요.";
@@ -4019,26 +4052,15 @@ function showTradeRoundNote(result){
   else title="손실 확정";
   note.innerHTML=`<b>${title}</b><br><span style="color:${result.profitRate>=0?"var(--good)":"var(--bad)"}">${tradeRate(result.profitRate)}</span> · ${result.holdTime?result.holdTime.toFixed(1)+"초 보유":"매수하지 않음"} · ${tradeMoney(result.profit)}`;
 }
-function showTradeNews(){
+function showTradeNews(event=null){
   if(!tradeGame?.running||tradeGame.hasSold)return;
-  const r=Math.random();
-  let category=r<.34?"surge":r<.68?"crash":"volatile";
-  if(tradeGame.round===2)category=r<.72?"crash":"volatile";
-  if(tradeGame.round===3)category=r<.72?"surge":"volatile";
-  const messages=TRADE_NEWS[category];
-  const msg=messages[Math.floor(Math.random()*messages.length)];
-  const isReal=Math.random()>(tradeGame.scenario?.fakeNewsRatio||.2);
-  if(isReal){
-    if(category==="surge")tradeGame.trend+=.30;
-    if(category==="crash")tradeGame.trend-=.30;
-    if(category==="volatile")tradeGame.volatility*=1.5;
-  }
   tradeGame.lastNewsTime=Date.now();
   tradeGame.newsFiredCount++;
-  const headline=`${tradeGame.stockName}, ${msg}`;
-  addTradeLocalEvent("news",{category,headline,is_real:isReal,fake:!isReal});
+  const headline=event?.headline||`${tradeGame.stockName} 실제 가격 구간 재생 중`;
+  const category=event?.category||"real_market";
+  addTradeLocalEvent("news",{category,headline,is_real:true,fake:false});
   const box=$("#tradeNews");
-  box.textContent=`속보: ${headline}${isReal?"":" (확인 필요)"}`;
+  box.textContent=`실제 구간: ${headline}`;
   box.style.display="block";
   tradeGame.newsTimer=setTimeout(()=>{if($("#tradeNews"))$("#tradeNews").style.display="none";},2800);
 }
@@ -4197,18 +4219,6 @@ function renderTradeResult(result){
 /* ============================================================
    STEP 4 — 리밸런싱 솔루션
    ============================================================ */
-const SOLUTION_BUY_MODELS={
-  aggressive:[
-    {ticker:"379800",name:"KODEX 미국S&P500TR",reason:"글로벌 대형주 분산",ratio:0.45,color:"#7dd3fc",sector:"기타"},
-    {ticker:"069500",name:"KODEX 200",reason:"국내 대형주 분산",ratio:0.30,color:"#2563eb",sector:"기타"},
-    {ticker:"273130",name:"KODEX 종합채권",reason:"변동성 완충",ratio:0.25,color:"#64748b",sector:"채권"}
-  ],
-  stable:[
-    {ticker:"273130",name:"KODEX 종합채권",reason:"방어 자산 보강",ratio:0.45,color:"#64748b",sector:"채권"},
-    {ticker:"379800",name:"KODEX 미국S&P500TR",reason:"글로벌 분산",ratio:0.35,color:"#7dd3fc",sector:"기타"},
-    {ticker:"069500",name:"KODEX 200",reason:"국내 대표지수 분산",ratio:0.20,color:"#2563eb",sector:"기타"}
-  ]
-};
 function signedPct(n){return `${n>=0?"+":""}${(Number(n)||0).toFixed(1)}%`;}
 function maxDrawdownFromReturns(values){
   let peak=1, mdd=0;
@@ -4331,7 +4341,36 @@ function sajuRebalanceSignal(profile){
   };
   return signals[key]?{active:true,...signals[key]}:{active:false,label:"미측정",targetAdj:0,sellCap:.55,defensive:false,short:"",comment:""};
 }
-function buildSolutionPlan(analysis,profile){
+async function fetchDynamicRebalancePlan({analysis,profile,sellAmt,aggressive,tradeSignal,sajuSignal}){
+  const top=analysis.top||{};
+  return postJson("/api/portfolio/rebalance-plan",{
+    sell_amount:sellAmt,
+    aggressive,
+    defensive:Boolean(tradeSignal?.defensive||sajuSignal?.defensive),
+    period_days:365,
+    profile:{
+      title:profile?.title||"",
+      risk:profile?.risk||"",
+      bal:profile?.bal||"",
+      trade:profile?.trade||"",
+      saju:profile?.saju||""
+    },
+    analysis:{
+      total:analysis.total,
+      gross:analysis.gross,
+      hhi:analysis.hhi,
+      leverage_ratio:analysis.leverageRatio,
+      top_ticker:top.ticker||"",
+      top_name:top.name||"",
+      top_sector:top.sector||"",
+      top_weight:top.weight||0,
+      risk_score:analysis.marketRisk?.risk_score||null,
+      risk_volatility:analysis.marketRisk?.annual_volatility_pct||null,
+      risk_beta:analysis.marketRisk?.beta||null
+    }
+  });
+}
+async function buildSolutionPlan(analysis,profile){
   const p=profile||{title:"균형형 투자자",bal:"stable",risk:"mid"};
   const tradeSignal=tradeRebalanceSignal(p);
   const sajuSignal=sajuRebalanceSignal(p);
@@ -4345,20 +4384,35 @@ function buildSolutionPlan(analysis,profile){
   const sellHolding=contributors[0]?.holding||state.holdings[0];
   const sellCap=Math.max(tradeSignal.sellCap,sajuSignal.sellCap);
   const sellAmt=Math.min(cutAmt, Math.round((sellHolding?.amount||0)*sellCap));
-  const buyModel=(aggressive?SOLUTION_BUY_MODELS.aggressive:SOLUTION_BUY_MODELS.stable);
-  const buyActions=sellAmt>0?buyModel.map((b,idx)=>{
-    const amt=idx===buyModel.length-1
-      ? sellAmt-buyModel.slice(0,-1).reduce((s,x)=>s+Math.round(sellAmt*x.ratio),0)
-      : Math.round(sellAmt*b.ratio);
-    return {...b,amount:Math.max(0,amt)};
-  }).filter(b=>b.amount>0):[];
+  let marketPlan=null,marketPlanError="";
+  let buyActions=[];
+  if(sellAmt>0){
+    try{
+      marketPlan=await fetchDynamicRebalancePlan({analysis,profile:p,sellAmt,aggressive,tradeSignal,sajuSignal});
+      buyActions=(Array.isArray(marketPlan.buy_actions)?marketPlan.buy_actions:[]).map(b=>({
+        ticker:b.ticker,
+        name:b.name||b.ticker,
+        reason:b.reason||"실제 시장 데이터 기반 분산 후보",
+        ratio:Number(b.ratio)||0,
+        amount:Math.max(0,Math.round(Number(b.amount)||0)),
+        color:b.color||"#2563eb",
+        sector:b.sector||"기타",
+        role:b.role||"",
+        metrics:b.metrics||{}
+      })).filter(b=>b.amount>0);
+    }catch(err){
+      marketPlanError=err?.message||String(err||"동적 ETF 후보 조회 실패");
+      buyActions=[];
+    }
+  }
+  const executableSellAmt=buyActions.length?sellAmt:0;
   const sourcePositions=normalizeInputPositions(state.inputPositions);
   const proposed=new Map(sourcePositions.map(p=>[positionKey(p),{...p}]));
-  if(sellAmt>0&&sellHolding?.ticker){
+  if(executableSellAmt>0&&sellHolding?.ticker){
     const sellKey=`${normalizeTicker(sellHolding.ticker)}__${sellHolding.accountType||"taxable"}`;
     const current=proposed.get(sellKey);
     if(current){
-      current.amount=Math.max(0,Math.round(current.amount-sellAmt));
+      current.amount=Math.max(0,Math.round(current.amount-executableSellAmt));
       if(current.amount===0)proposed.delete(sellKey);
     }
   }
@@ -4386,24 +4440,31 @@ function buildSolutionPlan(analysis,profile){
     aggressive,
     targetTop,
     cutPct,
-    sellAmt,
+    sellAmt:executableSellAmt,
+    plannedSellAmt:sellAmt,
     sellHolding,
     buyActions,
     proposedPositions:Array.from(proposed.values()).filter(p=>p.amount>0),
     tradeSignal,
-    sajuSignal
+    sajuSignal,
+    marketPlan,
+    marketPlanError
   };
 }
 function renderSolutionActions(plan,analysis){
   const top=analysis.top;
   const signalShorts=[plan.tradeSignal?.active?plan.tradeSignal.short:"",plan.sajuSignal?.active?plan.sajuSignal.short:""].filter(Boolean);
+  const marketSource=plan.marketPlan?.data_source?`<br><span style="color:var(--muted);font-size:12.5px">ETF 후보는 ${escapeHtml(plan.marketPlan.data_source)} 기준으로 동적 산출했습니다.</span>`:"";
+  const marketError=plan.marketPlanError?`<br><span style="color:var(--bad);font-size:12.5px">동적 ETF 후보 조회 실패: ${escapeHtml(plan.marketPlanError)}</span>`:"";
   const behaviorLines=[
     plan.tradeSignal?.active?`손절·존버 게임: ${escapeHtml(plan.tradeSignal.label)} · ${escapeHtml(plan.tradeSignal.comment)}`:"",
     plan.sajuSignal?.active?`만세력 분석: ${escapeHtml(plan.sajuSignal.label)} · ${escapeHtml(plan.sajuSignal.comment)}`:""
   ].filter(Boolean).map(line=>`<br><span style="color:var(--muted);font-size:12.5px">${line}</span>`).join("");
   $("#solSummary").innerHTML=plan.sellAmt>0
-    ? `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중을 ${pc(top.weight)}에서 약 ${plan.targetTop}% 수준으로 낮추도록 재배치합니다.${behaviorLines}`
-    : `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중이 목표 범위 안에 있어 신규 매도 없이 분산 상태를 유지합니다.${behaviorLines}`;
+    ? `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중을 ${pc(top.weight)}에서 약 ${plan.targetTop}% 수준으로 낮추도록 재배치합니다.${behaviorLines}${marketSource}${marketError}`
+    : plan.plannedSellAmt>0
+      ? `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준으론 조정 필요성이 있지만, 실제 시장 데이터가 충분한 ETF 후보를 확정하지 못해 매수·매도 제안을 보류합니다.${behaviorLines}${marketError}`
+      : `<b>${escapeHtml(plan.profile.title)}</b> 프로필 기준 · 최대 실질 노출 ${escapeHtml(top.name)} 비중이 목표 범위 안에 있어 신규 매도 없이 분산 상태를 유지합니다.${behaviorLines}${marketSource}`;
   const actions=[];
   if(plan.sellAmt>0&&plan.sellHolding){
     actions.push({
@@ -4425,7 +4486,9 @@ function renderSolutionActions(plan,analysis){
     <div class="side ${ac.side}">${ac.side==="sell"?"매도":"매수"}</div>
     <div><div class="nm">${escapeHtml(ac.nm)}</div><div class="rs">${escapeHtml(ac.rs)}</div></div>
     <div class="num"><div class="a">${ac.side==="sell"?"-":"+"}${won(ac.amt)}원</div><div class="w">${escapeHtml(ac.w)}</div></div>
-  </div>`).join(""):`<div class="analysis-state"><b>추가 조정 없음</b>현재 포트폴리오가 설정한 집중도 목표를 충족합니다.</div>`;
+  </div>`).join(""):plan.plannedSellAmt>0
+    ? `<div class="analysis-state"><b>실데이터 후보 부족</b>고정 ETF 모델로 대체하지 않고 제안을 보류했습니다.</div>`
+    : `<div class="analysis-state"><b>추가 조정 없음</b>현재 포트폴리오가 설정한 집중도 목표를 충족합니다.</div>`;
 }
 function renderBeforeAfter(plan,analysis){
   const beforeSec=analysis.sectors.map(s=>({label:s.name,value:s.amount,color:sectorColor(s.name)}));
@@ -4453,8 +4516,10 @@ function renderNewPortfolio(plan,analysis){
   ].filter(Boolean);
   const tradeDesc=signalDesc.length?` ${signalDesc.join(" 및 ")}를 반영했습니다.`:"";
   $("#newPortDesc").textContent=plan.sellAmt>0
-    ? "현재 보유 상품을 일부 축소하고, 실제 매수 가능한 ETF로 재배치한 제안 포트폴리오입니다."+tradeDesc
-    : "현재 집중도 목표를 충족해 기존 포지션을 유지하는 제안 포트폴리오입니다."+tradeDesc;
+    ? "현재 보유 상품을 일부 축소하고, 최근 시장 데이터로 선별한 ETF 후보에 재배치한 제안 포트폴리오입니다."+tradeDesc
+    : plan.plannedSellAmt>0
+      ? "실제 시장 데이터가 충분한 ETF 후보를 확정하지 못해 기존 포지션 유지 상태로 표시합니다."+tradeDesc
+      : "현재 집중도 목표를 충족해 기존 포지션을 유지하는 제안 포트폴리오입니다."+tradeDesc;
   const rows=plan.proposedPositions
     .map(p=>({name:p.name||p.ticker,amount:p.amount,color:(plan.buyActions.find(b=>b.ticker===p.ticker)?.color)||"#2563eb"}))
     .sort((a,b)=>b.amount-a.amount)
@@ -4545,7 +4610,7 @@ async function renderStep4(){
   const a=state.analysis||computeLookThrough(state.holdings);
   const p=state.profile||{title:"균형형 투자자",bal:"stable",risk:"mid"};
   if(!a.top){goStep(2);return;}
-  const plan=buildSolutionPlan(a,p);
+  const plan=await buildSolutionPlan(a,p);
   renderSolutionActions(plan,a);
   renderBeforeAfter(plan,a);
   renderNewPortfolio(plan,a);

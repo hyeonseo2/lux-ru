@@ -13,7 +13,9 @@ from ..instrument_insights import get_instrument_insights
 from ..live_data import analyze_live_portfolio
 from ..lookthrough import compute_exposure
 from ..overlap import find_overlaps
+from ..rebalance import compute_dynamic_rebalance_plan
 from ..risk import compute_market_risk
+from ..trade_game import build_trade_game_data
 from ..models import Position, PortfolioAnalysis
 from ..seed_data import FINLIFE_PRODUCTS
 from ..search_universe import search_instruments as search_universe_instruments
@@ -276,6 +278,21 @@ class IncomeFeesRequest(BaseModel):
     positions: list[dict]
 
 
+class TradeGameDataRequest(BaseModel):
+    query: str = ""
+    ticker: str = ""
+    period_days: int = 1095
+
+
+class RebalancePlanRequest(BaseModel):
+    sell_amount: float = 0
+    analysis: dict | None = None
+    profile: dict | None = None
+    aggressive: bool = False
+    defensive: bool = False
+    period_days: int = 365
+
+
 class RiskMetricsRequest(BaseModel):
     exposures: list[dict]
     total_value: float | None = None
@@ -311,6 +328,26 @@ async def compare_benchmarks(req: BenchmarkCompareRequest) -> dict:
 async def income_fees(req: IncomeFeesRequest) -> dict:
     """Return live dividend and fee lookups for portfolio positions."""
     return await run_in_threadpool(compute_income_fees, req.positions)
+
+
+@router.post("/trade-game-data")
+async def trade_game_data(req: TradeGameDataRequest) -> dict:
+    """Return real historical price paths for the buy/sell mini game."""
+    return await run_in_threadpool(build_trade_game_data, req.query, req.ticker, req.period_days)
+
+
+@router.post("/rebalance-plan")
+async def rebalance_plan(req: RebalancePlanRequest) -> dict:
+    """Return dynamic ETF buy actions based on market data."""
+    return await run_in_threadpool(
+        compute_dynamic_rebalance_plan,
+        req.sell_amount,
+        req.analysis,
+        req.profile,
+        req.aggressive,
+        req.defensive,
+        req.period_days,
+    )
 
 
 @router.post("/risk-metrics")
