@@ -176,12 +176,12 @@ def _event_text(name: str, item: dict[str, Any], idx: int) -> str:
     ret = item["total_return_pct"]
     abs_move = item["abs_move_pct"]
     if idx == 0:
-        return f"{name} 실제 {item['start']}~{item['end']} 구간 재생. 변동폭 합계 {abs_move:.1f}%."
+        return f"{name} {item['start']}~{item['end']} 구간 재생. 변동폭 합계 {abs_move:.1f}%."
     if ret < -3:
-        return f"실제 하락 압력이 컸던 구간입니다. 구간 수익률 {ret:.1f}%."
+        return f"하락 압력이 컸던 구간입니다 ({ret:.1f}%)."
     if ret > 3:
-        return f"실제 반등 흐름이 강했던 구간입니다. 구간 수익률 {ret:+.1f}%."
-    return f"방향보다 흔들림이 컸던 실제 구간입니다. 구간 수익률 {ret:+.1f}%."
+        return f"반등 흐름이 강했던 구간입니다 ({ret:+.1f}%)."
+    return f"방향보다 흔들림이 컸던 구간입니다 ({ret:+.1f}%)."
 
 
 def build_trade_game_data(query: str = "", ticker: str = "", period_days: int = 1095) -> dict[str, Any]:

@@ -239,6 +239,9 @@ h1,h2,h3,.display,.lead,.kicker,.h2,.h3,.muted,.small,.empty,.btn,.chip,.card,.c
 .callout .ic{font-size:18px;flex:none;line-height:1.3}
 .analysis-state{padding:32px 20px;text-align:center;color:var(--muted);line-height:1.6}
 .analysis-state b{display:block;color:var(--ink);font-size:18px;margin-bottom:8px}
+.analysis-state.compact{padding:22px 12px}
+.analysis-spinner{display:block;width:24px;height:24px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);margin:0 auto 12px;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── STEP2 리스크 진단 ── */
 .risk-spectrum{margin-top:20px}
@@ -250,13 +253,13 @@ h1,h2,h3,.display,.lead,.kicker,.h2,.h3,.muted,.small,.empty,.btn,.chip,.card,.c
 .risk-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
 @media(max-width:640px){.risk-kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:460px){.risk-kpis{grid-template-columns:1fr}}
-.rk{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:126px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:0 10px 26px -22px rgba(15,23,42,.42)}
+.rk{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:126px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:0 10px 26px -22px rgba(15,23,42,.42);cursor:help}
 .rk-top{display:flex;align-items:center;gap:8px;min-width:0}
 .rk-ic{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--bg-softer);color:var(--ink);font-weight:900;font-size:13px}
 .rk-label{font-size:11.5px;color:var(--muted);font-weight:800;line-height:1.25}
-.rk-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px}
+.rk-main{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;min-width:0}
 .rk-main b{font-size:clamp(21px,2.4vw,25px);font-weight:900;letter-spacing:0;line-height:1;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-.rk-main em{font-style:normal;justify-self:end;border-radius:999px;background:var(--bg-softer);color:var(--muted);padding:4px 8px;font-size:10.5px;font-weight:900;white-space:nowrap}
+.rk-main em{font-style:normal;max-width:108px;text-align:right;border-radius:999px;background:var(--bg-softer);color:var(--muted);padding:4px 8px;font-size:10.5px;font-weight:900;white-space:normal;line-height:1.15;overflow-wrap:anywhere}
 .rk-bar{height:6px;border-radius:999px;background:var(--bg-softer);overflow:hidden;margin-top:auto}
 .rk-bar i{display:block;height:100%;border-radius:999px;background:var(--blue);transition:width .7s cubic-bezier(.2,.8,.2,1)}
 .rk-low .rk-ic,.rk-low .rk-main em{background:#e9f7ee;color:#15803d}.rk-low .rk-bar i{background:#16a34a}
@@ -542,7 +545,8 @@ h1,h2,h3,.display,.lead,.kicker,.h2,.h3,.muted,.small,.empty,.btn,.chip,.card,.c
 .trade-chart-wrap canvas{width:100%;height:100%;display:block}
 .trade-status{position:absolute;left:12px;top:12px;z-index:2;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;padding:5px 10px;font-size:12px;font-weight:700}
 .trade-heart{position:absolute;right:12px;top:12px;z-index:2;border-radius:999px;background:rgba(229,72,77,.16);color:#fecaca;padding:5px 10px;font-size:12px;font-family:var(--mono)}
-.trade-news{display:none;margin-top:10px;border-left:3px solid var(--warn);background:#fff7ed;border-radius:10px;padding:10px 12px;color:#92400e;font-size:12.5px}
+.trade-news{display:flex;align-items:center;min-height:54px;max-height:54px;margin-top:10px;border-left:3px solid var(--warn);background:#fff7ed;border-radius:10px;padding:8px 12px;color:#92400e;font-size:12.5px;line-height:1.35;box-sizing:border-box;overflow:hidden;visibility:hidden;opacity:0;transition:opacity .15s}
+.trade-news.show{visibility:visible;opacity:1}
 .trade-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .trade-action{border-radius:14px;padding:17px 12px;color:#fff;font-weight:800;font-size:16px;transition:.15s}
 .trade-action:hover:not(:disabled){transform:translateY(-1px)}.trade-action:disabled{opacity:.38;cursor:not-allowed;transform:none}
@@ -1068,6 +1072,7 @@ const state={
   incomeFees:null,
   incomeFeesKey:"",
   isAnalyzing:false,
+  solutionLoading:false,
   tests:{},
   profile:null,
   gameSessionId:null,
@@ -1815,13 +1820,15 @@ function renderRisk(a,risk){
   const hasVol=Number.isFinite(Number(risk.vol));
   const hasBeta=Number.isFinite(Number(risk.beta));
   const betaTone=hasBeta?(risk.beta>1.3?"danger":risk.beta>1.15?"high":risk.beta>.9?"mid":"low"):"mid";
+  const periodBase=risk.periodDays?`최근 ${risk.periodDays}일 일봉 수익률`:"일봉 수익률";
+  const benchmarkName=risk.benchmarkLabel||"벤치마크";
   const kpis=[
-    {l:"실측 연환산 변동성",v:pcOrDash(risk.vol),s:hasVol?(risk.vol>30?"높음":"보통"):"데이터 부족",icon:"σ",tone:hasVol?(risk.vol>38?"danger":risk.vol>30?"high":risk.vol>18?"mid":"low"):"mid",bar:hasVol?clamp(risk.vol/45*100,4,100):0},
-    {l:"시장 민감도",v:hasBeta?risk.beta.toFixed(2)+"β":"—",s:hasBeta?(risk.beta>1.15?`${risk.benchmarkLabel||"시장"}보다 큼`:`${risk.benchmarkLabel||"시장"} 수준`):"표본 부족",icon:"β",tone:betaTone,bar:hasBeta?clamp(risk.beta/1.7*100,4,100):0},
-    {l:"상위 3종목",v:pc(risk.top3),s:"실질 노출 기준",icon:"TOP",tone:risk.top3>70?"danger":risk.top3>55?"high":risk.top3>35?"mid":"low",bar:clamp(risk.top3,4,100)},
-    {l:"레버리지 노출",v:pc(risk.levered),s:a.leverageRatio>1.05?`${a.leverageRatio.toFixed(2)}배 노출`:"미미",icon:"LEV",tone:risk.levered>30?"danger":risk.levered>10?"high":"low",bar:clamp(Math.max(risk.levered,(a.leverageRatio-1)*100),0,100)}
+    {l:"연환산 변동성",v:pcOrDash(risk.vol),s:hasVol?(risk.vol>30?"높음":"보통"):"데이터 부족",icon:"σ",tone:hasVol?(risk.vol>38?"danger":risk.vol>30?"high":risk.vol>18?"mid":"low"):"mid",bar:hasVol?clamp(risk.vol/45*100,4,100):0,tip:`${periodBase}의 표준편차에 √252를 곱해 연환산 변동성을 계산합니다.`},
+    {l:"시장 민감도",v:hasBeta?risk.beta.toFixed(2)+"β":"—",s:hasBeta?(risk.beta>1.15?"벤치보다 큼":"벤치 수준"):"표본 부족",icon:"β",tone:betaTone,bar:hasBeta?clamp(risk.beta/1.7*100,4,100):0,tip:`보유 종목의 일별 수익률을 비중 가중한 뒤 ${benchmarkName} 대비 공분산/분산으로 베타를 계산합니다.`},
+    {l:"상위 3종목",v:pc(risk.top3),s:"노출 기준",icon:"TOP",tone:risk.top3>70?"danger":risk.top3>55?"high":risk.top3>35?"mid":"low",bar:clamp(risk.top3,4,100),tip:"ETF 룩스루와 레버리지 배율을 반영한 실질 노출액 기준 상위 3종목 비중 합계입니다."},
+    {l:"레버리지 노출",v:pc(risk.levered),s:a.leverageRatio>1.05?`${a.leverageRatio.toFixed(2)}배`:"미미",icon:"LEV",tone:risk.levered>30?"danger":risk.levered>10?"high":"low",bar:clamp(Math.max(risk.levered,(a.leverageRatio-1)*100),0,100),tip:"레버리지 ETF와 배율형 상품을 반영해 평가액보다 커진 실질 노출 정도를 계산합니다."}
   ];
-  $("#riskKpis").innerHTML=kpis.map(k=>`<div class="rk rk-${k.tone}">
+  $("#riskKpis").innerHTML=kpis.map(k=>`<div class="rk rk-${k.tone}" title="${escapeHtml(k.tip)}" aria-label="${escapeHtml(k.l)} 계산 방식: ${escapeHtml(k.tip)}">
     <div class="rk-top"><span class="rk-ic">${escapeHtml(k.icon)}</span><span class="rk-label">${escapeHtml(k.l)}</span></div>
     <div class="rk-main"><b>${escapeHtml(k.v)}</b><em>${escapeHtml(k.s)}</em></div>
     <div class="rk-bar"><i style="width:${Number(k.bar).toFixed(0)}%"></i></div>
@@ -1855,7 +1862,7 @@ function renderRisk(a,risk){
   const levText=a.leverageRatio>1.05?` 레버리지 상품 반영 후 실질 노출액은 ${won(a.gross)}원으로 평가액의 ${a.leverageRatio.toFixed(2)}배입니다.`:"";
   const coverageText=`가격 데이터 커버리지 ${pc((risk.dataCoverage||0)*100)}`;
   const unmatchedText=risk.unmatched?.length?` 미조회 종목: ${escapeHtml(risk.unmatched.slice(0,5).join(", "))}${risk.unmatched.length>5?" 외":""}.`:"";
-  const periodText=risk.periodDays?` 최근 ${risk.periodDays}일 일봉 수익률`:" 실제 일봉 수익률";
+  const periodText=risk.periodDays?` 최근 ${risk.periodDays}일 일봉 수익률`:" 일봉 수익률";
   $("#riskNote").innerHTML=`${risk.style.tone} ${periodText}로 변동성·베타를 계산하고, 집중도 ${a.hhi.toLocaleString()}, 최대 종목 ${pc(a.top.weight)}, 방어 자산 ${pc(risk.defensive)}를 함께 반영했습니다. ${coverageText}.${unmatchedText}${levText}`;
 }
 let incomeFeesRequestId=0;
@@ -3817,7 +3824,7 @@ function startTradeRound(){
   tradeGame.newsFiredCount=0;
   tradeGame.lastNewsTime=null;
   tradeGame.startTime=Date.now();
-  $("#tradeNews").style.display="none";
+  $("#tradeNews").classList.remove("show");
   $("#tradeRoundNote").textContent=`${scenario.label} (${scenario.start}~${scenario.end}) 실제 가격 구간이 시작됐습니다.`;
   $("#tradeBuyBtn").disabled=false;
   $("#tradeSellBtn").disabled=true;
@@ -4060,9 +4067,9 @@ function showTradeNews(event=null){
   const category=event?.category||"real_market";
   addTradeLocalEvent("news",{category,headline,is_real:true,fake:false});
   const box=$("#tradeNews");
-  box.textContent=`실제 구간: ${headline}`;
-  box.style.display="block";
-  tradeGame.newsTimer=setTimeout(()=>{if($("#tradeNews"))$("#tradeNews").style.display="none";},2800);
+  box.textContent=`시장 구간: ${headline}`;
+  box.classList.add("show");
+  tradeGame.newsTimer=setTimeout(()=>{if($("#tradeNews"))$("#tradeNews").classList.remove("show");},2800);
 }
 function computeTradeSummary(game){
   const results=game.roundResults;
@@ -4532,8 +4539,33 @@ function renderNewPortfolio(plan,analysis){
       <span class="pc">${pc(w)}</span></div>`;
   }).join("");
 }
+function renderSolutionLoading(){
+  $("#solSummary").innerHTML=`<b>리밸런싱 분석 중</b> 입력 포트폴리오의 과집중 노출, 성향 검사 결과, ETF 후보 데이터를 함께 계산하고 있습니다.`;
+  $("#solActions").innerHTML=`<div class="analysis-state"><span class="analysis-spinner"></span><b>매수·매도 액션 산출 중</b>실제 시장 데이터로 ETF 후보와 조정 금액을 계산하고 있습니다.</div>`;
+  $("#baBefore").innerHTML=`<div class="analysis-state compact"><span class="analysis-spinner"></span><b>현재 구성 계산 중</b>룩스루 노출을 정리하고 있습니다.</div>`;
+  $("#baAfter").innerHTML=`<div class="analysis-state compact"><span class="analysis-spinner"></span><b>제안 구성 계산 중</b>리밸런싱 후 비중을 시뮬레이션합니다.</div>`;
+  $("#newPortTitle").textContent="분산·성향 맞춤 모델 분석 중";
+  $("#newPortDesc").textContent="추천 후보의 수익률, 변동성, 배당, 수수료 데이터를 확인하고 있습니다.";
+  $("#newPort").innerHTML=`<div class="analysis-state"><span class="analysis-spinner"></span><b>신규 포트폴리오 구성 중</b>고정 모델 대신 조회 가능한 ETF 후보만 사용합니다.</div>`;
+  $("#btHost").innerHTML=`<div class="analysis-state"><span class="analysis-spinner"></span><b>백테스트 대기 중</b>제안 포트폴리오 산출이 끝나면 시장 비교를 시작합니다.</div>`;
+  $("#btLegend").innerHTML="";
+  $("#btStats").innerHTML="";
+}
+function renderSolutionError(err){
+  const msg=escapeHtml(err?.message||err||"리밸런싱 계산을 완료하지 못했습니다.");
+  $("#solSummary").innerHTML=`<b>리밸런싱 분석 실패</b> ${msg}`;
+  $("#solActions").innerHTML=`<div class="analysis-state"><b>분석 실패</b>${msg}</div>`;
+  $("#baBefore").innerHTML=`<div class="analysis-state compact"><b>계산 중단</b>현재 구성을 다시 확인해 주세요.</div>`;
+  $("#baAfter").innerHTML=`<div class="analysis-state compact"><b>계산 중단</b>제안 구성을 만들지 못했습니다.</div>`;
+  $("#newPortTitle").textContent="분산·성향 맞춤 모델";
+  $("#newPortDesc").textContent="리밸런싱 분석을 완료하지 못했습니다.";
+  $("#newPort").innerHTML=`<div class="analysis-state"><b>포트폴리오 생성 실패</b>${msg}</div>`;
+  $("#btHost").innerHTML=`<div class="analysis-state"><b>백테스트 대기</b>제안 포트폴리오가 생성되지 않아 비교를 시작하지 않았습니다.</div>`;
+  $("#btLegend").innerHTML="";
+  $("#btStats").innerHTML="";
+}
 function renderBacktestLoading(){
-  $("#btHost").innerHTML=`<div class="analysis-state"><b>백테스트 조회 중</b>현재 포트폴리오와 제안 포트폴리오의 최근 3년 시장 데이터를 불러오고 있습니다.</div>`;
+  $("#btHost").innerHTML=`<div class="analysis-state"><span class="analysis-spinner"></span><b>백테스트 조회 중</b>현재 포트폴리오와 제안 포트폴리오의 최근 3년 시장 데이터를 불러오고 있습니다.</div>`;
   $("#btLegend").innerHTML="";
   $("#btStats").innerHTML="";
 }
@@ -4610,7 +4642,18 @@ async function renderStep4(){
   const a=state.analysis||computeLookThrough(state.holdings);
   const p=state.profile||{title:"균형형 투자자",bal:"stable",risk:"mid"};
   if(!a.top){goStep(2);return;}
-  const plan=await buildSolutionPlan(a,p);
+  state.solutionLoading=true;
+  renderSolutionLoading();
+  updateNav();
+  let plan;
+  try{
+    plan=await buildSolutionPlan(a,p);
+  }catch(err){
+    state.solutionLoading=false;
+    renderSolutionError(err);
+    updateNav();
+    return;
+  }
   renderSolutionActions(plan,a);
   renderBeforeAfter(plan,a);
   renderNewPortfolio(plan,a);
@@ -4623,6 +4666,9 @@ async function renderStep4(){
     renderBacktestComparison(currentBench,proposedBench);
   }catch(err){
     renderBacktestError(err);
+  }finally{
+    state.solutionLoading=false;
+    updateNav();
   }
 }
 
@@ -4646,7 +4692,7 @@ function updateStepper(){
   });
 }
 function canAdvance(){
-  if(state.isAnalyzing)return false;
+  if(state.isAnalyzing||state.solutionLoading)return false;
   if(state.step===1)return state.inputPositions.length>0;
   if(state.step===2)return Boolean(state.analysis);
   return true;
@@ -4654,7 +4700,7 @@ function canAdvance(){
 function updateNav(){
   $("#prevBtn").disabled=state.step===1;
   const nb=$("#nextBtn");
-  if(state.step===4){nb.textContent="✓ 완료";nb.disabled=false;}
+  if(state.step===4){nb.textContent=state.solutionLoading?"분석 중...":"✓ 완료";nb.disabled=state.solutionLoading;}
   else{nb.innerHTML=state.isAnalyzing?"분석 중...":"다음 →";nb.disabled=!canAdvance();}
 }
 async function goStep(n){
@@ -4679,7 +4725,7 @@ function initNav(){
   $("#prevBtn").onclick=()=>goStep(state.step-1);
   const restart=()=>{
     $("#modalBg").classList.remove("open"); // 퀴즈 모달이 열려 있으면 닫고 초기화
-    state.inputPositions=[];state.holdings=[];state.analysis=null;state.analysisKey="";state.analysisSourceMode="";state.analysisRefreshId++;state.tests={};state.profile=null;state.maxStep=1;state.isAnalyzing=false;
+    state.inputPositions=[];state.holdings=[];state.analysis=null;state.analysisKey="";state.analysisSourceMode="";state.analysisRefreshId++;state.tests={};state.profile=null;state.maxStep=1;state.isAnalyzing=false;state.solutionLoading=false;
     renderHoldings();renderAgents();
     $("#dropDefault").style.display="";$("#dropPreview").style.display="none";
     goStep(1);
