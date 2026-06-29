@@ -47,6 +47,8 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+img, svg, canvas { max-width: 100%; }
+button, input, select, textarea { min-width: 0; }
 
 html { font-size: 16px; scroll-behavior: smooth; }
 
@@ -56,6 +58,10 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
+}
+h1, h2, h3, .page-title, .page-subtitle, .card-title, .btn, .badge, .chat-msg, .chat-suggestion, .finlife-card, .legend-item {
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* ── App Layout ── */
@@ -92,7 +98,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-.nav-links { display: flex; gap: 8px; list-style: none; }
+.nav-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; list-style: none; min-width: 0; }
 .nav-links a {
   color: var(--text-secondary);
   text-decoration: none;
@@ -148,8 +154,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
+.card-header > * { min-width: 0; }
 
 .card-title {
   font-size: 1.15rem;
@@ -218,6 +226,8 @@ th.text-right { text-align: right; }
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: -0.2px;
+  text-align: center;
+  white-space: normal;
 }
 .btn-primary { background: var(--accent-primary); color: white; }
 .btn-primary:hover { background: var(--accent-hover); }
@@ -274,7 +284,7 @@ th.text-right { text-align: right; }
 .badge-e { background: #fee2e2; color: var(--grade-e); }
 
 /* ── Exposure Bar ── */
-.exposure-bar { display: flex; align-items: center; gap: 8px; }
+.exposure-bar { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .exposure-bar-fill { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
 .exposure-bar-inner { height: 100%; background: var(--accent-primary); border-radius: 4px; }
 .exposure-pct { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); width: 45px; text-align: right; }
@@ -291,7 +301,7 @@ th.text-right { text-align: right; }
 }
 .chat-msg.user { align-self: flex-end; background: var(--accent-primary); color: white; border-bottom-right-radius: 4px; }
 .chat-msg.assistant { align-self: flex-start; background: #f1f5f9; color: var(--text-primary); border-bottom-left-radius: 4px; }
-.chat-input-area { padding: 1.5rem; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; }
+.chat-input-area { padding: 1.5rem; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; min-width: 0; }
 .chat-input {
   flex: 1;
   background: #f8fafc;
@@ -334,8 +344,8 @@ th.text-right { text-align: right; }
 
 /* ── Legend ── */
 .donut-legend { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-.legend-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-.legend-left { display: flex; align-items: center; gap: 8px; }
+.legend-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 0.85rem; }
+.legend-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .legend-color { width: 10px; height: 10px; border-radius: 50%; }
 .legend-label { color: var(--text-primary); font-weight: 600; }
 .legend-value { color: var(--text-secondary); font-family: var(--font-mono); }
@@ -366,3 +376,29 @@ th.text-right { text-align: right; }
 .mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; } .mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; }
 .w-full { width: 100%; }
 .text-center { text-align: center; }
+
+@media (max-width: 720px) {
+  .nav { padding: 0 1rem; }
+  .nav-inner {
+    height: auto;
+    min-height: 64px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.875rem 0;
+  }
+  .nav-links {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+  .nav-links a { white-space: nowrap; }
+  .page { padding: 1.5rem 1rem 4rem; }
+  .card { padding: 1.125rem; }
+  .card-header { align-items: flex-start; flex-direction: column; }
+  .chat-msg { max-width: 94%; }
+  .chat-input-area { flex-direction: column; }
+  .chat-input-area .btn, .chat-input-area button { width: 100%; }
+}

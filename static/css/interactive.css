@@ -13,6 +13,7 @@
   --shadow:0 16px 36px -30px rgba(15,23,42,.55);
 }
 *{box-sizing:border-box}
+img,svg,canvas{max-width:100%}
 body{
   margin:0;
   min-height:100vh;
@@ -21,8 +22,13 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',system-ui,sans-serif;
 }
 button,input{font:inherit}
+button,input,select,textarea{min-width:0}
 button{cursor:pointer}
 button:disabled{cursor:default;opacity:.62}
+h1,h2,.section-head,.muted,.primary-action,.secondary-action,.game-tab,.persona-card,.visual-surface,.bubble,.quick-choices button,.trade-launch p,.trade-note,.event-item,.markdown-box{
+  word-break:keep-all;
+  overflow-wrap:break-word;
+}
 .app-shell{min-height:100vh;display:flex;flex-direction:column}
 .topbar{
   height:58px;
@@ -143,7 +149,7 @@ h2{font-size:18px}
 .position-list{display:grid;gap:7px;max-height:220px;overflow:auto}
 .position-item{
   display:grid;
-  grid-template-columns:1fr auto 26px;
+  grid-template-columns:minmax(0,1fr) auto 26px;
   gap:8px;
   align-items:center;
   border:1px solid var(--soft);
@@ -169,6 +175,7 @@ h2{font-size:18px}
   border-radius:8px;
   padding:12px;
 }
+.game-tab strong,.game-tab span{min-width:0}
 .game-tab.active{background:#ecf4ff;border-color:var(--blue)}
 .game-tab strong{display:block;font-size:14px;margin-bottom:3px}
 .game-tab span{display:block;color:var(--muted);font-size:12px}
@@ -251,7 +258,7 @@ h2{font-size:18px}
 .market-chip{font-variant-numeric:tabular-nums;font-weight:850}
 .market-canvas{width:100%;height:132px;display:block}
 .crowd-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.crowd-card{border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px;background:rgba(255,255,255,.07);font-size:12px;line-height:1.35}
+.crowd-card{min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px;background:rgba(255,255,255,.07);font-size:12px;line-height:1.35}
 .dilemma-board,.saju-board{height:100%;display:grid;gap:12px;padding:14px;background:#fbfcfe;color:var(--ink)}
 .dilemma-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .dilemma-card,.saju-card{
@@ -280,7 +287,7 @@ h2{font-size:18px}
   font-weight:850;
 }
 .trade-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.trade-metrics div{border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px;background:rgba(255,255,255,.07)}
+.trade-metrics div{min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px;background:rgba(255,255,255,.07)}
 .trade-metrics span{display:block;color:rgba(255,255,255,.65);font-size:10px;margin-bottom:3px}
 .trade-metrics b{font-size:13px;font-variant-numeric:tabular-nums}
 .timer-line{height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
@@ -301,7 +308,7 @@ h2{font-size:18px}
 .trade-launch h2{font-size:24px;color:#fff;margin-bottom:7px}
 .trade-launch p{margin:0;max-width:560px;color:rgba(255,255,255,.74);font-size:13px;line-height:1.55}
 .trade-launch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.trade-launch-grid div{border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.08);padding:10px}
+.trade-launch-grid div{min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.08);padding:10px}
 .trade-launch-grid span{display:block;color:rgba(255,255,255,.62);font-size:11px;margin-bottom:3px}
 .trade-launch-grid b{font-size:15px}
 .trade-launch-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -357,7 +364,7 @@ h2{font-size:18px}
 .trade-intro-card h3{margin:0 0 8px;font-size:20px;line-height:1.3}
 .trade-intro-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
 .trade-rule-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}
-.trade-rule-grid div{border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px}
+.trade-rule-grid div{min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px}
 .trade-rule-grid b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#111827;color:#fff;font-size:12px;margin-bottom:7px}
 .trade-rule-grid span{font-size:12px;font-weight:800}
 .trade-stock-label{display:block;margin:12px 0 6px;font-size:12px;color:var(--muted);font-weight:800}
@@ -388,7 +395,7 @@ h2{font-size:18px}
 #tradeInstruction{display:block;font-size:16px;margin-bottom:3px}
 #tradeSub{display:block;color:var(--muted);font-size:12px}
 .trade-price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.trade-price-grid div{border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px;text-align:center}
+.trade-price-grid div{min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px;text-align:center}
 .trade-price-grid span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
 .trade-price-grid b{font-size:16px;font-variant-numeric:tabular-nums}
 .ai-trader{display:flex;gap:10px;align-items:center;border-left:3px solid var(--violet);border-radius:10px;background:linear-gradient(135deg,rgba(124,58,237,.10),rgba(37,99,235,.07));padding:10px 12px}
@@ -421,7 +428,7 @@ h2{font-size:18px}
 .trade-result-card strong{display:block;font-size:20px}
 .trade-result-card p{margin:8px auto 0;max-width:520px;color:var(--muted);font-size:13px;line-height:1.5}
 .trade-result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
-.trade-result-grid div,.trade-turn-list div{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}
+.trade-result-grid div,.trade-turn-list div{min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}
 .trade-result-grid span,.trade-turn-list span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
 .trade-result-grid b{font-size:15px}
 .trade-turn-list{display:grid;gap:8px;margin-top:12px}
@@ -480,6 +487,7 @@ h2{font-size:18px}
 .chat-form button{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;font-weight:850}
 .trait-grid{display:grid;gap:8px}
 .trait-row{display:grid;grid-template-columns:86px 1fr 46px;gap:8px;align-items:center;font-size:12px}
+.trait-row span{min-width:0}
 .trait-track{height:7px;background:var(--soft);border-radius:99px;position:relative;overflow:hidden}
 .trait-fill{position:absolute;top:0;bottom:0;left:50%;background:var(--blue);border-radius:99px}
 .trait-row b{text-align:right;font-variant-numeric:tabular-nums}
@@ -523,6 +531,10 @@ h2{font-size:18px}
   .inspector{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr}
   .report-panel{grid-column:1 / -1}
 }
+@media(max-width:980px){
+  .quick-choices{grid-template-columns:repeat(2,1fr)}
+  .agent-scene{grid-template-columns:180px minmax(0,1fr)}
+}
 @media(max-width:780px){
   .topbar{height:auto;align-items:flex-start;gap:10px;flex-direction:column;padding:14px}
   .workspace{grid-template-columns:1fr;padding:10px}
@@ -531,6 +543,12 @@ h2{font-size:18px}
   .persona-card{min-height:auto;gap:16px}
   .stage-head{flex-direction:column}
   .game-modal-bg{padding:10px}
+  .game-modal{width:100%;border-radius:12px}
   .modal-head,.modal-body{padding-left:16px;padding-right:16px}
   .trade-chart-wrap{height:210px}
+  .bubble{max-width:94%}
+  .chat-form{grid-template-columns:1fr}
+  .chat-form button{min-height:44px}
+  .position-item{grid-template-columns:minmax(0,1fr) 26px}
+  .position-item b{grid-column:1 / -1;text-align:left}
 }
