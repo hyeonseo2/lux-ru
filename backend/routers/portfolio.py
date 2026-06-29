@@ -1,11 +1,13 @@
 """Portfolio API router."""
 from __future__ import annotations
 
+import time
+
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
-from ..historical import compute_backtest, compute_benchmark_comparison, list_scenarios
+from ..historical import compute_backtest, compute_benchmark_comparison, list_scenarios, map_to_yfinance
 from ..income_fees import compute_income_fees
 from ..instrument_insights import get_instrument_insights
 from ..live_data import analyze_live_portfolio
@@ -19,6 +21,20 @@ router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 
 # In-memory session storage (demo)
 _sessions: dict[str, dict] = {}
+_MARKET_TAPE_CACHE: tuple[float, dict] | None = None
+MARKET_TAPE_TTL_SECONDS = 5 * 60
+MARKET_TAPE_SYMBOLS = [
+    {"symbol": "GOOGL", "name": "Alphabet"},
+    {"symbol": "AMZN", "name": "Amazon"},
+    {"symbol": "META", "name": "Meta"},
+    {"symbol": "005930", "name": "삼성전자"},
+    {"symbol": "NVDA", "name": "NVIDIA"},
+    {"symbol": "AAPL", "name": "Apple"},
+    {"symbol": "000660", "name": "SK하이닉스"},
+    {"symbol": "TSLA", "name": "Tesla"},
+    {"symbol": "373220", "name": "LG에너지솔루션"},
+    {"symbol": "035720", "name": "카카오"},
+]
 
 
 class AnalyzeRequest(BaseModel):
@@ -30,6 +46,89 @@ class AnalyzeResponse(BaseModel):
     success: bool
     message: str
     data: dict | None = None
+
+
+def _series_close_values(df, yf_symbol: str, symbol_count: int) -> list[float]:
+    """Extract non-null close values from a yfinance DataFrame for one symbol."""
+    try:
+        is_multi = getattr(df.columns, "nlevels", 1) > 1
+        if is_multi:
+            close = df[yf_symbol]["Close"]
+        elif symbol_count == 1 and "Close" in df.columns:
+            close = df["Close"]
+        else:
+            return []
+        close = close.dropna()
+        return [float(v) for v in close.tolist() if float(v) > 0]
+    except Exception:
+        return []
+
+
+def _load_market_tape() -> dict:
+    """Return recent daily percentage changes for the top ticker tape."""
+    global _MARKET_TAPE_CACHE
+    now = time.time()
+    if _MARKET_TAPE_CACHE and _MARKET_TAPE_CACHE[0] > now:
+        return _MARKET_TAPE_CACHE[1]
+
+    symbols: list[str] = []
+    symbol_meta: dict[str, dict] = {}
+    for item in MARKET_TAPE_SYMBOLS:
+        yf_symbol = map_to_yfinance(item["symbol"]) or item["symbol"]
+        symbols.append(yf_symbol)
+        symbol_meta[yf_symbol] = item
+
+    items: list[dict] = []
+    try:
+        import yfinance as yf
+
+        df = yf.download(
+            symbols,
+            period="10d",
+            interval="1d",
+            auto_adjust=True,
+            group_by="ticker",
+            progress=False,
+            threads=True,
+            timeout=10,
+        )
+    except Exception as exc:
+        result = {"success": False, "message": f"market data unavailable: {exc}", "items": []}
+        _MARKET_TAPE_CACHE = (now + 60, result)
+        return result
+
+    if df is None or getattr(df, "empty", True):
+        result = {"success": False, "message": "empty market data", "items": []}
+        _MARKET_TAPE_CACHE = (now + 60, result)
+        return result
+
+    for yf_symbol in symbols:
+        closes = _series_close_values(df, yf_symbol, len(symbols))
+        if len(closes) < 2:
+            continue
+        prev, last = closes[-2], closes[-1]
+        if prev <= 0:
+            continue
+        change_pct = (last / prev - 1.0) * 100
+        meta = symbol_meta[yf_symbol]
+        items.append({
+            "symbol": meta["symbol"],
+            "yf_symbol": yf_symbol,
+            "name": meta["name"],
+            "change_pct": change_pct,
+            "direction": "up" if change_pct >= 0 else "down",
+            "price": last,
+            "source": "yfinance",
+        })
+
+    result = {
+        "success": bool(items),
+        "message": "ok" if items else "no valid market data",
+        "as_of": int(now),
+        "items": items,
+    }
+    _MARKET_TAPE_CACHE = (now + MARKET_TAPE_TTL_SECONDS, result)
+    return result
 
 
 def _to_search_payload(query: str, limit: int = 20) -> dict:
@@ -142,6 +241,12 @@ async def search_instruments_api(q: str = "", limit: int = 12) -> dict:
     """Return symbols and instrument names matching query for UI autocomplete."""
     limit = max(1, min(limit, 30))
     return _to_search_payload(q, limit=limit)
+
+
+@router.get("/market-tape")
+async def market_tape() -> dict:
+    """Return live-ish daily market moves for the landing ticker tape."""
+    return await run_in_threadpool(_load_market_tape)
 
 
 # ---- Live (사용자 직접 입력) 분석 ----

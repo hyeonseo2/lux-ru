@@ -604,7 +604,7 @@ h1,h2,h3,.display,.lead,.kicker,.h2,.h3,.muted,.small,.empty,.btn,.chip,.card,.c
 .np-item .pc{font-family:var(--mono);font-size:12.5px;font-weight:700;width:46px;text-align:right}
 .bt-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12.5px}
 .bt-legend .li{display:flex;align-items:center;gap:7px} .bt-legend .ln{width:18px;height:3px;border-radius:2px}
-.bt-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.bt-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
 .bt-stat{min-width:0;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
 .bt-stat .l,.bt-stat span{font-size:11.5px;color:var(--muted);display:block}.bt-stat .v,.bt-stat b{font-size:19px;font-weight:800;margin-top:3px;letter-spacing:-.02em;display:block}.bt-stat em{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:3px}
 .disclaimer{font-size:11.5px;color:var(--muted-2);text-align:center;margin-top:28px;line-height:1.6}
@@ -879,16 +879,6 @@ h1,h2,h3,.display,.lead,.kicker,.h2,.h3,.muted,.small,.empty,.btn,.chip,.card,.c
         <div class="profile-log-grid" id="profileLogGrid"></div>
         <div class="profile-log-detail" id="profileLogDetail"></div>
       </div>
-      <div class="card pad" style="margin:16px;border-radius:16px">
-        <div class="row between center-y wrap">
-          <div>
-            <div class="h3">LLM 로그 분석 리포트</div>
-            <div class="muted small">손절·존버 미니게임 로그를 위키로 정리하고 포트폴리오 X-Ray와 종합합니다.</div>
-          </div>
-          <button class="btn btn-ghost btn-sm" id="profileReportBtn" type="button">리포트 생성</button>
-        </div>
-        <div class="llm-report-body empty" id="profileLlmReport" style="margin-top:12px">손절·존버 미니게임을 완료하면 생성할 수 있습니다.</div>
-      </div>
     </div>
   </section>
 
@@ -927,7 +917,7 @@ h1,h2,h3,.display,.lead,.kicker,.h2,.h3,.muted,.small,.empty,.btn,.chip,.card,.c
       <div class="card pad">
         <div class="eyebrow">백테스트 근거</div>
         <div class="h2" style="margin-top:6px">최근 3년 실제 시장 비교</div>
-        <div class="muted small" style="margin-top:5px">동일 기간 현재 포트폴리오 · 제안 포트폴리오 · 벤치마크(KOSPI) 누적 수익을 시장 데이터로 비교합니다.</div>
+        <div class="muted small" style="margin-top:5px">동일 기간 현재 포트폴리오 · 제안 포트폴리오 · KOSPI · S&P 500 누적 수익을 시장 데이터로 비교합니다.</div>
         <div id="btHost" style="margin-top:14px"></div>
         <div class="bt-legend" id="btLegend"></div>
         <div class="bt-stats" id="btStats"></div>
@@ -2305,16 +2295,6 @@ function renderProfile(){
     <div class="l">${t.l}</div><div class="v">${t.v}</div>
     <div class="meter"><i style="width:${t.m}%"></i></div></div>`).join("");
   renderProfileLogAnalysis(trade);
-  const reportBtn=$("#profileReportBtn");
-  if(reportBtn)reportBtn.onclick=generateTradeLlmReport;
-  const reportHost=$("#profileLlmReport");
-  if(reportHost&&state.llmReport){
-    setMarkdownPreview(reportHost,state.llmReport);
-  }else if(reportHost){
-    setMarkdownPreview(reportHost,"",trade
-      ?"손절·존버 미니게임 로그를 기반으로 LLM 리포트를 생성할 수 있습니다."
-      :"손절·존버 미니게임을 완료하면 생성할 수 있습니다.");
-  }
 }
 
 function tradeRoundInsight(round){
@@ -4096,10 +4076,9 @@ function finishTradeGame(){
 }
 async function generateTradeLlmReport(){
   const tradeHost=$("#tradeLlmReport");
-  const profileHost=$("#profileLlmReport");
-  const buttons=[$("#tradeReportBtn"),$("#profileReportBtn")].filter(Boolean);
+  const buttons=[$("#tradeReportBtn")].filter(Boolean);
   const setHosts=(text,empty=false)=>{
-    [tradeHost,profileHost].filter(Boolean).forEach(host=>{
+    [tradeHost].filter(Boolean).forEach(host=>{
       setMarkdownPreview(host,empty?"":text,text);
     });
   };
@@ -4123,7 +4102,7 @@ async function generateTradeLlmReport(){
   }catch(err){
     setHosts(`리포트 생성 실패: ${err.message||err}`,true);
   }finally{
-    buttons.forEach(btn=>{btn.disabled=false;btn.textContent=btn.id==="profileReportBtn"?"리포트 생성":"생성";});
+    buttons.forEach(btn=>{btn.disabled=false;btn.textContent="생성";});
   }
 }
 function renderTradeResult(result){
@@ -4481,24 +4460,38 @@ function renderBacktestComparison(current,proposed){
   const labels=rows.map(x=>x.current.date);
   const cur=rows.map(x=>Number(x.current.portfolio_return_pct)||0);
   const prop=rows.map(x=>Number(x.proposed.portfolio_return_pct)||0);
-  const bench=rows.map(x=>Number(x.current.kospi_return_pct)||0);
+  const benchmarkValues=key=>{
+    const values=rows.map(x=>{
+      const value=x.current[key];
+      if(value===null||value===undefined||value==="")return null;
+      const number=Number(value);
+      return Number.isFinite(number)?number:null;
+    });
+    return values.every(value=>value!==null)?values:null;
+  };
+  const kospi=benchmarkValues("kospi_return_pct");
+  const sp500=benchmarkValues("sp500_return_pct");
   const series=[
     {name:"현재 포트폴리오",color:"#e5484d",data:cur,width:2.2},
-    {name:"제안 포트폴리오",color:"#2563eb",data:prop,width:2.8},
-    {name:"벤치마크(KOSPI)",color:"#a1a1aa",data:bench,width:1.8}
+    {name:"제안 포트폴리오",color:"#2563eb",data:prop,width:2.8}
   ];
+  if(kospi)series.push({name:"KOSPI",color:"#a1a1aa",data:kospi,width:1.8});
+  if(sp500)series.push({name:"S&P 500",color:"#16a34a",data:sp500,width:1.8});
   const host=$("#btHost");host.innerHTML="";host.appendChild(lineChart(series,labels,540,210));
   $("#btLegend").innerHTML=series.map(s=>`<div class="li">
     <span class="ln" style="background:${s.color}"></span>${s.name}</div>`).join("");
   const currentRet=cur[cur.length-1]||0;
   const proposedRet=prop[prop.length-1]||0;
+  const sp500Ret=sp500?sp500[sp500.length-1]:null;
   const currentMdd=maxDrawdownFromReturns(cur);
   const proposedMdd=maxDrawdownFromReturns(prop);
-  $("#btStats").innerHTML=[
+  const stats=[
     {l:"3년 누적(제안)",v:signedPct(proposedRet),c:proposedRet>=0?"var(--good)":"var(--bad)"},
     {l:"vs 현재",v:`${(proposedRet-currentRet)>=0?"+":""}${(proposedRet-currentRet).toFixed(1)}%p`,c:(proposedRet-currentRet)>=0?"var(--blue)":"var(--bad)"},
     {l:"최대낙폭",v:`${currentMdd.toFixed(1)}% → ${proposedMdd.toFixed(1)}%`,c:proposedMdd>=currentMdd?"var(--good)":"var(--bad)"}
-  ].map(s=>`<div class="bt-stat"><div class="l">${s.l}</div>
+  ];
+  if(sp500Ret!==null)stats.splice(2,0,{l:"vs S&P 500",v:`${(proposedRet-sp500Ret)>=0?"+":""}${(proposedRet-sp500Ret).toFixed(1)}%p`,c:(proposedRet-sp500Ret)>=0?"var(--good)":"var(--bad)"});
+  $("#btStats").innerHTML=stats.map(s=>`<div class="bt-stat"><div class="l">${s.l}</div>
     <div class="v" style="color:${s.c}">${s.v}</div></div>`).join("");
 }
 function renderBacktestError(err){
@@ -4599,12 +4592,25 @@ function initNav(){
 /* ============================================================
    티커테이프
    ============================================================ */
-function initTape(){
-  const items=[["Alphabet","+0.85%",1],["Amazon","+2.05%",1],["Meta","-1.62%",0],
-    ["삼성전자","+1.24%",1],["NVIDIA","+3.78%",1],["Apple","+0.78%",1],["SK하이닉스","-0.94%",0],
-    ["Tesla","+2.34%",1],["테슬라","+2.34%",1],["LG에너지","-1.10%",0],["카카오","+0.42%",1]];
-  const html=items.map(([n,c,u])=>`<span class="tape-item"><b>${n}</b> <span class="${u?'up':'down'}">${c}</span></span>`).join("");
-  $("#tapeTrack").innerHTML=html+html; // 무한 루프용 2배
+async function initTape(){
+  const host=$("#tapeTrack");
+  if(!host)return;
+  host.innerHTML=`<span class="tape-item"><b>시장 데이터</b> <span class="muted">조회 중</span></span>`;
+  try{
+    const res=await fetch("/api/portfolio/market-tape");
+    const data=await res.json();
+    const items=Array.isArray(data.items)?data.items.filter(item=>Number.isFinite(Number(item.change_pct))):[];
+    if(!res.ok||!items.length)throw new Error(data.message||"시장 데이터를 불러오지 못했습니다.");
+    const html=items.map(item=>{
+      const pct=Number(item.change_pct);
+      const cls=pct>=0?"up":"down";
+      const sign=pct>=0?"+":"";
+      return `<span class="tape-item"><b>${escapeHtml(item.name||item.symbol)}</b> <span class="${cls}">${sign}${pct.toFixed(2)}%</span></span>`;
+    }).join("");
+    host.innerHTML=html+html; // 무한 루프용 2배
+  }catch(err){
+    host.innerHTML=`<span class="tape-item"><b>시장 데이터</b> <span class="down">조회 실패</span></span>`;
+  }
 }
 
 /* ============================================================
