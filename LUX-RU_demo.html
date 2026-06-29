@@ -957,27 +957,7 @@ const SECTOR_COLORS={
 const STOCK_PALETTE=["#2563eb","#7dd3fc","#a78bfa","#f472b6","#f59e0b","#10b981",
   "#fb7185","#22d3ee","#f97316","#6366f1","#94a3b8"];
 
-// ---------- 리스크/비용/배당 메타 ----------
-const STOCK_RISK={
-  "005930":{vol:25,beta:1.02},"000660":{vol:39,beta:1.42},"042700":{vol:46,beta:1.55},
-  "058470":{vol:42,beta:1.30},"000990":{vol:40,beta:1.25},"403870":{vol:50,beta:1.45},
-  "357780":{vol:44,beta:1.30},"240810":{vol:48,beta:1.40},"108320":{vol:43,beta:1.20},
-  "207940":{vol:34,beta:0.85},"068270":{vol:40,beta:0.95},"373220":{vol:42,beta:1.30},
-  "006400":{vol:44,beta:1.35},"051910":{vol:38,beta:1.25},"005380":{vol:30,beta:1.10},
-  "000270":{vol:32,beta:1.12},"012330":{vol:31,beta:1.08},"035420":{vol:33,beta:1.15},
-  "035720":{vol:41,beta:1.30},"017670":{vol:22,beta:0.55},"105560":{vol:26,beta:0.95},
-  "055550":{vol:28,beta:1.00},"066570":{vol:30,beta:1.05},
-  "NVDA":{vol:52,beta:1.70},"AAPL":{vol:28,beta:1.15},"MSFT":{vol:27,beta:1.05},
-  "TSLA":{vol:58,beta:1.90},"AMZN":{vol:34,beta:1.25},"GOOGL":{vol:30,beta:1.10},
-  "META":{vol:38,beta:1.25},"AVGO":{vol:42,beta:1.35},"AMD":{vol:55,beta:1.65},
-  "KO":{vol:18,beta:0.55},"VZ":{vol:22,beta:0.45},"PFE":{vol:26,beta:0.65},"HD":{vol:27,beta:0.95}
-};
-const SECTOR_RISK={
-  "반도체":{vol:42,beta:1.40},"IT":{vol:30,beta:1.10},"커뮤니케이션":{vol:33,beta:1.15},
-  "2차전지":{vol:43,beta:1.32},"바이오":{vol:38,beta:0.90},"금융":{vol:27,beta:0.97},
-  "소비재":{vol:31,beta:1.10},"소재":{vol:34,beta:1.10},"산업재":{vol:30,beta:1.05},
-  "에너지":{vol:36,beta:1.10},"채권":{vol:6,beta:0.15},"현금":{vol:0.4,beta:0},"기타":{vol:35,beta:1.00}
-};
+// ---------- 비용/배당 메타 ----------
 const PRODUCT_META={
   "069500":{type:"etf",ter:.15,div:{y:1.6,m:[1,4,7,10,12]}},
   "122630":{type:"etf",ter:.64,lev:2,div:{y:0,m:[]}},
@@ -1180,6 +1160,7 @@ const won=n=>{ // 원 → 사람이 읽는 한글 단위
   return n.toLocaleString();
 };
 const pc=n=>(Number.isFinite(n)?n:0).toFixed(1)+"%";
+const pcOrDash=n=>Number.isFinite(Number(n))?Number(n).toFixed(1)+"%":"—";
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const sectorColor=s=>SECTOR_COLORS[s]||"#90a4ae";
 const normalizeTicker=s=>String(s||"").trim().toUpperCase();
@@ -1223,7 +1204,6 @@ function enrichHoldingMeta(holding,typeHint){
   if(meta.sector&&enriched.composition?.length===1)enriched.composition[0].sector=meta.sector;
   return enriched;
 }
-const riskOf=(ticker,sector)=>STOCK_RISK[normalizeTicker(ticker)]||SECTOR_RISK[sector]||{vol:35,beta:1.0};
 const levOf=h=>(typeof h?.lev==="number"?h.lev:1);
 function holdingDiv(h){
   if(h?.div)return h.div;
@@ -1773,30 +1753,71 @@ function resetStep2DerivedPanels(label="분석 대기"){
   $("#divList").innerHTML="";
   $("#divNote").textContent="";
 }
+async function fetchMarketRisk(a){
+  const payload={
+    exposures:(a.stocks||[]).map(s=>({
+      ticker:s.ticker,
+      name:s.name,
+      sector:s.sector,
+      amount:Number(s.amount)||0,
+      weight:Number(s.weight)||0,
+      levered:!!s.levered
+    })),
+    total_value:Number(a.total)||0,
+    gross_value:Number(a.gross)||0,
+    hhi:Number(a.hhi)||0,
+    leverage_ratio:Number(a.leverageRatio)||1,
+    period_days:365
+  };
+  return postJson("/api/portfolio/risk-metrics",payload);
+}
 function computePortfolioRisk(a){
+  const market=a.marketRisk||{};
   const denom=a.gross||a.total||1;
-  let vol=0,beta=0,defensive=0,levered=0;
-  a.stocks.forEach(s=>{
-    const w=(Number(s.amount)||0)/denom;
-    const r=riskOf(s.ticker,s.sector);
-    vol+=r.vol*w;
-    beta+=r.beta*w;
-    if(DEFENSIVE_SECTORS.has(s.sector))defensive+=w*100;
-    if(s.levered)levered+=w*100;
-  });
   const top3=a.stocks.slice(0,3).reduce((sum,s)=>sum+s.weight,0);
-  const score=clamp((vol-8)*2.3+Math.max(0,a.hhi-900)/24+Math.max(0,a.leverageRatio-1)*38+top3*.18-defensive*.2,0,100);
-  const style=score>=68?{label:"공격형",chip:"warn",tone:"변동성·집중 노출이 큰 편입니다."}:score>=42?{label:"중립형",chip:"blue",tone:"성장 노출과 방어 노출이 혼재합니다."}:{label:"수비형",chip:"good",tone:"방어 자산 비중이 상대적으로 높습니다."};
-  return {score,vol,beta,defensive,levered,top3,style};
+  const defensive=a.sectors.filter(s=>DEFENSIVE_SECTORS.has(s.name)).reduce((sum,s)=>sum+s.weight,0);
+  const levered=a.stocks.filter(s=>s.levered).reduce((sum,s)=>sum+s.weight,0);
+  if(market.status!=="success"){
+    return {
+      score:null,vol:null,beta:null,defensive,levered,top3,
+      style:{label:"계산 불가",chip:"warn",tone:"실제 가격 데이터가 부족해 리스크 수치를 확정하지 못했습니다."},
+      status:market.status||"error",
+      message:market.message||"실제 가격 데이터를 불러오지 못했습니다.",
+      dataCoverage:Number(market.data_coverage)||0,
+      unmatched:Array.isArray(market.unmatched_tickers)?market.unmatched_tickers:[]
+    };
+  }
+  const score=Number(market.risk_score);
+  const vol=Number(market.annual_volatility_pct);
+  const beta=Number.isFinite(Number(market.beta))?Number(market.beta):null;
+  return {
+    score:Number.isFinite(score)?score:null,
+    vol:Number.isFinite(vol)?vol:null,
+    beta,
+    defensive:Number(market.defensive_pct)||defensive,
+    levered:Number(market.levered_pct)||levered,
+    top3:Number(market.top3_pct)||top3,
+    style:market.style||{label:"리스크 계산",chip:"blue",tone:"실제 가격 데이터 기반 계산입니다."},
+    status:market.status,
+    message:market.message||"",
+    benchmarkLabel:market.benchmark_label||"시장",
+    benchmarks:market.benchmarks||{},
+    dataCoverage:Number(market.data_coverage)||0,
+    periodDays:Number(market.period_days)||365,
+    maxDrawdown:Number.isFinite(Number(market.max_drawdown_pct))?Number(market.max_drawdown_pct):null,
+    unmatched:Array.isArray(market.unmatched_tickers)?market.unmatched_tickers:[]
+  };
 }
 function renderRisk(a,risk){
   $("#riskStyleChip").className=`chip ${risk.style.chip}`;
-  $("#riskStyleChip").textContent=`${risk.style.label} · ${Math.round(risk.score)}점`;
-  $("#riskMk").style.left=`${clamp(risk.score,3,97).toFixed(0)}%`;
-  const betaTone=risk.beta>1.3?"danger":risk.beta>1.15?"high":risk.beta>.9?"mid":"low";
+  $("#riskStyleChip").textContent=risk.score===null?risk.style.label:`${risk.style.label} · ${Math.round(risk.score)}점`;
+  $("#riskMk").style.left=risk.score===null?"0%":`${clamp(risk.score,3,97).toFixed(0)}%`;
+  const hasVol=Number.isFinite(Number(risk.vol));
+  const hasBeta=Number.isFinite(Number(risk.beta));
+  const betaTone=hasBeta?(risk.beta>1.3?"danger":risk.beta>1.15?"high":risk.beta>.9?"mid":"low"):"mid";
   const kpis=[
-    {l:"예상 연 변동성",v:pc(risk.vol),s:risk.vol>30?"높음":"보통",icon:"σ",tone:risk.vol>38?"danger":risk.vol>30?"high":risk.vol>18?"mid":"low",bar:clamp(risk.vol/45*100,4,100)},
-    {l:"시장 민감도",v:risk.beta.toFixed(2)+"β",s:risk.beta>1.15?"시장보다 큼":"시장 수준",icon:"β",tone:betaTone,bar:clamp(risk.beta/1.7*100,4,100)},
+    {l:"실측 연환산 변동성",v:pcOrDash(risk.vol),s:hasVol?(risk.vol>30?"높음":"보통"):"데이터 부족",icon:"σ",tone:hasVol?(risk.vol>38?"danger":risk.vol>30?"high":risk.vol>18?"mid":"low"):"mid",bar:hasVol?clamp(risk.vol/45*100,4,100):0},
+    {l:"시장 민감도",v:hasBeta?risk.beta.toFixed(2)+"β":"—",s:hasBeta?(risk.beta>1.15?`${risk.benchmarkLabel||"시장"}보다 큼`:`${risk.benchmarkLabel||"시장"} 수준`):"표본 부족",icon:"β",tone:betaTone,bar:hasBeta?clamp(risk.beta/1.7*100,4,100):0},
     {l:"상위 3종목",v:pc(risk.top3),s:"실질 노출 기준",icon:"TOP",tone:risk.top3>70?"danger":risk.top3>55?"high":risk.top3>35?"mid":"low",bar:clamp(risk.top3,4,100)},
     {l:"레버리지 노출",v:pc(risk.levered),s:a.leverageRatio>1.05?`${a.leverageRatio.toFixed(2)}배 노출`:"미미",icon:"LEV",tone:risk.levered>30?"danger":risk.levered>10?"high":"low",bar:clamp(Math.max(risk.levered,(a.leverageRatio-1)*100),0,100)}
   ];
@@ -1814,18 +1835,28 @@ function renderRisk(a,risk){
   const denom=a.gross||a.total||1;
   $("#assetSplit").innerHTML=assetItems.map(x=>`<i style="width:${(x.amount/denom*100).toFixed(1)}%;background:${x.color}"></i>`).join("");
   $("#assetLegend").innerHTML=assetItems.map(x=>`<span><i style="background:${x.color}"></i>${x.label} ${pc(x.amount/denom*100)}</span>`).join("");
+  const benchmarkRows=Object.values(risk.benchmarks||{}).map(x=>({
+    name:x.name||x.symbol||"벤치마크",
+    value:Number(x.annual_volatility_pct),
+    color:"#94a3b8"
+  })).filter(x=>Number.isFinite(x.value));
   const compare=[
-    {name:"내 포트폴리오",value:risk.vol,color:"#2563eb"},
-    {name:"KOSPI 200",value:22,color:"#94a3b8"},
-    {name:"NASDAQ 100",value:28,color:"#94a3b8"},
-    {name:"채권형 ETF",value:6,color:"#94a3b8"}
+    ...(hasVol?[{name:"내 포트폴리오",value:risk.vol,color:"#2563eb"}]:[]),
+    ...benchmarkRows
   ];
-  const max=Math.max(...compare.map(x=>x.value),1);
-  $("#riskCompare").innerHTML=compare.map(x=>`<div class="rcmp-row">
-    <span>${x.name}</span><div class="rcmp-track"><i style="width:${(x.value/max*100).toFixed(0)}%;background:${x.color}"></i></div><b>${pc(x.value)}</b>
-  </div>`).join("");
+  if(compare.length){
+    const max=Math.max(...compare.map(x=>x.value),1);
+    $("#riskCompare").innerHTML=compare.map(x=>`<div class="rcmp-row">
+      <span>${escapeHtml(x.name)}</span><div class="rcmp-track"><i style="width:${(x.value/max*100).toFixed(0)}%;background:${x.color}"></i></div><b>${pc(x.value)}</b>
+    </div>`).join("");
+  }else{
+    $("#riskCompare").innerHTML=`<div class="analysis-state"><b>시장 변동성 비교 불가</b> 실제 가격 데이터가 부족합니다.</div>`;
+  }
   const levText=a.leverageRatio>1.05?` 레버리지 상품 반영 후 실질 노출액은 ${won(a.gross)}원으로 평가액의 ${a.leverageRatio.toFixed(2)}배입니다.`:"";
-  $("#riskNote").innerHTML=`${risk.style.tone} 집중도 ${a.hhi.toLocaleString()}, 최대 종목 ${pc(a.top.weight)}, 방어 자산 ${pc(risk.defensive)} 기준으로 계산했습니다.${levText}`;
+  const coverageText=`가격 데이터 커버리지 ${pc((risk.dataCoverage||0)*100)}`;
+  const unmatchedText=risk.unmatched?.length?` 미조회 종목: ${escapeHtml(risk.unmatched.slice(0,5).join(", "))}${risk.unmatched.length>5?" 외":""}.`:"";
+  const periodText=risk.periodDays?` 최근 ${risk.periodDays}일 일봉 수익률`:" 실제 일봉 수익률";
+  $("#riskNote").innerHTML=`${risk.style.tone} ${periodText}로 변동성·베타를 계산하고, 집중도 ${a.hhi.toLocaleString()}, 최대 종목 ${pc(a.top.weight)}, 방어 자산 ${pc(risk.defensive)}를 함께 반영했습니다. ${coverageText}.${unmatchedText}${levText}`;
 }
 let incomeFeesRequestId=0;
 function renderIncomeFeesLoading(){
@@ -2000,6 +2031,11 @@ async function fetchRealAnalysis(sourceMode="seed_fast"){
   if(!holdings.length)throw new Error("분석 가능한 보유 상품이 없습니다.");
   const analysis=computeLookThrough(holdings);
   if(!analysis.top)throw new Error("실질 노출 종목을 계산하지 못했습니다.");
+  try{
+    analysis.marketRisk=await fetchMarketRisk(analysis);
+  }catch(err){
+    analysis.marketRisk={status:"error",message:err?.message||String(err||"리스크 계산 실패")};
+  }
   analysis.sourceSummary=data.source_summary||null;
   analysis.durationMs=data.duration_ms||0;
   analysis.sourceMode=data.source_summary?.source_mode||sourceMode;

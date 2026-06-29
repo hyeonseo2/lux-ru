@@ -13,6 +13,7 @@ from ..instrument_insights import get_instrument_insights
 from ..live_data import analyze_live_portfolio
 from ..lookthrough import compute_exposure
 from ..overlap import find_overlaps
+from ..risk import compute_market_risk
 from ..models import Position, PortfolioAnalysis
 from ..seed_data import FINLIFE_PRODUCTS
 from ..search_universe import search_instruments as search_universe_instruments
@@ -275,6 +276,15 @@ class IncomeFeesRequest(BaseModel):
     positions: list[dict]
 
 
+class RiskMetricsRequest(BaseModel):
+    exposures: list[dict]
+    total_value: float | None = None
+    gross_value: float | None = None
+    hhi: float | None = None
+    leverage_ratio: float | None = None
+    period_days: int = 365
+
+
 @router.get("/backtest/scenarios")
 async def get_backtest_scenarios() -> dict:
     """List available historical event scenarios for backtesting."""
@@ -301,6 +311,20 @@ async def compare_benchmarks(req: BenchmarkCompareRequest) -> dict:
 async def income_fees(req: IncomeFeesRequest) -> dict:
     """Return live dividend and fee lookups for portfolio positions."""
     return await run_in_threadpool(compute_income_fees, req.positions)
+
+
+@router.post("/risk-metrics")
+async def risk_metrics(req: RiskMetricsRequest) -> dict:
+    """Return volatility and beta from real historical daily prices."""
+    return await run_in_threadpool(
+        compute_market_risk,
+        req.exposures,
+        req.total_value,
+        req.gross_value,
+        req.hhi,
+        req.leverage_ratio,
+        req.period_days,
+    )
 
 
 @router.get("/instrument-insights")
