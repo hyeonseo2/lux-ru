@@ -9,8 +9,10 @@ missing so the UI does not present fallback numbers as market data.
 """
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 import math
+import os
 import re
 import threading
 import time
@@ -20,6 +22,8 @@ from .historical import map_to_yfinance
 from .search_universe import load_expanded_universe
 
 INCOME_FEES_TTL_SECONDS = 6 * 3600
+INCOME_FEES_LOOKUP_TIMEOUT_SECONDS = float(os.getenv("INCOME_FEES_LOOKUP_TIMEOUT_SECONDS", "4.0"))
+INCOME_FEES_MAX_WORKERS = max(2, int(os.getenv("INCOME_FEES_MAX_WORKERS", "8")))
 
 _CACHE_LOCK = threading.Lock()
 _CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
@@ -269,6 +273,66 @@ def _load_symbol_income_fee(symbol: str, name: str, type_hint: str) -> dict[str,
     return payload
 
 
+def _fallback_symbol_income_fee(symbol: str, name: str, type_hint: str, source: str = "timeout_fallback") -> dict[str, Any]:
+    yf_symbol = map_to_yfinance(symbol) or symbol
+    instrument_type = _infer_type(symbol, name, type_hint, {})
+    if instrument_type == "stock":
+        expense_ratio = 0.0
+        expense_source = "direct_stock"
+        expense_estimated = False
+    elif symbol in FEE_FALLBACKS:
+        expense_ratio = FEE_FALLBACKS[symbol]
+        expense_source = "fallback_estimate"
+        expense_estimated = True
+    else:
+        expense_ratio = None
+        expense_source = "none"
+        expense_estimated = False
+    return {
+        "symbol": symbol,
+        "yf_symbol": yf_symbol,
+        "instrument_type": instrument_type,
+        "price": None,
+        "expense_ratio": expense_ratio,
+        "expense_source": expense_source,
+        "expense_estimated": expense_estimated,
+        "dividend_yield": None,
+        "dividend_source": source,
+        "dividend_estimated": False,
+        "dividend_months": [],
+        "data_source": source,
+    }
+
+
+def _load_income_fee_batch(valid: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    unique: dict[str, dict[str, Any]] = {}
+    for pos in valid:
+        unique.setdefault(pos["ticker"], pos)
+    if not unique:
+        return {}
+
+    executor = ThreadPoolExecutor(max_workers=min(INCOME_FEES_MAX_WORKERS, len(unique)))
+    future_to_symbol = {
+        executor.submit(_load_symbol_income_fee, pos["ticker"], pos["name"], pos["type_hint"]): symbol
+        for symbol, pos in unique.items()
+    }
+    done, pending = wait(future_to_symbol, timeout=INCOME_FEES_LOOKUP_TIMEOUT_SECONDS)
+    loaded: dict[str, dict[str, Any]] = {}
+    for future in done:
+        symbol = future_to_symbol[future]
+        pos = unique[symbol]
+        try:
+            loaded[symbol] = future.result()
+        except Exception:
+            loaded[symbol] = _fallback_symbol_income_fee(pos["ticker"], pos["name"], pos["type_hint"], "lookup_error")
+    for future in pending:
+        symbol = future_to_symbol[future]
+        pos = unique[symbol]
+        loaded[symbol] = _fallback_symbol_income_fee(pos["ticker"], pos["name"], pos["type_hint"], "timeout_fallback")
+    executor.shutdown(wait=False, cancel_futures=True)
+    return loaded
+
+
 def compute_income_fees(positions: list[dict[str, Any]]) -> dict[str, Any]:
     valid: list[dict[str, Any]] = []
     for raw in positions or []:
@@ -284,9 +348,10 @@ def compute_income_fees(positions: list[dict[str, Any]]) -> dict[str, Any]:
             "type_hint": str(raw.get("type_hint") or raw.get("symbol_type") or item.get("symbol_type") or ""),
         })
 
+    meta_by_ticker = _load_income_fee_batch(valid)
     items: list[dict[str, Any]] = []
     for pos in valid:
-        meta = _load_symbol_income_fee(pos["ticker"], pos["name"], pos["type_hint"])
+        meta = meta_by_ticker.get(pos["ticker"]) or _fallback_symbol_income_fee(pos["ticker"], pos["name"], pos["type_hint"])
         expense_ratio = meta["expense_ratio"]
         dividend_yield = meta["dividend_yield"]
         annual_fee = pos["amount"] * (expense_ratio or 0.0) / 100

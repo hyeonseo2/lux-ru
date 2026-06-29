@@ -1895,7 +1895,7 @@ function renderIncomeFeesError(err){
 async function fetchIncomeFees(){
   const key=inputSignature();
   if(state.incomeFees&&state.incomeFeesKey===key)return state.incomeFees;
-  const data=await postJson("/api/portfolio/income-fees",{positions:inputPositionsForApi()});
+  const data=await postJson("/api/portfolio/income-fees",{positions:inputPositionsForApi()},9000);
   state.incomeFees=data;
   state.incomeFeesKey=key;
   return data;
@@ -4246,17 +4246,27 @@ function inputPositionsForApi(positions=state.inputPositions){
     account_label:p.accountLabel||ACCOUNT_LABEL_MAP[p.accountType]||"주식계좌"
   }));
 }
-async function postJson(path,payload){
-  const res=await fetch(path,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload)
-  });
-  const raw=await res.text();
-  let data=null;
-  try{data=raw?JSON.parse(raw):{};}catch(_){throw new Error("API 응답을 해석하지 못했습니다.");}
-  if(!res.ok||data?.success===false)throw new Error(data?.message||data?.detail||`API 오류 (${res.status})`);
-  return data;
+async function postJson(path,payload,timeoutMs=0){
+  const controller=timeoutMs?new AbortController():null;
+  const timer=timeoutMs?setTimeout(()=>controller.abort(),timeoutMs):null;
+  try{
+    const res=await fetch(path,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),
+      signal:controller?.signal
+    });
+    const raw=await res.text();
+    let data=null;
+    try{data=raw?JSON.parse(raw):{};}catch(_){throw new Error("API 응답을 해석하지 못했습니다.");}
+    if(!res.ok||data?.success===false)throw new Error(data?.message||data?.detail||`API 오류 (${res.status})`);
+    return data;
+  }catch(err){
+    if(err?.name==="AbortError")throw new Error("API 응답 시간이 길어 요청을 중단했습니다.");
+    throw err;
+  }finally{
+    if(timer)clearTimeout(timer);
+  }
 }
 async function ensureGameSession(){
   if(state.gameSessionId)return state.gameSessionId;
@@ -4375,7 +4385,7 @@ async function fetchDynamicRebalancePlan({analysis,profile,sellAmt,aggressive,tr
       risk_volatility:analysis.marketRisk?.annual_volatility_pct||null,
       risk_beta:analysis.marketRisk?.beta||null
     }
-  });
+  },20000);
 }
 async function buildSolutionPlan(analysis,profile){
   const p=profile||{title:"균형형 투자자",bal:"stable",risk:"mid"};
@@ -4570,17 +4580,27 @@ function renderBacktestLoading(){
   $("#btStats").innerHTML="";
 }
 async function fetchBenchmarkComparison(positions){
-  const res=await fetch("/api/portfolio/benchmark-compare",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({positions:inputPositionsForApi(positions),period_days:1095})
-  });
-  const raw=await res.text();
-  if(!res.ok)throw new Error(`백테스트 API 오류 (${res.status})`);
-  let data;
-  try{data=JSON.parse(raw);}catch(_){throw new Error("백테스트 응답을 해석하지 못했습니다.");}
-  if(data.status!=="success")throw new Error(data.message||"백테스트 데이터가 부족합니다.");
-  return data;
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),20000);
+  try{
+    const res=await fetch("/api/portfolio/benchmark-compare",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({positions:inputPositionsForApi(positions),period_days:1095}),
+      signal:controller.signal
+    });
+    const raw=await res.text();
+    if(!res.ok)throw new Error(`백테스트 API 오류 (${res.status})`);
+    let data;
+    try{data=JSON.parse(raw);}catch(_){throw new Error("백테스트 응답을 해석하지 못했습니다.");}
+    if(data.status!=="success")throw new Error(data.message||"백테스트 데이터가 부족합니다.");
+    return data;
+  }catch(err){
+    if(err?.name==="AbortError")throw new Error("백테스트 응답 시간이 길어 요청을 중단했습니다.");
+    throw err;
+  }finally{
+    clearTimeout(timer);
+  }
 }
 function alignBenchmarkSeries(current,proposed){
   const proposedByDate=new Map((proposed.series||[]).map(r=>[r.date,r]));

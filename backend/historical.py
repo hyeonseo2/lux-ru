@@ -143,7 +143,7 @@ def _fetch_series_bulk(symbols: list[str], start: str, end: str) -> dict[str, di
             auto_adjust=True,
             group_by="ticker",
             threads=True,
-            timeout=12,
+            timeout=6,
         )
     except Exception as exc:
         LOG.warning("yfinance.download(%s) failed: %s", symbols, exc)

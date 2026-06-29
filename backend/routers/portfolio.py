@@ -1,6 +1,7 @@
 """Portfolio API router."""
 from __future__ import annotations
 
+import asyncio
 import time
 
 from fastapi import APIRouter, Query
@@ -38,6 +39,10 @@ MARKET_TAPE_SYMBOLS = [
     {"symbol": "373220", "name": "LG에너지솔루션"},
     {"symbol": "035720", "name": "카카오"},
 ]
+
+
+async def _run_with_timeout(func, timeout_seconds: float, *args):
+    return await asyncio.wait_for(run_in_threadpool(func, *args), timeout=timeout_seconds)
 
 
 class AnalyzeRequest(BaseModel):
@@ -321,13 +326,19 @@ async def run_backtest(req: BacktestRequest) -> dict:
 @router.post("/benchmark-compare")
 async def compare_benchmarks(req: BenchmarkCompareRequest) -> dict:
     """Compare portfolio cumulative return with benchmark indices."""
-    return await run_in_threadpool(compute_benchmark_comparison, req.positions, req.period_days)
+    try:
+        return await _run_with_timeout(compute_benchmark_comparison, 18.0, req.positions, req.period_days)
+    except asyncio.TimeoutError:
+        return {"status": "error", "message": "시장 데이터 조회 시간이 길어 백테스트를 중단했습니다."}
 
 
 @router.post("/income-fees")
 async def income_fees(req: IncomeFeesRequest) -> dict:
     """Return live dividend and fee lookups for portfolio positions."""
-    return await run_in_threadpool(compute_income_fees, req.positions)
+    try:
+        return await _run_with_timeout(compute_income_fees, 8.0, req.positions)
+    except asyncio.TimeoutError:
+        return {"success": False, "message": "배당·수수료 조회 시간이 길어 중단했습니다.", "items": [], "summary": {}}
 
 
 @router.post("/trade-game-data")
@@ -339,15 +350,19 @@ async def trade_game_data(req: TradeGameDataRequest) -> dict:
 @router.post("/rebalance-plan")
 async def rebalance_plan(req: RebalancePlanRequest) -> dict:
     """Return dynamic ETF buy actions based on market data."""
-    return await run_in_threadpool(
-        compute_dynamic_rebalance_plan,
-        req.sell_amount,
-        req.analysis,
-        req.profile,
-        req.aggressive,
-        req.defensive,
-        req.period_days,
-    )
+    try:
+        return await _run_with_timeout(
+            compute_dynamic_rebalance_plan,
+            18.0,
+            req.sell_amount,
+            req.analysis,
+            req.profile,
+            req.aggressive,
+            req.defensive,
+            req.period_days,
+        )
+    except asyncio.TimeoutError:
+        return {"success": False, "buy_actions": [], "candidates": [], "message": "ETF 후보 조회 시간이 길어 리밸런싱 제안을 보류했습니다."}
 
 
 @router.post("/risk-metrics")
