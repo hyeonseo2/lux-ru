@@ -4397,7 +4397,7 @@
             },
             {
                 title: "실측 데이터 백테스트 호출",
-                detail: "POST /api/portfolio/backtest 요청을 전송하고 응답 상태를 기다립니다."
+                detail: "POST /api/portfolio/backtest 요청을 전송합니다. 캐시 우선으로 기존 종가를 재사용하고 누락 데이터만 새로 조회합니다."
             },
             {
                 title: "응답 검증 및 충격 계산",
@@ -4470,7 +4470,7 @@
 
             panel.innerHTML = `
                 <div class="name">${headerTitle}</div>
-                <div class="ticker">실행 단계 / 진행률: ${pct}%</div>
+                <div class="ticker">캐시 우선 조회 / 진행률: ${pct}%</div>
                 <div style="margin:10px 0 8px;">
                     <div style="height:8px; border-radius:999px; background:#e2e8f0; overflow:hidden;">
                         <div style="height:100%; width:${pct}%; background:linear-gradient(90deg,#3182f6,#60a5fa); transition:width .2s ease; border-radius:999px;"></div>
@@ -4580,12 +4580,12 @@
 
             // 로딩 상태 표시
             document.getElementById("simResult").classList.add("visible");
-            document.getElementById("srTitle").textContent = "📡 yfinance에서 과거 가격 조회 중...";
-            document.getElementById("srSubtitle").textContent = "수 초 소요됩니다";
+            document.getElementById("srTitle").textContent = "📡 과거 가격 데이터 확인 중";
+            document.getElementById("srSubtitle").textContent = "캐시가 있으면 즉시 반영하고, 없는 종목만 새로 조회합니다.";
             document.getElementById("srValue").textContent = "—";
             document.getElementById("srValue").className = "sim-result-value";
             document.getElementById("srAmount").textContent = "";
-            document.getElementById("srRationale").textContent = "실제 시장 데이터로 백테스트 진행 중입니다.";
+            document.getElementById("srRationale").textContent = "캐시 우선으로 백테스트를 시작했습니다. 누락 데이터만 새로 조회해 수 초 걸릴 수 있습니다.";
             document.getElementById("srImpactList").innerHTML = "";
 
             let result;
@@ -5144,7 +5144,7 @@
             },
             {
                 title: "실시간 API 호출",
-                detail: "POST /api/portfolio/analyze_real로 전송하고 request/response 바이트 및 응답 상태를 수집합니다."
+                detail: "POST /api/portfolio/analyze_real로 전송합니다. 캐시 우선으로 KRX/yfinance 결과를 재사용하고 필요한 종목만 보강 조회합니다."
             },
             {
                 title: "응답 수신 및 파싱",
@@ -5156,7 +5156,7 @@
             },
             {
                 title: "Look-through 1차 확장",
-                detail: "티커별 상품 구성 수집 결과(yfinance/seed/direct)를 기준으로 하위 종목 계층을 1차 생성합니다."
+                detail: "티커별 상품 구성 수집 결과(캐시/KRX/yfinance/seed/direct)를 기준으로 하위 종목 계층을 1차 생성합니다."
             },
             {
                 title: "Look-through 2차 정제",
@@ -5266,7 +5266,7 @@
 
             panel.innerHTML = `
                 <div class="name">직접입력 실시간 분석</div>
-                <div class="ticker">실행 단계 / 진행률: ${pct}%</div>
+                <div class="ticker">캐시 우선 조회 / 진행률: ${pct}%</div>
                 <div style="margin:10px 0 8px;">
                     <div style="height:8px; border-radius:999px; background:#e2e8f0; overflow:hidden;">
                         <div style="height:100%; width:${pct}%; background:linear-gradient(90deg,#3182f6,#60a5fa); transition:width .2s ease; border-radius:999px;"></div>
@@ -6260,7 +6260,7 @@
         document.getElementById("analyzeLiveBtn").addEventListener("click", () => {
             const btn = document.getElementById("analyzeLiveBtn");
             btn.disabled = true;
-                btn.innerText = "크롤링 및 분석 중...";
+                btn.innerText = "구성종목 조회·분석 중...";
                 startLiveAnalysisProgress();
                 const requestPayload = {
                     positions: livePositions.map(p => ({ ticker: p.ticker, amount: p.amount, account_type: p.accountType, account_label: p.accountLabel }))
@@ -6832,9 +6832,9 @@
             const reqSeq = ++dashboardBenchmarkReqSeq;
             if (dashboardBenchmarkAbortController) dashboardBenchmarkAbortController.abort();
             dashboardBenchmarkAbortController = new AbortController();
-            if (rangeEl) rangeEl.textContent = "최근 1년 데이터를 불러오는 중입니다.";
-            if (noteEl) noteEl.textContent = "";
-            renderDashboardBenchmarkPlaceholder("시계열 데이터를 조회하고 있습니다...");
+            if (rangeEl) rangeEl.textContent = "최근 1년 데이터 확인 중 · 캐시 우선";
+            if (noteEl) noteEl.textContent = "캐시가 있으면 즉시 표시하고, 누락 데이터만 새로 조회합니다.";
+            renderDashboardBenchmarkPlaceholder("벤치마크 시계열을 확인 중입니다. 캐시 우선으로 재사용하고, 누락 데이터만 새로 조회합니다.");
 
             try {
                 const resp = await fetch("/api/portfolio/benchmark-compare", {

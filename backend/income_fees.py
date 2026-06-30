@@ -22,6 +22,7 @@ from .historical import map_to_yfinance
 from .search_universe import load_expanded_universe
 
 INCOME_FEES_TTL_SECONDS = 6 * 3600
+INCOME_FEES_FALLBACK_TTL_SECONDS = int(os.getenv("INCOME_FEES_FALLBACK_TTL_SECONDS", "120"))
 INCOME_FEES_LOOKUP_TIMEOUT_SECONDS = float(os.getenv("INCOME_FEES_LOOKUP_TIMEOUT_SECONDS", "55.0"))
 INCOME_FEES_MAX_WORKERS = max(2, int(os.getenv("INCOME_FEES_MAX_WORKERS", "8")))
 
@@ -100,6 +101,28 @@ def _universe_item(symbol: str) -> dict[str, Any] | None:
             if item.get("symbol")
         }
     return _UNIVERSE_BY_SYMBOL.get(symbol)
+
+
+def _income_fee_cache_key(symbol: str) -> str:
+    return (map_to_yfinance(symbol) or symbol).upper()
+
+
+def _get_cached_income_fee(symbol: str) -> dict[str, Any] | None:
+    cache_key = _income_fee_cache_key(symbol)
+    now = time.time()
+    with _CACHE_LOCK:
+        cached = _CACHE.get(cache_key)
+        if cached and cached[0] > now:
+            return dict(cached[1])
+        if cached:
+            _CACHE.pop(cache_key, None)
+    return None
+
+
+def _set_cached_income_fee(symbol: str, payload: dict[str, Any], ttl_seconds: int | float) -> None:
+    cache_key = _income_fee_cache_key(symbol)
+    with _CACHE_LOCK:
+        _CACHE[cache_key] = (time.time() + float(ttl_seconds), dict(payload))
 
 
 def _infer_type(symbol: str, name: str, type_hint: str = "", info: dict[str, Any] | None = None) -> str:
@@ -218,12 +241,9 @@ def _extract_dividend_yield(ticker: Any, info: dict[str, Any], price: float | No
 
 def _load_symbol_income_fee(symbol: str, name: str, type_hint: str) -> dict[str, Any]:
     yf_symbol = map_to_yfinance(symbol) or symbol
-    cache_key = yf_symbol.upper()
-    now = time.time()
-    with _CACHE_LOCK:
-        cached = _CACHE.get(cache_key)
-        if cached and cached[0] > now:
-            return dict(cached[1])
+    cached = _get_cached_income_fee(symbol)
+    if cached is not None:
+        return cached
 
     try:
         import yfinance as yf
@@ -268,8 +288,7 @@ def _load_symbol_income_fee(symbol: str, name: str, type_hint: str) -> dict[str,
         "dividend_months": dividend_months,
         "data_source": "yfinance" if info or ticker is not None else "none",
     }
-    with _CACHE_LOCK:
-        _CACHE[cache_key] = (now + INCOME_FEES_TTL_SECONDS, dict(payload))
+    _set_cached_income_fee(symbol, payload, INCOME_FEES_TTL_SECONDS)
     return payload
 
 
@@ -311,24 +330,37 @@ def _load_income_fee_batch(valid: list[dict[str, Any]]) -> dict[str, dict[str, A
     if not unique:
         return {}
 
-    executor = ThreadPoolExecutor(max_workers=min(INCOME_FEES_MAX_WORKERS, len(unique)))
+    loaded: dict[str, dict[str, Any]] = {}
+    pending_unique: dict[str, dict[str, Any]] = {}
+    for symbol, pos in unique.items():
+        cached = _get_cached_income_fee(symbol)
+        if cached is not None:
+            loaded[symbol] = cached
+        else:
+            pending_unique[symbol] = pos
+
+    if not pending_unique:
+        return loaded
+
+    executor = ThreadPoolExecutor(max_workers=min(INCOME_FEES_MAX_WORKERS, len(pending_unique)))
     future_to_symbol = {
         executor.submit(_load_symbol_income_fee, pos["ticker"], pos["name"], pos["type_hint"]): symbol
-        for symbol, pos in unique.items()
+        for symbol, pos in pending_unique.items()
     }
     done, pending = wait(future_to_symbol, timeout=INCOME_FEES_LOOKUP_TIMEOUT_SECONDS)
-    loaded: dict[str, dict[str, Any]] = {}
     for future in done:
         symbol = future_to_symbol[future]
-        pos = unique[symbol]
+        pos = pending_unique[symbol]
         try:
             loaded[symbol] = future.result()
         except Exception:
             loaded[symbol] = _fallback_symbol_income_fee(pos["ticker"], pos["name"], pos["type_hint"], "lookup_error")
+            _set_cached_income_fee(symbol, loaded[symbol], INCOME_FEES_FALLBACK_TTL_SECONDS)
     for future in pending:
         symbol = future_to_symbol[future]
-        pos = unique[symbol]
+        pos = pending_unique[symbol]
         loaded[symbol] = _fallback_symbol_income_fee(pos["ticker"], pos["name"], pos["type_hint"], "timeout_fallback")
+        _set_cached_income_fee(symbol, loaded[symbol], INCOME_FEES_FALLBACK_TTL_SECONDS)
     executor.shutdown(wait=False, cancel_futures=True)
     return loaded
 

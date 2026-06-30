@@ -11,7 +11,8 @@
 
 캐시
 ----
-프로세스 메모리, 키 = (yfinance 심볼, start, end). TTL 7일.
+프로세스 메모리, 키 = (yfinance 심볼, start, end). 성공 TTL 7일,
+실패/무데이터 negative-cache TTL 15분.
 """
 from __future__ import annotations
 
@@ -20,6 +21,7 @@ import copy
 from datetime import date, timedelta
 import logging
 import os
+import threading
 import time
 from typing import Any, Optional
 
@@ -92,6 +94,9 @@ SCENARIOS: dict[str, dict[str, Any]] = {
 # close_series_dict는 {iso_date_str: float} 형태로 보관 (pandas 의존성 회피).
 _PRICE_CACHE: dict[tuple[str, str, str], tuple[dict[str, float], float]] = {}
 DEFAULT_TTL_SECONDS = 7 * 24 * 3600
+PRICE_MISS_TTL_SECONDS = int(os.getenv("PRICE_MISS_TTL_SECONDS", str(15 * 60)))
+_PRICE_MISS_CACHE: dict[tuple[str, str, str], float] = {}
+_PRICE_CACHE_LOCK = threading.Lock()
 _BENCHMARK_RESULT_CACHE: dict[tuple[Any, ...], tuple[dict[str, Any], float]] = {}
 BENCHMARK_RESULT_TTL_SECONDS = int(os.getenv("BENCHMARK_RESULT_TTL_SECONDS", str(6 * 3600)))
 
@@ -180,23 +185,51 @@ def _fetch_series_bulk(symbols: list[str], start: str, end: str) -> dict[str, di
 
 
 def fetch_prices(symbols: list[str], start: str, end: str) -> dict[str, dict[str, float]]:
-    """캐시 + bulk fetch. 결과는 {symbol: {iso_date: close}}."""
+    """캐시 + bulk fetch. 결과는 {symbol: {iso_date: close}}.
+
+    성공한 가격 시계열은 장기 TTL로 재사용하고, yfinance가 빈 결과를
+    돌려준 심볼/기간은 짧은 negative-cache에 넣어 같은 요청이 반복해서
+    외부 조회를 때리지 않게 한다.
+    """
     now = time.time()
     out: dict[str, dict[str, float]] = {}
     missing: list[str] = []
 
-    for sym in set(symbols):
-        cached = _PRICE_CACHE.get((sym, start, end))
-        if cached and cached[1] > now:
-            out[sym] = cached[0]
-        else:
+    with _PRICE_CACHE_LOCK:
+        for sym in set(symbols):
+            key = (sym, start, end)
+            cached = _PRICE_CACHE.get(key)
+            if cached and cached[1] > now:
+                out[sym] = dict(cached[0])
+                continue
+            if cached:
+                _PRICE_CACHE.pop(key, None)
+
+            miss_expires_at = _PRICE_MISS_CACHE.get(key)
+            if miss_expires_at and miss_expires_at > now:
+                continue
+            if miss_expires_at:
+                _PRICE_MISS_CACHE.pop(key, None)
             missing.append(sym)
 
     if missing:
         fetched = _fetch_series_bulk(missing, start, end)
-        for sym, series in fetched.items():
-            _PRICE_CACHE[(sym, start, end)] = (series, now + DEFAULT_TTL_SECONDS)
-            out[sym] = series
+        fetched_symbols = set()
+        with _PRICE_CACHE_LOCK:
+            for sym, series in fetched.items():
+                key = (sym, start, end)
+                if not series:
+                    continue
+                series_copy = dict(series)
+                _PRICE_CACHE[key] = (series_copy, now + DEFAULT_TTL_SECONDS)
+                _PRICE_MISS_CACHE.pop(key, None)
+                out[sym] = dict(series_copy)
+                fetched_symbols.add(sym)
+
+            miss_expires_at = now + PRICE_MISS_TTL_SECONDS
+            for sym in missing:
+                if sym not in fetched_symbols:
+                    _PRICE_MISS_CACHE[(sym, start, end)] = miss_expires_at
 
     return out
 

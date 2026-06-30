@@ -27,6 +27,7 @@ except Exception:
 
 KST = ZoneInfo("Asia/Seoul")
 KRX_ETF_CACHE_TTL_SECONDS = int(os.getenv("KRX_ETF_CACHE_TTL_SECONDS", str(12 * 3600)))
+KRX_UNAVAILABLE_CACHE_TTL_SECONDS = int(os.getenv("KRX_UNAVAILABLE_CACHE_TTL_SECONDS", str(5 * 60)))
 KRX_STOCK_SECTOR_CACHE_TTL_SECONDS = int(
     os.getenv("KRX_STOCK_SECTOR_CACHE_TTL_SECONDS", str(12 * 3600))
 )
@@ -225,6 +226,8 @@ def get_krx_etf_universe(force_reload: bool = False) -> list[dict[str, str]]:
 
     stock = _get_pykrx_stock()
     if stock is None:
+        with _UNIVERSE_LOCK:
+            _UNIVERSE_CACHE = (now + KRX_UNAVAILABLE_CACHE_TTL_SECONDS, [])
         return []
 
     rows: list[dict[str, str]] = []
@@ -317,6 +320,8 @@ def get_krx_stock_sector_map(force_reload: bool = False) -> dict[str, str]:
 
     stock = _get_pykrx_stock()
     if stock is None:
+        with _STOCK_SECTOR_LOCK:
+            _STOCK_SECTOR_CACHE = (now + KRX_UNAVAILABLE_CACHE_TTL_SECONDS, {})
         return {}
 
     rows: dict[str, str] = {}
